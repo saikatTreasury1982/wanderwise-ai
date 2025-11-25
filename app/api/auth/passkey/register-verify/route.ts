@@ -52,14 +52,15 @@ export async function POST(request: Request) {
 
   // In v13, credential data is nested under registrationInfo.credential
   const { credential: registeredCredential } = verification.registrationInfo;
-  const credentialID = registeredCredential.id;
+  // Use credential.id from request (already base64url) instead of converting from Uint8Array
+  const credentialID = credential.id;
   const credentialPublicKey = registeredCredential.publicKey;
   const counter = registeredCredential.counter;
 
   // Store passkey in database
   await storePasskey(
     userId,
-    Buffer.from(credentialID).toString('base64'),
+    credentialID,  // Already base64url string from browser
     Buffer.from(credentialPublicKey).toString('base64'),
     counter,
     'Primary Device'
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
   // Create session
   const sessionToken = await createSession(
     userId,
-    Buffer.from(credentialID).toString('base64')
+    credentialID  // Already base64url string from browser
   );
 
     // Set session cookie

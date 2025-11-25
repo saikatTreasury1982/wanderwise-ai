@@ -22,9 +22,9 @@ export async function createSession(
 
     await query(
       `INSERT INTO auth_sessions (
-        user_id, credential_id, session_status
-      ) VALUES (?, ?,?)`,
-      [userId, credentialId || null,'OPEN']
+        session_token, user_id, credential_id, session_status
+      ) VALUES (?, ?, ?, 'OPEN')`,
+      [sessionToken, userId, credentialId || null]
     );
 
     return sessionToken;
@@ -66,4 +66,18 @@ function generateSessionToken(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export async function closeSession(sessionToken: string): Promise<void> {
+  try {
+    await query(
+      `UPDATE auth_sessions 
+       SET session_status = 'CLOSED', closed_at = datetime('now')
+       WHERE session_token = ? AND session_status = 'OPEN'`,
+      [sessionToken]
+    );
+  } catch (error) {
+    console.error('Error closing session:', error);
+    throw error;
+  }
 }

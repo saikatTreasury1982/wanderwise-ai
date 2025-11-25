@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { DM_Sans } from 'next/font/google';
 import './globals.css';
+import SessionGuard from '@/components/organisms/SessionGuard';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -20,7 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={dmSans.variable}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <SessionGuard />
+        {children}
+      </body>
     </html>
   );
 }
