@@ -1,20 +1,27 @@
 import { NextResponse } from 'next/server';
 import { generateRegistrationOptions } from '@simplewebauthn/server';
-import { getUserById } from '@/lib/services/user-service';
+import { getUserById, getUserByEmail } from '@/lib/services/user-service';
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await request.json();
+    const body = await request.json();
+    const { userId, email } = body;
 
-    if (!userId) {
+    if (!userId && !email) {
       return NextResponse.json(
-        { error: 'User ID is required' },
+        { error: 'User ID or email is required' },
         { status: 400 }
       );
     }
 
     // Fetch user from database
-    const user = await getUserById(userId);
+    let user;
+    if (userId) {
+      user = await getUserById(userId);
+    } else {
+      user = await getUserByEmail(email);
+    }
+
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -37,7 +44,7 @@ export async function POST(request: Request) {
     const options = await generateRegistrationOptions({
       rpName,
       rpID,
-      userID: userId,
+      userID: new TextEncoder().encode(user.user_id),
       userName: user.email,
       userDisplayName: `${user.first_name} ${user.last_name}`,
       attestationType: 'none',

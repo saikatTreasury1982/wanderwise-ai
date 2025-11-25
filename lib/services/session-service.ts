@@ -22,9 +22,9 @@ export async function createSession(
 
     await query(
       `INSERT INTO auth_sessions (
-        session_token, user_id, credential_id, expires_at
-      ) VALUES (?, ?, ?, ?)`,
-      [sessionToken, userId, credentialId || null, expiresAt.toISOString()]
+        user_id, credential_id, session_status
+      ) VALUES (?, ?,?)`,
+      [userId, credentialId || null,'OPEN']
     );
 
     return sessionToken;

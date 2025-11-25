@@ -51,7 +51,7 @@ export default function LoginForm() {
       const optionsRes = await fetch('/api/auth/passkey/register-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ email }),
       });
 
       if (!optionsRes.ok) throw new Error('Failed to get registration options');
