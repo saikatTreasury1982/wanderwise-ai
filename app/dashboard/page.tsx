@@ -108,6 +108,30 @@ export default function DashboardPage() {
     }
   };
 
+  const handleStartPlanning = async (tripId: number) => {
+    try {
+      const response = await fetch(`/api/trips/${tripId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trip_status: 'active' }),
+      });
+
+      if (response.ok) {
+        router.push(`/dashboard/trip/${tripId}`);
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to start planning');
+      }
+    } catch (error) {
+      console.error('Error starting planning:', error);
+      alert('Failed to start planning');
+    }
+  };
+
+  const handleCardClick = (tripId: number) => {
+    router.push(`/dashboard/trip/${tripId}`);
+  };
+
   const handleFormSuccess = () => {
     fetchTrips();
   };
@@ -151,6 +175,8 @@ export default function DashboardPage() {
                   dateFormat={preferences.date_format}
                   onEdit={handleEditTrip}
                   onDelete={handleDeleteTrip}
+                  onStartPlanning={handleStartPlanning}
+                  onCardClick={handleCardClick}
                 />
               ))}
             </div>

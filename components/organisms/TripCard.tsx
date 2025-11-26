@@ -18,6 +18,8 @@ interface TripCardProps {
   dateFormat: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY';
   onEdit: (trip: Trip) => void;
   onDelete: (tripId: number) => void;
+  onStartPlanning: (tripId: number) => void;
+  onCardClick: (tripId: number) => void;
 }
 
 const statusConfig = {
@@ -44,6 +46,8 @@ export default function TripCard({
   dateFormat,
   onEdit,
   onDelete,
+  onStartPlanning,
+  onCardClick,
 }: TripCardProps) {
   const status = statusConfig[trip.trip_status];
   const destination = [trip.destination_city, trip.destination_country]
@@ -52,12 +56,14 @@ export default function TripCard({
 
   return (
     <div
+      onClick={() => onCardClick(trip.trip_id)}
       className={cn(
         'bg-white/10 backdrop-blur-xl',
         'border border-white/20',
         'rounded-xl p-4',
         'transition-all duration-200',
-        'hover:bg-white/15 hover:border-white/30'
+        'hover:bg-white/15 hover:border-white/30',
+        'cursor-pointer'
       )}
     >
       <div className="flex items-start justify-between gap-4">
@@ -89,9 +95,10 @@ export default function TripCard({
         {/* Action buttons */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => onEdit(trip)}
+            onClick={(e) => { e.stopPropagation(); onEdit(trip); }}
             className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
             aria-label="Edit trip"
+            title="Edit trip"
           >
             <svg
               className="w-5 h-5"
@@ -109,25 +116,55 @@ export default function TripCard({
           </button>
 
           {trip.trip_status === 'draft' && (
-            <button
-              onClick={() => onDelete(trip.trip_id)}
-              className="p-2 rounded-lg text-white/70 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-              aria-label="Delete trip"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); onStartPlanning(trip.trip_id); }}
+                className="p-2 rounded-lg text-white/70 hover:text-green-400 hover:bg-green-500/10 transition-colors"
+                aria-label="Start planning"
+                title="Start planning"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </button>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </button>
+
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(trip.trip_id); }}
+                className="p-2 rounded-lg text-white/70 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                aria-label="Delete trip"
+                title="Delete trip"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </>
           )}
         </div>
       </div>

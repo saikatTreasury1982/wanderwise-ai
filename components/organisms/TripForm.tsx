@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import { useRouter } from 'next/navigation';
 
 interface Trip {
   trip_id: number;
@@ -58,6 +59,7 @@ export default function TripForm({
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // Populate form when editing
   useEffect(() => {
@@ -116,8 +118,7 @@ export default function TripForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (startPlanning: boolean = false) => {
     if (!validate()) return;
 
     setIsLoading(true);
@@ -127,10 +128,14 @@ export default function TripForm({
       const url = isEditMode ? `/api/trips/${trip.trip_id}` : '/api/trips';
       const method = isEditMode ? 'PUT' : 'POST';
 
+      const payload = startPlanning
+        ? { ...formData, trip_status: 'active' }
+        : formData;
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -138,13 +143,25 @@ export default function TripForm({
         throw new Error(data.error || 'Failed to save trip');
       }
 
-      onSuccess();
-      onClose();
+      const data = await response.json();
+
+      if (startPlanning) {
+        onClose();
+        router.push(`/dashboard/trip/${data.trip.trip_id}`);
+      } else {
+        onSuccess();
+        onClose();
+      }
     } catch (error: any) {
       setErrors({ general: error.message || 'An error occurred' });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSave(false);
   };
 
   return (
@@ -229,23 +246,49 @@ export default function TripForm({
           />
         </div>
 
-        <div className="flex gap-3 pt-4">
-          <Button
+        <div className="flex justify-end gap-3 pt-4">
+          {/* Cancel button */}
+          <button
             type="button"
-            variant="ghost"
             onClick={onClose}
-            className="flex-1"
+            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all"
+            title="Cancel"
+            disabled={isLoading}
           >
-            Cancel
-          </Button>
-          <Button
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Save button */}
+          <button
             type="submit"
-            variant="primary"
-            isLoading={isLoading}
-            className="flex-1"
+            className="w-12 h-12 rounded-full bg-purple-500/20 backdrop-blur-sm border border-purple-400/30 flex items-center justify-center text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 hover:text-purple-200 transition-all disabled:opacity-50"
+            title={isEditMode ? 'Save changes' : 'Save as draft'}
+            disabled={isLoading}
           >
-            {isEditMode ? 'Save Changes' : 'Create Trip'}
-          </Button>
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </button>
+
+          {/* Start Planning button */}
+          <button
+            type="button"
+            onClick={() => handleSave(true)}
+            className="w-12 h-12 rounded-full bg-green-500/20 backdrop-blur-sm border border-green-400/30 flex items-center justify-center text-green-300 hover:bg-green-500/30 hover:border-green-400/50 hover:text-green-200 transition-all disabled:opacity-50"
+            title="Save and start planning"
+            disabled={isLoading}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
         </div>
       </form>
     </Modal>
