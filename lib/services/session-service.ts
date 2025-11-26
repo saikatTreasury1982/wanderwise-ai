@@ -1,11 +1,13 @@
 import { query } from '@/lib/db';
 
 interface Session {
+  session_id: number;
   session_token: string;
   user_id: string;
   credential_id: string | null;
-  expires_at: string;
+  session_status: string;
   created_at: string;
+  closed_at: string | null;
 }
 
 export async function createSession(
@@ -39,7 +41,7 @@ export async function getSession(sessionToken: string): Promise<Session | null> 
     const sessions = await query<Session>(
       `SELECT * FROM auth_sessions 
        WHERE session_token = ? 
-       AND datetime(expires_at) > datetime('now')`,
+       AND session_status = 'OPEN'`,
       [sessionToken]
     );
     return sessions.length > 0 ? sessions[0] : null;

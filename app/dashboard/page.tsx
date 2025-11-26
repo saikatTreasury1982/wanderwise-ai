@@ -1,44 +1,178 @@
-import { Metadata } from 'next';
-import PageBackground from '@/components/ui/PageBackground';
-import Card from '@/components/ui/Card';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Dashboard | WanderWise',
-  description: 'Your travel dashboard',
-};
+import { useState, useEffect } from 'react';
+import PageBackground from '@/components/ui/PageBackground';
+import FloatingActionButton from '@/components/ui/FloatingActionButton';
+import TripCard from '@/components/organisms/TripCard';
+import TripForm from '@/components/organisms/TripForm';
+import EmptyState from '@/components/organisms/EmptyState';
+import { useRouter } from 'next/navigation';
+
+interface Trip {
+  trip_id: number;
+  trip_name: string;
+  trip_description: string | null;
+  destination_country: string | null;
+  destination_city: string | null;
+  start_date: string;
+  end_date: string;
+  trip_status: 'draft' | 'active' | 'completed' | 'cancelled';
+}
+
+interface UserPreferences {
+  date_format: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY';
+  time_format: string;
+  decimal_places: number;
+}
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    date_format: 'YYYY-MM-DD',
+    time_format: '24h',
+    decimal_places: 2,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+
+  const fetchTrips = async () => {
+    try {
+      const response = await fetch('/api/trips');
+      if (response.status === 401) {
+        router.push('/login');
+        return;
+      }
+      if (response.ok) {
+        const data = await response.json();
+        setTrips(data.trips);
+      }
+    } catch (error) {
+      console.error('Error fetching trips:', error);
+    }
+  };
+
+  const fetchPreferences = async () => {
+    try {
+      const response = await fetch('/api/user/preferences');
+      if (response.status === 401) {
+        router.push('/login');
+        return;
+      }
+      if (response.ok) {
+        const data = await response.json();
+        setPreferences(data.preferences);
+      }
+    } catch (error) {
+      console.error('Error fetching preferences:', error);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      await Promise.all([fetchTrips(), fetchPreferences()]);
+      setIsLoading(false);
+    };
+    loadData();
+  }, []);
+
+  const handleCreateTrip = () => {
+    setEditingTrip(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEditTrip = (trip: Trip) => {
+    setEditingTrip(trip);
+    setIsFormOpen(true);
+  };
+
+  const handleDeleteTrip = async (tripId: number) => {
+    if (!confirm('Are you sure you want to delete this trip?')) return;
+
+    try {
+      const response = await fetch(`/api/trips/${tripId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await fetchTrips();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to delete trip');
+      }
+    } catch (error) {
+      console.error('Error deleting trip:', error);
+      alert('Failed to delete trip');
+    }
+  };
+
+  const handleFormSuccess = () => {
+    fetchTrips();
+  };
+
+  const handleFormClose = () => {
+    setIsFormOpen(false);
+    setEditingTrip(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center">
+        <PageBackground />
+        <div className="relative z-10">
+          <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  const hasTrips = trips.length > 0;
+
   return (
     <div className="min-h-screen relative p-6">
       <PageBackground />
-      
-      <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Welcome to WanderWise
-          </h1>
-          <p className="text-white/80 text-lg">
-            Your travel dashboard
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card variant="glass" padding="lg" className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">My Trips</h2>
-            <p className="text-white/70">No trips yet. Create your first trip!</p>
-          </Card>
+      <div className="relative z-10 max-w-3xl mx-auto">
+        {hasTrips ? (
+          <>
+            {/* Header */}
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-white">My Trips</h1>
+            </div>
 
-          <Card variant="glass" padding="lg" className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Budget</h2>
-            <p className="text-white/70">Track your travel expenses</p>
-          </Card>
+            {/* Trip Cards */}
+            <div className="space-y-4">
+              {trips.map((trip) => (
+                <TripCard
+                  key={trip.trip_id}
+                  trip={trip}
+                  dateFormat={preferences.date_format}
+                  onEdit={handleEditTrip}
+                  onDelete={handleDeleteTrip}
+                />
+              ))}
+            </div>
 
-          <Card variant="glass" padding="lg" className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Settings</h2>
-            <p className="text-white/70">Manage your preferences</p>
-          </Card>
-        </div>
+            {/* FAB */}
+            <FloatingActionButton
+              onClick={handleCreateTrip}
+              ariaLabel="Create new trip"
+            />
+          </>
+        ) : (
+          <EmptyState onCreateTrip={handleCreateTrip} />
+        )}
       </div>
+
+      {/* Trip Form Modal */}
+      <TripForm
+        isOpen={isFormOpen}
+        onClose={handleFormClose}
+        onSuccess={handleFormSuccess}
+        trip={editingTrip}
+      />
     </div>
   );
 }
