@@ -16,7 +16,7 @@ interface Trip {
   destination_city: string | null;
   start_date: string;
   end_date: string;
-  trip_status: 'draft' | 'active' | 'completed' | 'cancelled';
+  status_code: number;
 }
 
 interface UserPreferences {
@@ -113,7 +113,7 @@ export default function DashboardPage() {
       const response = await fetch(`/api/trips/${tripId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trip_status: 'active' }),
+        body: JSON.stringify({ status_code: 2 }),
       });
 
       if (response.ok) {

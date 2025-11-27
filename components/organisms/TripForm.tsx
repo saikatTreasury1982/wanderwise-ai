@@ -14,7 +14,7 @@ interface Trip {
   destination_city: string | null;
   start_date: string;
   end_date: string;
-  trip_status: 'draft' | 'active' | 'completed' | 'cancelled';
+  status_code: number;
 }
 
 interface TripFormProps {
@@ -47,6 +47,13 @@ export default function TripForm({
   trip,
 }: TripFormProps) {
   const isEditMode = !!trip;
+  const statusCode = trip?.status_code ?? 1;
+  const isDraft = statusCode === 1;
+  const isActive = statusCode === 2;
+  const isCompleted = statusCode === 3;
+  const isSuspended = statusCode === 4;
+  const isReadOnly = isCompleted;
+  const isLimitedEdit = isActive || isSuspended;
 
   const [formData, setFormData] = useState<FormData>({
     trip_name: '',
@@ -60,6 +67,7 @@ export default function TripForm({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const [showDropWarning, setShowDropWarning] = useState(false);
 
   // Populate form when editing
   useEffect(() => {
@@ -129,8 +137,8 @@ export default function TripForm({
       const method = isEditMode ? 'PUT' : 'POST';
 
       const payload = startPlanning
-        ? { ...formData, trip_status: 'active' }
-        : formData;
+      ? { ...formData, status_code: 2 }
+      : formData;
 
       const response = await fetch(url, {
         method,
@@ -164,6 +172,63 @@ export default function TripForm({
     await handleSave(false);
   };
 
+  const handleDropPlanning = async (deleteData: boolean) => {
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const newStatusCode = deleteData ? 1 : 4; // 1 = Draft, 4 = Suspended
+      
+      const response = await fetch(`/api/trips/${trip!.trip_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status_code: newStatusCode,
+          delete_planning_data: deleteData 
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update trip');
+      }
+
+      setShowDropWarning(false);
+      onSuccess();
+      onClose();
+    } catch (error: any) {
+      setErrors({ general: error.message || 'An error occurred' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResumePlanning = async () => {
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const response = await fetch(`/api/trips/${trip!.trip_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status_code: 2 }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to resume planning');
+      }
+
+      onSuccess();
+      onClose();
+      router.push(`/dashboard/trip/${trip!.trip_id}`);
+    } catch (error: any) {
+      setErrors({ general: error.message || 'An error occurred' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -186,6 +251,7 @@ export default function TripForm({
           error={errors.trip_name}
           variant="glass"
           required
+          disabled={isReadOnly}
         />
 
         <div>
@@ -198,7 +264,8 @@ export default function TripForm({
             value={formData.trip_description}
             onChange={handleChange}
             rows={3}
-            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent resize-none"
+            disabled={isReadOnly}
+            className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent resize-none ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
         </div>
 
@@ -210,6 +277,7 @@ export default function TripForm({
             value={formData.destination_country}
             onChange={handleChange}
             variant="glass"
+            disabled={isReadOnly || isLimitedEdit}
           />
 
           <Input
@@ -219,6 +287,7 @@ export default function TripForm({
             value={formData.destination_city}
             onChange={handleChange}
             variant="glass"
+            disabled={isReadOnly}
           />
         </div>
 
@@ -232,6 +301,7 @@ export default function TripForm({
             error={errors.start_date}
             variant="glass"
             required
+            disabled={isReadOnly || isLimitedEdit}
           />
 
           <Input
@@ -243,16 +313,17 @@ export default function TripForm({
             error={errors.end_date}
             variant="glass"
             required
+            disabled={isReadOnly || isLimitedEdit}
           />
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          {/* Cancel button */}
+          {/* Cancel/Close button - always shown */}
           <button
             type="button"
             onClick={onClose}
             className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all"
-            title="Cancel"
+            title={isCompleted ? 'Close' : 'Cancel'}
             disabled={isLoading}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -260,37 +331,114 @@ export default function TripForm({
             </svg>
           </button>
 
-          {/* Save button */}
-          <button
-            type="submit"
-            className="w-12 h-12 rounded-full bg-purple-500/20 backdrop-blur-sm border border-purple-400/30 flex items-center justify-center text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 hover:text-purple-200 transition-all disabled:opacity-50"
-            title={isEditMode ? 'Save changes' : 'Save as draft'}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-          </button>
+          {/* Save button - shown for Draft and Active */}
+          {(isDraft || isActive) && (
+            <button
+              type="submit"
+              className="w-12 h-12 rounded-full bg-purple-500/20 backdrop-blur-sm border border-purple-400/30 flex items-center justify-center text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 hover:text-purple-200 transition-all disabled:opacity-50"
+              title={isEditMode ? 'Save changes' : 'Save as draft'}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </button>
+          )}
 
-          {/* Start Planning button */}
-          <button
-            type="button"
-            onClick={() => handleSave(true)}
-            className="w-12 h-12 rounded-full bg-green-500/20 backdrop-blur-sm border border-green-400/30 flex items-center justify-center text-green-300 hover:bg-green-500/30 hover:border-green-400/50 hover:text-green-200 transition-all disabled:opacity-50"
-            title="Save and start planning"
-            disabled={isLoading}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </button>
+          {/* Start Planning button - shown for Draft only */}
+          {isDraft && (
+            <button
+              type="button"
+              onClick={() => handleSave(true)}
+              className="w-12 h-12 rounded-full bg-green-500/20 backdrop-blur-sm border border-green-400/30 flex items-center justify-center text-green-300 hover:bg-green-500/30 hover:border-green-400/50 hover:text-green-200 transition-all disabled:opacity-50"
+              title="Save and start planning"
+              disabled={isLoading}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+          )}
+
+          {/* Drop Planning button - shown for Active only */}
+          {isActive && (
+            <button
+              type="button"
+              onClick={() => setShowDropWarning(true)}
+              className="w-12 h-12 rounded-full bg-red-500/20 backdrop-blur-sm border border-red-400/30 flex items-center justify-center text-red-300 hover:bg-red-500/30 hover:border-red-400/50 hover:text-red-200 transition-all disabled:opacity-50"
+              title="Drop planning"
+              disabled={isLoading}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10h6M9 14h6" />
+              </svg>
+            </button>
+          )}
+
+          {/* Resume Planning button - shown for Suspended only */}
+          {isSuspended && (
+            <button
+              type="button"
+              onClick={handleResumePlanning}
+              className="w-12 h-12 rounded-full bg-green-500/20 backdrop-blur-sm border border-green-400/30 flex items-center justify-center text-green-300 hover:bg-green-500/30 hover:border-green-400/50 hover:text-green-200 transition-all disabled:opacity-50"
+              title="Resume planning"
+              disabled={isLoading}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+          )}
         </div>
       </form>
+      
+      {/* Drop Planning Warning Modal */}
+      {showDropWarning && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDropWarning(false)} />
+          <div className="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6">
+            <h3 className="text-xl font-semibold text-white mb-3">Drop Planning?</h3>
+            <p className="text-white/70 mb-6">
+              This will revert the trip to Draft status. What would you like to do with your planning data?
+            </p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => handleDropPlanning(true)}
+                disabled={isLoading}
+                className="w-full px-4 py-3 rounded-xl bg-red-500/20 border border-red-400/30 text-red-300 hover:bg-red-500/30 hover:border-red-400/50 transition-all disabled:opacity-50"
+              >
+                <span className="font-medium">Drop & Delete All Data</span>
+                <p className="text-sm text-red-300/70 mt-1">Remove all itinerary, expenses, and other planning data</p>
+              </button>
+              
+              <button
+                onClick={() => handleDropPlanning(false)}
+                disabled={isLoading}
+                className="w-full px-4 py-3 rounded-xl bg-yellow-500/20 border border-yellow-400/30 text-yellow-300 hover:bg-yellow-500/30 hover:border-yellow-400/50 transition-all disabled:opacity-50"
+              >
+                <span className="font-medium">Suspend Instead</span>
+                <p className="text-sm text-yellow-300/70 mt-1">Keep all data but pause planning activities</p>
+              </button>
+              
+              <button
+                onClick={() => setShowDropWarning(false)}
+                disabled={isLoading}
+                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white/70 hover:bg-white/20 hover:text-white transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Modal>
   );
 }

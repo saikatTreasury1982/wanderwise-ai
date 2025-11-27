@@ -9,7 +9,7 @@ interface Trip {
   destination_city: string | null;
   start_date: string;
   end_date: string;
-  trip_status: 'draft' | 'active' | 'completed' | 'cancelled';
+  status_code: number;
   created_at: string;
   updated_at: string;
 }
@@ -31,7 +31,7 @@ interface UpdateTripInput {
   destination_city?: string | null;
   start_date?: string;
   end_date?: string;
-  trip_status?: 'draft' | 'active' | 'completed' | 'cancelled';
+  status_code?: number;
 }
 
 export async function createTrip(input: CreateTripInput): Promise<Trip> {
@@ -130,9 +130,9 @@ export async function updateTrip(
       updates.push('end_date = ?');
       values.push(input.end_date);
     }
-    if (input.trip_status !== undefined) {
-      updates.push('trip_status = ?');
-      values.push(input.trip_status);
+    if (input.status_code !== undefined) {
+      updates.push('status_code = ?');
+      values.push(input.status_code);
     }
 
     if (updates.length === 0) {
@@ -163,7 +163,7 @@ export async function deleteTrip(tripId: number, userId: string): Promise<boolea
       throw new Error('Trip not found');
     }
     
-    if (trip.trip_status !== 'draft') {
+    if (trip.status_code !== 1) {
       throw new Error('Only draft trips can be deleted');
     }
 
@@ -175,6 +175,31 @@ export async function deleteTrip(tripId: number, userId: string): Promise<boolea
     return true;
   } catch (error) {
     console.error('Error deleting trip:', error);
+    throw error;
+  }
+}
+
+export async function deleteTripPlanningData(tripId: number): Promise<void> {
+  try {
+    // Get all tables that need data deletion from trip_functions
+    const tables = await query<{ table_name: string; delete_on_drop: number }>(
+      'SELECT table_name, delete_on_drop FROM trip_functions WHERE delete_on_drop = 1'
+    );
+
+    // Delete data from each table
+    for (const table of tables) {
+      try {
+        await query(
+          `DELETE FROM ${table.table_name} WHERE trip_id = ?`,
+          [tripId]
+        );
+      } catch (err) {
+        // Table might not exist yet, continue with others
+        console.warn(`Could not delete from ${table.table_name}:`, err);
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting trip planning data:', error);
     throw error;
   }
 }

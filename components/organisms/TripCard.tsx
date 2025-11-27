@@ -10,7 +10,7 @@ interface Trip {
   destination_city: string | null;
   start_date: string;
   end_date: string;
-  trip_status: 'draft' | 'active' | 'completed' | 'cancelled';
+  status_code: number;
 }
 
 interface TripCardProps {
@@ -22,20 +22,20 @@ interface TripCardProps {
   onCardClick: (tripId: number) => void;
 }
 
-const statusConfig = {
-  draft: {
+const statusConfig: Record<number, { label: string; className: string }> = {
+  1: {
     label: 'Draft',
     className: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
   },
-  active: {
+  2: {
     label: 'Active',
     className: 'bg-green-500/20 text-green-300 border-green-500/30',
   },
-  completed: {
+  3: {
     label: 'Completed',
     className: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
   },
-  cancelled: {
+  4: {
     label: 'Cancelled',
     className: 'bg-red-500/20 text-red-300 border-red-500/30',
   },
@@ -49,7 +49,7 @@ export default function TripCard({
   onStartPlanning,
   onCardClick,
 }: TripCardProps) {
-  const status = statusConfig[trip.trip_status];
+  const status = statusConfig[trip.status_code];
   const destination = [trip.destination_city, trip.destination_country]
     .filter(Boolean)
     .join(', ');
@@ -115,7 +115,7 @@ export default function TripCard({
             </svg>
           </button>
 
-          {trip.trip_status === 'draft' && (
+          {trip.status_code === 1 && (
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); onStartPlanning(trip.trip_id); }}

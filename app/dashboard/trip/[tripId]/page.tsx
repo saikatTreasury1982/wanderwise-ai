@@ -13,7 +13,7 @@ interface Trip {
   destination_city: string | null;
   start_date: string;
   end_date: string;
-  trip_status: 'draft' | 'active' | 'completed' | 'cancelled';
+  status_code: number;
 }
 
 interface PageProps {
