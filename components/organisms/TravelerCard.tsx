@@ -14,24 +14,22 @@ interface Traveler {
   is_active: number;
 }
 
+interface Relationship {
+  relationship_code: string;
+  relationship_name: string;
+}
+
 interface TravelerCardProps {
   traveler: Traveler;
+  relationships: Relationship[];
   onEdit: (traveler: Traveler) => void;
   onCopy: (traveler: Traveler) => void;
   onDelete: (travelerId: number) => void;
 }
 
-const relationshipLabels: Record<string, string> = {
-  self: 'Self',
-  spouse: 'Spouse',
-  child: 'Child',
-  friend: 'Friend',
-  family: 'Family',
-  colleague: 'Colleague',
-};
-
 export default function TravelerCard({
   traveler,
+  relationships,
   onEdit,
   onCopy,
   onDelete,
@@ -70,7 +68,9 @@ export default function TravelerCard({
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
             {traveler.relationship && (
-              <span>{relationshipLabels[traveler.relationship] || traveler.relationship}</span>
+              <span>
+                {relationships.find(r => r.relationship_code === traveler.relationship)?.relationship_name || traveler.relationship}
+              </span>
             )}
             {traveler.traveler_email && (
               <span className="truncate">{traveler.traveler_email}</span>

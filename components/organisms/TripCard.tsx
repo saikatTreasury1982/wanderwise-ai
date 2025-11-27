@@ -13,43 +13,39 @@ interface Trip {
   status_code: number;
 }
 
+interface TripStatus {
+  status_code: number;
+  status_name: string;
+}
+
 interface TripCardProps {
   trip: Trip;
   dateFormat: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY';
+  statuses: TripStatus[];
   onEdit: (trip: Trip) => void;
   onDelete: (tripId: number) => void;
   onStartPlanning: (tripId: number) => void;
   onCardClick: (tripId: number) => void;
 }
 
-const statusConfig: Record<number, { label: string; className: string }> = {
-  1: {
-    label: 'Draft',
-    className: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-  },
-  2: {
-    label: 'Active',
-    className: 'bg-green-500/20 text-green-300 border-green-500/30',
-  },
-  3: {
-    label: 'Completed',
-    className: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  },
-  4: {
-    label: 'Cancelled',
-    className: 'bg-red-500/20 text-red-300 border-red-500/30',
-  },
+const statusStyles: Record<number, string> = {
+  1: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+  2: 'bg-green-500/20 text-green-300 border-green-500/30',
+  3: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  4: 'bg-red-500/20 text-red-300 border-red-500/30',
 };
 
 export default function TripCard({
   trip,
   dateFormat,
+  statuses,
   onEdit,
   onDelete,
   onStartPlanning,
   onCardClick,
 }: TripCardProps) {
-  const status = statusConfig[trip.status_code];
+  const statusLabel = statuses.find(s => s.status_code === trip.status_code)?.status_name || 'Unknown';
+  const statusStyle = statusStyles[trip.status_code] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   const destination = [trip.destination_city, trip.destination_country]
     .filter(Boolean)
     .join(', ');
@@ -76,10 +72,10 @@ export default function TripCard({
             <span
               className={cn(
                 'px-2 py-0.5 text-xs font-medium rounded-full border',
-                status.className
+                statusStyle
               )}
             >
-              {status.label}
+              {statusLabel}
             </span>
           </div>
 

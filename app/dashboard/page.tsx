@@ -19,6 +19,11 @@ interface Trip {
   status_code: number;
 }
 
+interface TripStatus {
+  status_code: number;
+  status_name: string;
+}
+
 interface UserPreferences {
   date_format: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY';
   time_format: string;
@@ -36,6 +41,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [statuses, setStatuses] = useState<TripStatus[]>([]);
 
   const fetchTrips = async () => {
     try {
@@ -50,6 +56,18 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Error fetching trips:', error);
+    }
+  };
+
+  const fetchStatuses = async () => {
+    try {
+      const response = await fetch('/api/statuses');
+      if (response.ok) {
+        const data = await response.json();
+        setStatuses(data.statuses);
+      }
+    } catch (error) {
+      console.error('Error fetching statuses:', error);
     }
   };
 
@@ -72,7 +90,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await Promise.all([fetchTrips(), fetchPreferences()]);
+      await Promise.all([fetchTrips(), fetchPreferences(), fetchStatuses()]);
       setIsLoading(false);
     };
     loadData();
@@ -173,6 +191,7 @@ export default function DashboardPage() {
                   key={trip.trip_id}
                   trip={trip}
                   dateFormat={preferences.date_format}
+                  statuses={statuses}
                   onEdit={handleEditTrip}
                   onDelete={handleDeleteTrip}
                   onStartPlanning={handleStartPlanning}

@@ -23,6 +23,11 @@ interface Trip {
   trip_name: string;
 }
 
+interface Relationship {
+  relationship_code: string;
+  relationship_name: string;
+}
+
 interface PageProps {
   params: Promise<{ tripId: string }>;
 }
@@ -34,6 +39,7 @@ export default function TravelersPage({ params }: PageProps) {
   const [travelers, setTravelers] = useState<Traveler[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTraveler, setSelectedTraveler] = useState<Traveler | null>(null);
+  const [relationships, setRelationships] = useState<Relationship[]>([]);
 
   const fetchTrip = async () => {
     try {
@@ -67,10 +73,22 @@ export default function TravelersPage({ params }: PageProps) {
     }
   };
 
+  const fetchRelationships = async () => {
+    try {
+      const response = await fetch('/api/relationships');
+      if (response.ok) {
+        const data = await response.json();
+        setRelationships(data.relationships);
+      }
+    } catch (error) {
+      console.error('Error fetching relationships:', error);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await Promise.all([fetchTrip(), fetchTravelers()]);
+      await Promise.all([fetchTrip(), fetchTravelers(), fetchRelationships()]);
       setIsLoading(false);
     };
     loadData();
@@ -185,6 +203,7 @@ export default function TravelersPage({ params }: PageProps) {
                   <TravelerCard
                     key={traveler.traveler_id}
                     traveler={traveler}
+                    relationships={relationships}
                     onEdit={handleEdit}
                     onCopy={handleCopy}
                     onDelete={handleDelete}
