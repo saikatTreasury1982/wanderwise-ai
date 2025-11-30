@@ -450,7 +450,7 @@ export default function FlightEntryForm({
         {/* Fare */}
         <div className="grid grid-cols-2 gap-3">
         <div>
-            <label className="block text-xs text-white/60 mb-1">Fare</label>
+            <label className="block text-xs text-white/60 mb-1">Unit Fare</label>
             <input
             type="number"
             value={totalPrice}
