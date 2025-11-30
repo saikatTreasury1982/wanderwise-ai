@@ -41,6 +41,7 @@ export default function TripHubPage({ params }: PageProps) {
   const [travelersCount, setTravelersCount] = useState(0);
   const [travelers, setTravelers] = useState<Traveler[]>([]);
   const [flightStats, setFlightStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
+  const [accommodationStats, setAccommodationStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,6 +70,18 @@ export default function TripHubPage({ params }: PageProps) {
             total: flights.length,
             shortlisted: flights.filter((f: any) => f.status === 'shortlisted').length,
             confirmed: flights.filter((f: any) => f.status === 'confirmed').length,
+          });
+        }
+
+        // Fetch accommodations
+        const accommodationsResponse = await fetch(`/api/trips/${tripId}/accommodations`);
+        if (accommodationsResponse.ok) {
+          const accommodationsData = await accommodationsResponse.json();
+          const accommodations = accommodationsData || [];
+          setAccommodationStats({
+            total: accommodations.length,
+            shortlisted: accommodations.filter((a: any) => a.status === 'shortlisted').length,
+            confirmed: accommodations.filter((a: any) => a.status === 'confirmed').length,
           });
         }
 
@@ -171,6 +184,28 @@ export default function TripHubPage({ params }: PageProps) {
     </div>
   ) : undefined;
 
+  const accommodationSubtitle = accommodationStats.total > 0 ? (
+    <div className="space-y-1 text-xs">
+      {accommodationStats.confirmed > 0 && (
+        <div>
+          <span className="text-green-400">{accommodationStats.confirmed}</span>
+          <span className="text-white/50"> confirmed</span>
+        </div>
+      )}
+      {accommodationStats.shortlisted > 0 && (
+        <div>
+          <span className="text-yellow-400">{accommodationStats.shortlisted}</span>
+          <span className="text-white/50"> shortlisted</span>
+        </div>
+      )}
+      {accommodationStats.confirmed === 0 && accommodationStats.shortlisted === 0 && (
+        <div>
+          <span className="text-white/50">No selection yet</span>
+        </div>
+      )}
+    </div>
+  ) : undefined;
+
   return (
     <div className="min-h-screen relative p-6">
       <PageBackground />
@@ -227,7 +262,10 @@ export default function TripHubPage({ params }: PageProps) {
           {/* Add Accommodations */}
           <HubTile
             title="Accommodations"
-            onClick={() => {}}
+            onClick={() => router.push(`/dashboard/trip/${tripId}/accommodations`)}
+            count={accommodationStats.total > 0 ? accommodationStats.total : undefined}
+            countLabel={accommodationStats.total > 0 ? "Options" : undefined}
+            subtitle={accommodationSubtitle}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />

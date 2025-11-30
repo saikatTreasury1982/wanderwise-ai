@@ -1,0 +1,334 @@
+'use client';
+
+import { useState, useEffect, use } from 'react';
+import { useRouter } from 'next/navigation';
+import PageBackground from '@/components/ui/PageBackground';
+import FloatingActionButton from '@/components/ui/FloatingActionButton';
+import LoadingOverlay from '@/components/ui/LoadingOverlay';
+import AccommodationEntryForm from '@/components/organisms/AccommodationEntryForm';
+import AccommodationOptionCard from '@/components/organisms/AccommodationOptionCard';
+import { formatDateRange } from '@/lib/utils';
+import type { AccommodationOption, AccommodationType } from '@/lib/types/accommodation';
+
+interface Trip {
+  trip_id: number;
+  trip_name: string;
+  destination_city: string | null;
+  destination_country: string | null;
+  start_date: string;
+  end_date: string;
+}
+
+interface Traveler {
+  traveler_id: number;
+  traveler_name: string;
+  is_active: number;
+}
+
+interface Currency {
+  currency_code: string;
+  currency_name: string;
+}
+
+interface PageProps {
+  params: Promise<{ tripId: string }>;
+}
+
+export default function AccommodationsPage({ params }: PageProps) {
+  const { tripId } = use(params);
+  const router = useRouter();
+
+  const [trip, setTrip] = useState<Trip | null>(null);
+  const [accommodations, setAccommodations] = useState<AccommodationOption[]>([]);
+  const [travelers, setTravelers] = useState<Traveler[]>([]);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [accommodationTypes, setAccommodationTypes] = useState<AccommodationType[]>([]);
+  const [preferences, setPreferences] = useState<{ date_format: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY' }>({
+    date_format: 'YYYY-MM-DD',
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingAccommodation, setEditingAccommodation] = useState<AccommodationOption | null>(null);
+
+  const fetchAccommodations = async () => {
+    try {
+      const response = await fetch(`/api/trips/${tripId}/accommodations`);
+      if (response.ok) {
+        const data = await response.json();
+        setAccommodations(data);
+      }
+    } catch (error) {
+      console.error('Error fetching accommodations:', error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch trip
+        const tripResponse = await fetch(`/api/trips/${tripId}`);
+        if (tripResponse.status === 401) {
+          router.push('/login');
+          return;
+        }
+        if (tripResponse.status === 404) {
+          router.push('/dashboard');
+          return;
+        }
+        if (tripResponse.ok) {
+          const tripData = await tripResponse.json();
+          setTrip(tripData.trip);
+        }
+
+        // Fetch accommodations
+        await fetchAccommodations();
+
+        // Fetch travelers
+        const travelersResponse = await fetch(`/api/trips/${tripId}/travelers`);
+        if (travelersResponse.ok) {
+          const travelersData = await travelersResponse.json();
+          setTravelers(travelersData.travelers);
+        }
+
+        // Fetch currencies
+        const currenciesResponse = await fetch('/api/currencies');
+        if (currenciesResponse.ok) {
+          const currenciesData = await currenciesResponse.json();
+          setCurrencies(currenciesData.currencies || currenciesData || []);
+        }
+
+        // Fetch accommodation types
+        const typesResponse = await fetch('/api/accommodation-types');
+        if (typesResponse.ok) {
+          const typesData = await typesResponse.json();
+          setAccommodationTypes(typesData);
+        }
+
+        // Fetch preferences
+        const prefResponse = await fetch('/api/user/preferences');
+        if (prefResponse.ok) {
+          const prefData = await prefResponse.json();
+          setPreferences(prefData.preferences);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [tripId, router]);
+
+  const handleEdit = (accommodation: AccommodationOption) => {
+    setEditingAccommodation(accommodation);
+    setShowForm(true);
+  };
+
+  const handleCopy = async (accommodation: AccommodationOption) => {
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/trips/${tripId}/accommodations/${accommodation.accommodation_option_id}`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        await fetchAccommodations();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to copy accommodation');
+      }
+    } catch (error) {
+      console.error('Error copying accommodation:', error);
+      alert('Failed to copy accommodation');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDelete = async (accommodationId: number) => {
+    if (!confirm('Are you sure you want to delete this accommodation?')) return;
+
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/trips/${tripId}/accommodations/${accommodationId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        await fetchAccommodations();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to delete accommodation');
+      }
+    } catch (error) {
+      console.error('Error deleting accommodation:', error);
+      alert('Failed to delete accommodation');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleStatusChange = async (accommodationId: number, status: AccommodationOption['status']) => {
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/trips/${tripId}/accommodations/${accommodationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (response.ok) {
+        await fetchAccommodations();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to update status');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFormSuccess = () => {
+    fetchAccommodations();
+    setShowForm(false);
+    setEditingAccommodation(null);
+  };
+
+  const handleFormClear = () => {
+    setShowForm(false);
+    setEditingAccommodation(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center">
+        <PageBackground />
+        <div className="relative z-10">
+          <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!trip) return null;
+
+  const destination = [trip.destination_city, trip.destination_country].filter(Boolean).join(', ');
+
+  // Group accommodations by status
+  const confirmedAccommodations = accommodations.filter(a => a.status === 'confirmed');
+  const shortlistedAccommodations = accommodations.filter(a => a.status === 'shortlisted');
+  const draftAccommodations = accommodations.filter(a => a.status === 'draft');
+  const notSelectedAccommodations = accommodations.filter(a => a.status === 'not_selected');
+
+  const renderAccommodationGroup = (title: string, items: AccommodationOption[]) => {
+    if (items.length === 0) return null;
+    return (
+      <div className="mb-6">
+        <h3 className="text-sm font-medium text-white/50 uppercase tracking-wide mb-3">{title}</h3>
+        <div className="space-y-3">
+          {items.map(accommodation => (
+            <AccommodationOptionCard
+              key={accommodation.accommodation_option_id}
+              accommodation={accommodation}
+              onEdit={handleEdit}
+              onCopy={handleCopy}
+              onDelete={handleDelete}
+              onStatusChange={handleStatusChange}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen relative p-6 pb-24">
+      <PageBackground />
+      <LoadingOverlay isLoading={isProcessing} />
+
+      <div className="relative z-10 max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <button
+            onClick={() => router.push(`/dashboard/trip/${tripId}`)}
+            className="flex items-center gap-2 text-white/70 hover:text-white mb-4 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Trip Hub
+          </button>
+
+          <h1 className="text-3xl font-bold text-white mb-2">Accommodations</h1>
+          <p className="text-white/70">
+            {[trip.trip_name, destination, formatDateRange(trip.start_date, trip.end_date, preferences.date_format)]
+              .filter(Boolean)
+              .join(' | ')}
+          </p>
+        </div>
+
+        {/* Content */}
+        <div className="flex gap-6">
+          {/* Form Column */}
+          {showForm && (
+            <div className="w-full md:w-1/2 lg:w-2/5">
+              <AccommodationEntryForm
+                tripId={Number(tripId)}
+                accommodation={editingAccommodation}
+                travelers={travelers}
+                currencies={currencies}
+                accommodationTypes={accommodationTypes}
+                onSuccess={handleFormSuccess}
+                onClear={handleFormClear}
+              />
+            </div>
+          )}
+
+          {/* Accommodations List */}
+          <div className={showForm ? 'w-full md:w-1/2 lg:w-3/5' : 'w-full'}>
+            {accommodations.length === 0 ? (
+              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-12 text-center">
+                <svg
+                  className="w-16 h-16 mx-auto mb-4 text-white/30"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
+                <h3 className="text-xl font-semibold text-white mb-2">No accommodations yet</h3>
+                <p className="text-white/60">Click the + button to add accommodation options</p>
+              </div>
+            ) : (
+              <>
+                {renderAccommodationGroup('Confirmed', confirmedAccommodations)}
+                {renderAccommodationGroup('Shortlisted', shortlistedAccommodations)}
+                {renderAccommodationGroup('Draft', draftAccommodations)}
+                {renderAccommodationGroup('Not Selected', notSelectedAccommodations)}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* FAB */}
+      {!showForm && (
+        <FloatingActionButton
+        onClick={() => {
+            setEditingAccommodation(null);
+            setShowForm(true);
+        }}
+        ariaLabel="Add accommodation"
+        />
+      )}
+    </div>
+  );
+}
