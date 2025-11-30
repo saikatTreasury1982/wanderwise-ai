@@ -50,16 +50,19 @@ export default function TripCard({
     .filter(Boolean)
     .join(', ');
 
+  const isDraft = trip.status_code === 1;
+
   return (
     <div
-      onClick={() => onCardClick(trip.trip_id)}
+      onClick={() => !isDraft && onCardClick(trip.trip_id)}
       className={cn(
         'bg-white/10 backdrop-blur-xl',
         'border border-white/20',
         'rounded-xl p-4',
         'transition-all duration-200',
-        'hover:bg-white/15 hover:border-white/30',
-        'cursor-pointer'
+        isDraft
+          ? 'cursor-default'
+          : 'hover:bg-white/15 hover:border-white/30 cursor-pointer'
       )}
     >
       <div className="flex items-start justify-between gap-4">

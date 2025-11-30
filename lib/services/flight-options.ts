@@ -60,6 +60,44 @@ export async function getFlightOptionById(flightOptionId: number): Promise<Fligh
   };
 }
 
+export async function getFlightOptionsGrouped(tripId: number): Promise<FlightOption[]> {
+  const allOptions = await getFlightOptionsByTrip(tripId);
+  
+  const grouped: FlightOption[] = [];
+  const processedIds = new Set<number>();
+
+  for (const option of allOptions) {
+    if (processedIds.has(option.flight_option_id)) continue;
+
+    if (option.flight_type === 'round_trip' && option.linked_flight_id) {
+      const linkedFlight = allOptions.find(f => f.flight_option_id === option.linked_flight_id);
+      
+      if (linkedFlight) {
+        // Always use the lower ID as outbound (the one created first)
+        const outbound = option.flight_option_id < linkedFlight.flight_option_id ? option : linkedFlight;
+        const returnFlight = option.flight_option_id < linkedFlight.flight_option_id ? linkedFlight : option;
+        
+        // Add return legs to outbound for display
+        (outbound as any).return_legs = returnFlight.legs;
+        (outbound as any).return_flight_id = returnFlight.flight_option_id;
+        grouped.push(outbound);
+        
+        // Mark both as processed
+        processedIds.add(option.flight_option_id);
+        processedIds.add(linkedFlight.flight_option_id);
+      } else {
+        grouped.push(option);
+        processedIds.add(option.flight_option_id);
+      }
+    } else {
+      grouped.push(option);
+      processedIds.add(option.flight_option_id);
+    }
+  }
+
+  return grouped;
+}
+
 export async function createFlightOption(input: CreateFlightOptionInput): Promise<FlightOption> {
   // Create main flight option
   await query(
@@ -139,7 +177,10 @@ export async function createFlightOption(input: CreateFlightOptionInput): Promis
 }
 
 export async function updateFlightOption(flightOptionId: number, input: UpdateFlightOptionInput): Promise<FlightOption | null> {
+  // Get current option to check for linked flight
+  const current = await getFlightOptionById(flightOptionId);
   const updates: string[] = [];
+  if (!current) return null;
   const args: (string | number | null)[] = [];
 
   if (input.total_price !== undefined) {
@@ -187,6 +228,36 @@ export async function updateFlightOption(flightOptionId: number, input: UpdateFl
     }
   }
 
+  // Update return legs if provided and linked flight exists
+  if (input.return_legs && input.return_legs.length > 0 && current.linked_flight_id) {
+    await query(`DELETE FROM flight_legs WHERE flight_option_id = ?`, [current.linked_flight_id]);
+
+    for (const leg of input.return_legs) {
+      await query(
+        `INSERT INTO flight_legs (flight_option_id, leg_order, departure_airport, arrival_airport,
+        departure_date, departure_time, arrival_date, arrival_time, airline, flight_number, stops_count, duration_minutes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          current.linked_flight_id, leg.leg_order, leg.departure_airport, leg.arrival_airport,
+          leg.departure_date, leg.departure_time ?? null, leg.arrival_date, leg.arrival_time ?? null,
+          leg.airline ?? null, leg.flight_number ?? null, leg.stops_count ?? 0, leg.duration_minutes ?? null,
+        ]
+      );
+    }
+  }
+
+  // Update travelers for linked flight too
+  if (input.traveler_ids && current.linked_flight_id) {
+    await query(`DELETE FROM flight_option_travelers WHERE flight_option_id = ?`, [current.linked_flight_id]);
+
+    for (const travelerId of input.traveler_ids) {
+      await query(
+        `INSERT INTO flight_option_travelers (flight_option_id, traveler_id) VALUES (?, ?)`,
+        [current.linked_flight_id, travelerId]
+      );
+    }
+  }
+
   // Update travelers if provided
   if (input.traveler_ids) {
     await query(`DELETE FROM flight_option_travelers WHERE flight_option_id = ?`, [flightOptionId]);
@@ -197,6 +268,14 @@ export async function updateFlightOption(flightOptionId: number, input: UpdateFl
         [flightOptionId, travelerId]
       );
     }
+  }
+
+  // If status changed and this is a round-trip, update linked flight too
+  if (input.status && current.linked_flight_id) {
+    await query(
+      `UPDATE flight_options SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE flight_option_id = ?`,
+      [input.status, current.linked_flight_id]
+    );
   }
 
   return getFlightOptionById(flightOptionId);
@@ -218,7 +297,12 @@ export async function deleteFlightOption(flightOptionId: number): Promise<boolea
 }
 
 export async function duplicateFlightOption(flightOptionId: number): Promise<FlightOption | null> {
-  const original = await getFlightOptionById(flightOptionId);
+  // Get grouped version to include return_legs
+  const allGrouped = await getFlightOptionsGrouped(
+    (await getFlightOptionById(flightOptionId))?.trip_id ?? 0
+  );
+  const original = allGrouped.find(f => f.flight_option_id === flightOptionId);
+  
   if (!original) return null;
 
   const input: CreateFlightOptionInput = {
@@ -241,6 +325,20 @@ export async function duplicateFlightOption(flightOptionId: number): Promise<Fli
       duration_minutes: leg.duration_minutes ?? undefined,
     })) ?? [],
     traveler_ids: original.travelers?.map(t => t.traveler_id),
+    // Include return legs for round-trip
+    return_legs: original.return_legs?.map(leg => ({
+      leg_order: leg.leg_order,
+      departure_airport: leg.departure_airport,
+      arrival_airport: leg.arrival_airport,
+      departure_date: leg.departure_date,
+      departure_time: leg.departure_time ?? undefined,
+      arrival_date: leg.arrival_date,
+      arrival_time: leg.arrival_time ?? undefined,
+      airline: leg.airline ?? undefined,
+      flight_number: leg.flight_number ?? undefined,
+      stops_count: leg.stops_count,
+      duration_minutes: leg.duration_minutes ?? undefined,
+    })),
   };
 
   return createFlightOption(input);

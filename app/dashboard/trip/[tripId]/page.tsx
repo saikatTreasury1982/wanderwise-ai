@@ -40,6 +40,7 @@ export default function TripHubPage({ params }: PageProps) {
   });
   const [travelersCount, setTravelersCount] = useState(0);
   const [travelers, setTravelers] = useState<Traveler[]>([]);
+  const [flightStats, setFlightStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +58,18 @@ export default function TripHubPage({ params }: PageProps) {
         if (tripResponse.ok) {
           const tripData = await tripResponse.json();
           setTrip(tripData.trip);
+        }
+
+        // Fetch flights
+        const flightsResponse = await fetch(`/api/trips/${tripId}/flights`);
+        if (flightsResponse.ok) {
+          const flightsData = await flightsResponse.json();
+          const flights = flightsData || [];
+          setFlightStats({
+            total: flights.length,
+            shortlisted: flights.filter((f: any) => f.status === 'shortlisted').length,
+            confirmed: flights.filter((f: any) => f.status === 'confirmed').length,
+          });
         }
 
         // Fetch preferences
@@ -136,6 +149,28 @@ export default function TripHubPage({ params }: PageProps) {
       </div>
     );
 
+    const flightSubtitle = flightStats.total > 0 ? (
+    <div className="space-y-1 text-xs">
+      {flightStats.confirmed > 0 && (
+        <div>
+          <span className="text-green-400">{flightStats.confirmed}</span>
+          <span className="text-white/50"> confirmed</span>
+        </div>
+      )}
+      {flightStats.shortlisted > 0 && (
+        <div>
+          <span className="text-yellow-400">{flightStats.shortlisted}</span>
+          <span className="text-white/50"> shortlisted</span>
+        </div>
+      )}
+      {flightStats.confirmed === 0 && flightStats.shortlisted === 0 && (
+        <div>
+          <span className="text-white/50">No selection yet</span>
+        </div>
+      )}
+    </div>
+  ) : undefined;
+
   return (
     <div className="min-h-screen relative p-6">
       <PageBackground />
@@ -175,10 +210,13 @@ export default function TripHubPage({ params }: PageProps) {
             }
           />
 
-          {/* Add Flights */}
+          {/* Flights */}
           <HubTile
             title="Flights"
             onClick={() => router.push(`/dashboard/trip/${tripId}/flights`)}
+            count={flightStats.total > 0 ? flightStats.total : undefined}
+            countLabel={flightStats.total > 0 ? "Flight Options" : undefined}
+            subtitle={flightSubtitle}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

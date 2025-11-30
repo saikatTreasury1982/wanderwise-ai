@@ -8,6 +8,7 @@ import FlightEntryForm from '@/components/organisms/FlightEntryForm';
 import FlightOptionCard from '@/components/organisms/FlightOptionCard';
 import type { FlightOption } from '@/lib/types/flight';
 import { formatDateRange } from '@/lib/utils';
+import LoadingOverlay from '@/components/ui/LoadingOverlay';
 
 interface Trip {
   trip_id: number;
@@ -43,6 +44,7 @@ export default function FlightsPage({ params }: PageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFlight, setSelectedFlight] = useState<FlightOption | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [preferences, setPreferences] = useState<{ date_format: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY' }>({
     date_format: 'YYYY-MM-DD',
   });
@@ -130,8 +132,9 @@ export default function FlightsPage({ params }: PageProps) {
   };
 
   const handleCopy = async (flight: FlightOption) => {
+    setIsProcessing(true);
     try {
-      const response = await fetch(`/api/flights/${flight.flight_option_id}/duplicate`, {
+      const response = await fetch(`/api/trips/${tripId}/flights/${flight.flight_option_id}`, {
         method: 'POST',
       });
       if (response.ok) {
@@ -143,14 +146,17 @@ export default function FlightsPage({ params }: PageProps) {
     } catch (error) {
       console.error('Error copying flight:', error);
       alert('Failed to copy flight');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleDelete = async (flightId: number) => {
     if (!confirm('Are you sure you want to delete this flight option?')) return;
 
+    setIsProcessing(true);
     try {
-      const response = await fetch(`/api/flights/${flightId}`, {
+      const response = await fetch(`/api/trips/${tripId}/flights/${flightId}`, {
         method: 'DELETE',
       });
       if (response.ok) {
@@ -162,12 +168,15 @@ export default function FlightsPage({ params }: PageProps) {
     } catch (error) {
       console.error('Error deleting flight:', error);
       alert('Failed to delete flight');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleStatusChange = async (flightId: number, status: FlightOption['status']) => {
+    setIsProcessing(true);
     try {
-      const response = await fetch(`/api/flights/${flightId}`, {
+      const response = await fetch(`/api/trips/${tripId}/flights/${flightId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -181,6 +190,8 @@ export default function FlightsPage({ params }: PageProps) {
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -228,6 +239,7 @@ export default function FlightsPage({ params }: PageProps) {
   return (
     <div className="min-h-screen relative p-6 pb-24">
       <PageBackground />
+      <LoadingOverlay isLoading={isProcessing} />
 
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Header */}

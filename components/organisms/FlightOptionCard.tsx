@@ -18,7 +18,8 @@ export default function FlightOptionCard({
   onDelete,
   onStatusChange,
 }: FlightOptionCardProps) {
-  const leg = flight.legs?.[0];
+  const outboundLeg = flight.legs?.[0];
+  const returnLeg = flight.return_legs?.[0];
   
   const statusColors = {
     draft: 'bg-gray-500/20 text-gray-300 border-gray-400/30',
@@ -34,11 +35,22 @@ export default function FlightOptionCard({
     return `${h}h ${m}m`;
   };
 
-  const routeDisplay = flight.legs?.map(l => l.departure_airport).join(' → ') + 
-    (flight.legs?.length ? ` → ${flight.legs[flight.legs.length - 1].arrival_airport}` : '');
+  const formatRoute = (legs: typeof flight.legs) => {
+    if (!legs || legs.length === 0) return '';
+    return legs.map(l => l.departure_airport).join(' → ') + ` → ${legs[legs.length - 1].arrival_airport}`;
+  };
 
-  const totalDuration = flight.legs?.reduce((sum, l) => sum + (l.duration_minutes || 0), 0) || 0;
-  const totalStops = flight.legs?.reduce((sum, l) => sum + (l.stops_count || 0), 0) || 0;
+  const getTotalStops = (legs: typeof flight.legs) => {
+    if (!legs) return 0;
+    return legs.reduce((sum, l) => sum + (l.stops_count || 0), 0);
+  };
+
+  const getTotalDuration = (legs: typeof flight.legs) => {
+    if (!legs) return 0;
+    return legs.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+  };
+
+  const isRoundTrip = flight.flight_type === 'round_trip' && flight.return_legs;
 
   return (
     <div
@@ -53,36 +65,62 @@ export default function FlightOptionCard({
       <div className="flex items-start justify-between gap-3">
         {/* Left content */}
         <div className="flex-1 min-w-0">
-          {/* Route */}
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-base font-semibold text-white truncate">
-              {routeDisplay}
-            </span>
+          {/* Status badge */}
+          <div className="flex items-center gap-2 mb-3">
             <span className={cn('px-2 py-0.5 text-xs font-medium rounded-full border', statusColors[flight.status])}>
               {flight.status.replace('_', ' ')}
             </span>
+            <span className={cn(
+              'px-2 py-0.5 text-xs font-medium rounded-full border',
+              flight.flight_type === 'round_trip' && 'bg-purple-500/20 text-purple-300 border-purple-400/30',
+              flight.flight_type === 'one_way' && 'bg-blue-500/20 text-blue-300 border-blue-400/30',
+              flight.flight_type === 'multi_city' && 'bg-orange-500/20 text-orange-300 border-orange-400/30'
+            )}>
+              {flight.flight_type === 'round_trip' && 'Round Trip'}
+              {flight.flight_type === 'one_way' && 'One Way'}
+              {flight.flight_type === 'multi_city' && 'Multi City'}
+            </span>
           </div>
 
-          {/* Flight details */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
-            {leg?.departure_date && (
-              <span>{leg.departure_date}</span>
-            )}
-            {leg?.departure_time && (
-              <span>{leg.departure_time}</span>
-            )}
-            {totalDuration > 0 && (
-              <span>{formatDuration(totalDuration)}</span>
-            )}
-            <span>{totalStops === 0 ? 'Direct' : `${totalStops} stop${totalStops > 1 ? 's' : ''}`}</span>
-            {leg?.airline && (
-              <span>{leg.airline}</span>
-            )}
+          {/* Outbound Flight */}
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs text-white/50 uppercase">Outbound</span>
+            </div>
+            <div className="text-base font-semibold text-white mb-1">
+              {formatRoute(flight.legs)}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
+              {outboundLeg?.departure_date && <span>{outboundLeg.departure_date}</span>}
+              {outboundLeg?.departure_time && <span>{outboundLeg.departure_time}</span>}
+              {getTotalDuration(flight.legs) > 0 && <span>{formatDuration(getTotalDuration(flight.legs))}</span>}
+              <span>{getTotalStops(flight.legs) === 0 ? 'Direct' : `${getTotalStops(flight.legs)} stop${getTotalStops(flight.legs) > 1 ? 's' : ''}`}</span>
+              {outboundLeg?.airline && <span>{outboundLeg.airline}</span>}
+            </div>
           </div>
+
+          {/* Return Flight (for round-trip) */}
+          {isRoundTrip && returnLeg && (
+            <div className="mb-3 pt-3 border-t border-white/10">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-white/50 uppercase">Return</span>
+              </div>
+              <div className="text-base font-semibold text-white mb-1">
+                {formatRoute(flight.return_legs)}
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
+                {returnLeg.departure_date && <span>{returnLeg.departure_date}</span>}
+                {returnLeg.departure_time && <span>{returnLeg.departure_time}</span>}
+                {getTotalDuration(flight.return_legs) > 0 && <span>{formatDuration(getTotalDuration(flight.return_legs))}</span>}
+                <span>{getTotalStops(flight.return_legs) === 0 ? 'Direct' : `${getTotalStops(flight.return_legs)} stop${getTotalStops(flight.return_legs) > 1 ? 's' : ''}`}</span>
+                {returnLeg.airline && <span>{returnLeg.airline}</span>}
+              </div>
+            </div>
+          )}
 
           {/* Price */}
           {flight.total_price && (
-            <div className="mt-2 text-lg font-bold text-purple-300">
+            <div className="text-lg font-bold text-purple-300">
               {flight.currency_code} {flight.total_price.toLocaleString()}
             </div>
           )}
@@ -97,7 +135,7 @@ export default function FlightOptionCard({
 
         {/* Action buttons */}
         <div className="flex flex-col gap-1">
-          {/* Status actions */}
+          {/* Confirm */}
           {flight.status !== 'confirmed' && (
             <button
               onClick={() => onStatusChange(flight.flight_option_id, 'confirmed')}
@@ -110,6 +148,7 @@ export default function FlightOptionCard({
             </button>
           )}
 
+          {/* Shortlist */}
           {flight.status === 'draft' && (
             <button
               onClick={() => onStatusChange(flight.flight_option_id, 'shortlisted')}
@@ -118,6 +157,19 @@ export default function FlightOptionCard({
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </button>
+          )}
+
+          {/* Revert to Draft */}
+          {(flight.status === 'shortlisted' || flight.status === 'confirmed' || flight.status === 'not_selected') && (
+            <button
+              onClick={() => onStatusChange(flight.flight_option_id, 'draft')}
+              className="p-2 rounded-full text-white/70 hover:text-gray-400 hover:bg-gray-500/10 transition-colors"
+              title="Revert to draft"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
               </svg>
             </button>
           )}

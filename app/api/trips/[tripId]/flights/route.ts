@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFlightOptionsByTrip, createFlightOption } from '@/lib/services/flight-options';
+import { getFlightOptionsGrouped, createFlightOption } from '@/lib/services/flight-options';
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { tripId } = await params;
-    const flights = await getFlightOptionsByTrip(Number(tripId));
+    const flights = await getFlightOptionsGrouped(Number(tripId));
     return NextResponse.json(flights);
   } catch (error) {
     console.error('Error fetching flights:', error);

@@ -80,21 +80,41 @@ export default function FlightEntryForm({
       setNotes(flight.notes || '');
       setSelectedTravelers(flight.travelers?.map(t => t.traveler_id) || []);
 
+      // Load outbound legs
       if (flight.legs && flight.legs.length > 0) {
         const legs: LegFormData[] = flight.legs.map(leg => ({
-            departure_airport: leg.departure_airport,
-            arrival_airport: leg.arrival_airport,
-            departure_date: leg.departure_date,
-            departure_time: leg.departure_time || '',
-            arrival_date: leg.arrival_date,
-            arrival_time: leg.arrival_time || '',
-            airline: leg.airline || '',
-            flight_number: leg.flight_number || '',
-            stops_count: leg.stops_count,
-            duration_minutes: leg.duration_minutes !== null ? leg.duration_minutes : '',
+          departure_airport: leg.departure_airport,
+          arrival_airport: leg.arrival_airport,
+          departure_date: leg.departure_date,
+          departure_time: leg.departure_time || '',
+          arrival_date: leg.arrival_date,
+          arrival_time: leg.arrival_time || '',
+          airline: leg.airline || '',
+          flight_number: leg.flight_number || '',
+          stops_count: leg.stops_count,
+          duration_minutes: leg.duration_minutes !== null ? leg.duration_minutes : '',
         }));
         setOutboundLegs(legs);
-        }
+      }
+
+      // Load return legs (for round-trip)
+      if (flight.return_legs && flight.return_legs.length > 0) {
+        const legs: LegFormData[] = flight.return_legs.map(leg => ({
+          departure_airport: leg.departure_airport,
+          arrival_airport: leg.arrival_airport,
+          departure_date: leg.departure_date,
+          departure_time: leg.departure_time || '',
+          arrival_date: leg.arrival_date,
+          arrival_time: leg.arrival_time || '',
+          airline: leg.airline || '',
+          flight_number: leg.flight_number || '',
+          stops_count: leg.stops_count,
+          duration_minutes: leg.duration_minutes !== null ? leg.duration_minutes : '',
+        }));
+        setReturnLegs(legs);
+      } else {
+        setReturnLegs([{ ...emptyLeg }]);
+      }
     } else {
       resetForm();
     }
@@ -186,7 +206,7 @@ export default function FlightEntryForm({
 
       let response;
       if (isEditing) {
-        response = await fetch(`/api/flights/${flight.flight_option_id}`, {
+        response = await fetch(`/api/trips/${tripId}/flights/${flight.flight_option_id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),

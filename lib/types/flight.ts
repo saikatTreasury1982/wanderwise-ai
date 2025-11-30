@@ -11,6 +11,9 @@ export interface FlightOption {
   updated_at: string;
   legs?: FlightLeg[];
   travelers?: FlightOptionTraveler[];
+  // For grouped round-trip display
+  return_legs?: FlightLeg[];
+  return_flight_id?: number;
 }
 
 export interface FlightLeg {
@@ -68,5 +71,6 @@ export interface UpdateFlightOptionInput {
   status?: 'draft' | 'shortlisted' | 'confirmed' | 'not_selected';
   notes?: string;
   legs?: CreateFlightLegInput[];
+  return_legs?: CreateFlightLegInput[];
   traveler_ids?: number[];
 }
