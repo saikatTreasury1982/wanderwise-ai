@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import CircleIconButton from '@/components/ui/CircleIconButton';
 import type { TripNote, TripNoteType } from '@/lib/types/trip-note';
 
 interface TripNotesSectionProps {
@@ -165,12 +166,17 @@ export default function TripNotesSection({ tripId }: TripNotesSectionProps) {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">Trip Notes</h3>
         {!isAdding && (
-          <button
+          <CircleIconButton
+            type="button"
+            variant="primary"
             onClick={() => setIsAdding(true)}
-            className="px-3 py-1.5 text-sm bg-purple-500/20 text-purple-300 rounded-lg border border-purple-400/30 hover:bg-purple-500/30 transition-colors"
-          >
-            + Add Note
-          </button>
+            title="Add note"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            }
+          />
         )}
       </div>
 
@@ -203,22 +209,33 @@ export default function TripNotesSection({ tripId }: TripNotesSectionProps) {
                 />
             </div>
             <div className="flex justify-end gap-2">
-              <button
+              <CircleIconButton
+                type="button"
+                variant="default"
                 onClick={() => {
                   setIsAdding(false);
                   setNewNoteContent('');
                 }}
-                className="px-3 py-1.5 text-sm text-white/70 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
+                title="Cancel"
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                }
+              />
+              <CircleIconButton
+                type="button"
+                variant="primary"
                 onClick={handleAddNote}
                 disabled={isSaving || !newNoteContent.trim()}
-                className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isSaving ? 'Saving...' : 'Save'}
-              </button>
+                isLoading={isSaving}
+                title="Save note"
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                }
+              />
             </div>
           </div>
         </div>
