@@ -7,6 +7,7 @@ import TripCard from '@/components/organisms/TripCard';
 import TripForm from '@/components/organisms/TripForm';
 import EmptyState from '@/components/organisms/EmptyState';
 import { useRouter } from 'next/navigation';
+import TripSummaryModal from '@/components/organisms/TripSummaryModal';
 
 interface Trip {
   trip_id: number;
@@ -41,6 +42,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [viewingTrip, setViewingTrip] = useState<Trip | null>(null);
   const [statuses, setStatuses] = useState<TripStatus[]>([]);
 
   const fetchTrips = async () => {
@@ -150,6 +152,14 @@ export default function DashboardPage() {
     router.push(`/dashboard/trip/${tripId}`);
   };
 
+  const handleViewTrip = (trip: Trip) => {
+    setViewingTrip(trip);
+  };
+
+  const handleCloseView = () => {
+    setViewingTrip(null);
+  };
+
   const handleFormSuccess = () => {
     fetchTrips();
   };
@@ -196,6 +206,7 @@ export default function DashboardPage() {
                   onDelete={handleDeleteTrip}
                   onStartPlanning={handleStartPlanning}
                   onCardClick={handleCardClick}
+                  onView={handleViewTrip}
                 />
               ))}
             </div>
@@ -217,6 +228,15 @@ export default function DashboardPage() {
         onClose={handleFormClose}
         onSuccess={handleFormSuccess}
         trip={editingTrip}
+      />
+
+      {/* Trip Summary Modal */}
+      <TripSummaryModal
+        isOpen={viewingTrip !== null}
+        onClose={handleCloseView}
+        trip={viewingTrip}
+        dateFormat={preferences.date_format}
+        statuses={statuses}
       />
     </div>
   );

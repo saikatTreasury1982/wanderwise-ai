@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import PageBackground from '@/components/ui/PageBackground';
 import HubTile from '@/components/ui/HubTile';
 import { formatDateRange } from '@/lib/utils';
+import TripNotesSection from '@/components/organisms/TripNotesSection';
 
 interface Traveler {
   traveler_id: number;
@@ -297,6 +298,11 @@ export default function TripHubPage({ params }: PageProps) {
               </svg>
             }
           />
+        </div>
+
+        {/* Trip Notes Section */}
+        <div className="mt-8">
+          <TripNotesSection tripId={Number(tripId)} />
         </div>
       </div>
     </div>
