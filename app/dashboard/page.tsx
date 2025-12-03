@@ -8,6 +8,7 @@ import TripForm from '@/app/components/organisms/TripForm';
 import EmptyState from '@/app/components/organisms/EmptyState';
 import { useRouter } from 'next/navigation';
 import TripSummaryModal from '@/app/components/organisms/TripSummaryModal';
+import PackingAlertWidget from '@/app/components/organisms/PackingAlertWidget';
 
 interface Trip {
   trip_id: number;
@@ -193,6 +194,9 @@ export default function DashboardPage() {
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-white">My Trips</h1>
             </div>
+
+            {/* Packing Alerts */}
+            <PackingAlertWidget />
 
             {/* Trip Cards */}
             <div className="space-y-4">

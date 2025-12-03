@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/app/lib/utils';
 import PackingItemRow from './PackingItemRow';
-import type { PackingCategory } from '@/app/lib/types/packing';
+import type { PackingCategory, PackingPriority } from '@/app/lib/types/packing';
 
 interface PackingCategoryCardProps {
   category: PackingCategory;
@@ -13,6 +13,7 @@ interface PackingCategoryCardProps {
   onAddItem: (categoryId: number, itemName: string) => void;
   onToggleItem: (itemId: number) => void;
   onUpdateItem: (itemId: number, name: string) => void;
+  onUpdateItemPriority: (itemId: number, priority: PackingPriority) => void;
   onDeleteItem: (itemId: number) => void;
 }
 
@@ -24,6 +25,7 @@ export default function PackingCategoryCard({
   onAddItem,
   onToggleItem,
   onUpdateItem,
+  onUpdateItemPriority,
   onDeleteItem,
 }: PackingCategoryCardProps) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -190,6 +192,7 @@ export default function PackingCategoryCard({
                   tripId={tripId}
                   onToggle={onToggleItem}
                   onUpdate={onUpdateItem}
+                  onUpdatePriority={onUpdateItemPriority}
                   onDelete={onDeleteItem}
                 />
               ))}

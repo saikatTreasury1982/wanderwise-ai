@@ -7,7 +7,7 @@ import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import PackingCategoryCard from '@/app/components/organisms/PackingCategoryCard';
 import { formatDateRange } from '@/app/lib/utils';
-import type { PackingCategory, PackingStats } from '@/app/lib/types/packing';
+import type { PackingCategory, PackingStats, PackingPriority } from '@/app/lib/types/packing';
 
 
 interface Trip {
@@ -196,6 +196,21 @@ export default function PackingChecklistPage({ params }: PageProps) {
     }
   };
 
+  const handleUpdateItemPriority = async (itemId: number, priority: PackingPriority) => {
+    try {
+      const response = await fetch(`/api/trips/${tripId}/packing/items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priority }),
+      });
+      if (response.ok) {
+        await fetchPackingList();
+      }
+    } catch (error) {
+      console.error('Error updating item priority:', error);
+    }
+  };
+
   const handleDeleteItem = async (itemId: number) => {
     setIsProcessing(true);
     try {
@@ -302,6 +317,7 @@ export default function PackingChecklistPage({ params }: PageProps) {
                 onAddItem={handleAddItem}
                 onToggleItem={handleToggleItem}
                 onUpdateItem={handleUpdateItem}
+                onUpdateItemPriority={handleUpdateItemPriority}
                 onDeleteItem={handleDeleteItem}
               />
             ))

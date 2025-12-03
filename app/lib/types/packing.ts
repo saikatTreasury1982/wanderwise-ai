@@ -7,11 +7,14 @@ export interface PackingCategory {
   items?: PackingItem[];
 }
 
+export type PackingPriority = 'critical' | 'important' | 'normal';
+
 export interface PackingItem {
   item_id: number;
   category_id: number;
   item_name: string;
   is_packed: number;
+  priority: PackingPriority;
   display_order: number;
   created_at: string;
 }
@@ -36,6 +39,7 @@ export interface CreatePackingItemInput {
 export interface UpdatePackingItemInput {
   item_name?: string;
   is_packed?: number;
+  priority?: PackingPriority;
   display_order?: number;
 }
 
@@ -43,4 +47,12 @@ export interface PackingStats {
   totalItems: number;
   packedItems: number;
   percentage: number;
+}
+
+export interface PackingAlert {
+  trip_id: number;
+  trip_name: string;
+  days_until: number;
+  critical_items: PackingItem[];
+  important_items: PackingItem[];
 }

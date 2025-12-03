@@ -7,6 +7,7 @@ import type {
   CreatePackingItemInput,
   UpdatePackingItemInput,
   PackingStats,
+  PackingAlert,
 } from '@/app/lib/types/packing';
 
 // Categories
@@ -158,6 +159,10 @@ export async function updatePackingItem(
     updates.push('is_packed = ?');
     args.push(input.is_packed);
   }
+  if (input.priority !== undefined) {
+    updates.push('priority = ?');
+    args.push(input.priority);
+  }
   if (input.display_order !== undefined) {
     updates.push('display_order = ?');
     args.push(input.display_order);
@@ -214,4 +219,60 @@ export async function getPackingStats(tripId: number): Promise<PackingStats> {
     packedItems: packed,
     percentage: total > 0 ? Math.round((packed / total) * 100) : 0,
   };
+}
+
+export async function getPackingAlerts(userId: string): Promise<PackingAlert[]> {
+  // Get active trips within 7 days
+  const trips = await query<{
+    trip_id: number;
+    trip_name: string;
+    start_date: string;
+  }>(
+    `SELECT trip_id, trip_name, start_date 
+     FROM trips 
+     WHERE user_id = ? 
+       AND status_code = 'active'
+       AND date(start_date) BETWEEN date('now') AND date('now', '+7 days')
+     ORDER BY start_date`,
+    [userId]
+  );
+
+  const alerts: PackingAlert[] = [];
+
+  for (const trip of trips) {
+    // Get unpacked critical items (alert 7 days before)
+    const criticalItems = await query<PackingItem>(
+      `SELECT pi.* FROM packing_items pi
+       JOIN packing_categories pc ON pi.category_id = pc.category_id
+       WHERE pc.trip_id = ? AND pi.is_packed = 0 AND pi.priority = 'critical'`,
+      [trip.trip_id]
+    );
+
+    // Get unpacked important items only if within 3 days
+    const daysUntil = Math.ceil(
+      (new Date(trip.start_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    let importantItems: PackingItem[] = [];
+    if (daysUntil <= 3) {
+      importantItems = await query<PackingItem>(
+        `SELECT pi.* FROM packing_items pi
+         JOIN packing_categories pc ON pi.category_id = pc.category_id
+         WHERE pc.trip_id = ? AND pi.is_packed = 0 AND pi.priority = 'important'`,
+        [trip.trip_id]
+      );
+    }
+
+    if (criticalItems.length > 0 || importantItems.length > 0) {
+      alerts.push({
+        trip_id: trip.trip_id,
+        trip_name: trip.trip_name,
+        days_until: daysUntil,
+        critical_items: criticalItems,
+        important_items: importantItems,
+      });
+    }
+  }
+
+  return alerts;
 }
