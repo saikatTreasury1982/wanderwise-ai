@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { cn } from '@/app/lib/utils';
-import CircleIconButton from '@/components/ui/CircleIconButton';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import type { TripNote, TripNoteType } from '@/app/lib/types/trip-note';
 
 interface TripNotesSectionProps {

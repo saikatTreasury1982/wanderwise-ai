@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Modal from '@/components/ui/Modal';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
+import Modal from '@/app/components/ui/Modal';
+import Input from '@/app/components/ui/Input';
+import Button from '@/app/components/ui/Button';
 import { useRouter } from 'next/navigation';
 
 interface Trip {

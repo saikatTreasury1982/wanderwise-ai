@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/app/lib/utils';
 import PackingItemRow from './PackingItemRow';
-import type { PackingCategory } from '@/lib/types/packing';
+import type { PackingCategory } from '@/app/lib/types/packing';
 
 interface PackingCategoryCardProps {
   category: PackingCategory;
@@ -31,6 +31,8 @@ export default function PackingCategoryCard({
   const [editName, setEditName] = useState(category.category_name);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [newItemName, setNewItemName] = useState('');
+  const [isBulkAdding, setIsBulkAdding] = useState(false);
+  const [bulkItems, setBulkItems] = useState('');
 
   const items = category.items || [];
   const packedCount = items.filter(i => i.is_packed === 1).length;
@@ -53,6 +55,21 @@ export default function PackingCategoryCard({
       onAddItem(category.category_id, newItemName.trim());
       setNewItemName('');
       setIsAddingItem(false);
+    }
+  };
+
+  const handleBulkAdd = () => {
+    const items = bulkItems
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+
+    if (items.length > 0) {
+      items.forEach(item => {
+        onAddItem(category.category_id, item);
+      });
+      setBulkItems('');
+      setIsBulkAdding(false);
     }
   };
 
@@ -110,6 +127,7 @@ export default function PackingCategoryCard({
             onClick={() => {
               setIsExpanded(true);
               setIsAddingItem(true);
+              setIsBulkAdding(false);
             }}
             className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 hover:bg-purple-500/30 transition-colors"
             title="Add item"
@@ -118,6 +136,21 @@ export default function PackingCategoryCard({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
+
+            {/* Bulk Add */}
+            <button
+              onClick={() => {
+                setIsExpanded(true);
+                setIsBulkAdding(true);
+                setIsAddingItem(false);
+              }}
+              className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300 hover:bg-blue-500/30 transition-colors"
+              title="Bulk add items"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </button>
 
           {/* Edit Category */}
           <button
@@ -203,6 +236,45 @@ export default function PackingCategoryCard({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </button>
+            </div>
+          )}
+
+          {/* Bulk Add Form */}
+          {isBulkAdding && (
+            <div className="px-3 py-2 mt-2 space-y-2">
+              <p className="text-xs text-white/50">Paste or type items (one per line)</p>
+              <textarea
+                value={bulkItems}
+                onChange={e => setBulkItems(e.target.value)}
+                placeholder="Item 1&#10;Item 2&#10;Item 3"
+                rows={5}
+                autoFocus
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-blue-400 resize-none"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => {
+                    setIsBulkAdding(false);
+                    setBulkItems('');
+                  }}
+                  className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                  title="Cancel"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <button
+                  onClick={handleBulkAdd}
+                  disabled={!bulkItems.trim()}
+                  className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300 hover:bg-blue-500/30 disabled:opacity-50 transition-colors"
+                  title="Add all items"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import PageBackground from '@/components/ui/PageBackground';
-import TravelerForm from '@/components/organisms/TravelerForm';
-import TravelerCard from '@/components/organisms/TravelerCard';
+import PageBackground from '@/app/components/ui/PageBackground';
+import TravelerForm from '@/app/components/organisms/TravelerForm';
+import TravelerCard from '@/app/components/organisms/TravelerCard';
 
 interface Traveler {
   traveler_id: number;

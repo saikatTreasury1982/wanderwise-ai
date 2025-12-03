@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import Logo from '@/components/ui/Logo';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import PageBackground from '@/components/ui/PageBackground';
+import Logo from '@/app/components/ui/Logo';
+import Button from '@/app/components/ui/Button';
+import Card from '@/app/components/ui/Card';
+import PageBackground from '@/app/components/ui/PageBackground';
 
 export default function Home() {
 return (

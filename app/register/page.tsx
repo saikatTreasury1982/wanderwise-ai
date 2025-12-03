@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
-import AuthLayout from '@/components/templates/AuthLayout';
-import RegistrationForm from '@/components/organisms/RegistrationForm';
+import AuthLayout from '@/app/components/templates/AuthLayout';
+import RegistrationForm from '@/app/components/organisms/RegistrationForm';
 
 export const metadata: Metadata = {
   title: 'Create Account | WanderWise',

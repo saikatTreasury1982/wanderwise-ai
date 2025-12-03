@@ -2,12 +2,12 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import PageBackground from '@/components/ui/PageBackground';
-import FloatingActionButton from '@/components/ui/FloatingActionButton';
-import LoadingOverlay from '@/components/ui/LoadingOverlay';
-import PackingCategoryCard from '@/components/organisms/PackingCategoryCard';
-import { formatDateRange } from '@/lib/utils';
-import type { PackingCategory, PackingStats } from '@/lib/types/packing';
+import PageBackground from '@/app/components/ui/PageBackground';
+import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
+import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
+import PackingCategoryCard from '@/app/components/organisms/PackingCategoryCard';
+import { formatDateRange } from '@/app/lib/utils';
+import type { PackingCategory, PackingStats } from '@/app/lib/types/packing';
 
 
 interface Trip {

@@ -4,7 +4,7 @@ import {
   updatePackingItem,
   deletePackingItem,
   togglePackingItem,
-} from '@/lib/services/packing';
+} from '@/app/lib/services/packing';
 
 export async function GET(
   request: NextRequest,

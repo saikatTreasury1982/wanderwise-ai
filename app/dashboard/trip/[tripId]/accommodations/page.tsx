@@ -2,11 +2,11 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import PageBackground from '@/components/ui/PageBackground';
-import FloatingActionButton from '@/components/ui/FloatingActionButton';
-import LoadingOverlay from '@/components/ui/LoadingOverlay';
-import AccommodationEntryForm from '@/components/organisms/AccommodationEntryForm';
-import AccommodationOptionCard from '@/components/organisms/AccommodationOptionCard';
+import PageBackground from '@/app/components/ui/PageBackground';
+import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
+import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
+import AccommodationEntryForm from '@/app/components/organisms/AccommodationEntryForm';
+import AccommodationOptionCard from '@/app/components/organisms/AccommodationOptionCard';
 import { formatDateRange } from '@/app/lib/utils';
 import type { AccommodationOption, AccommodationType } from '@/app/lib/types/accommodation';
 

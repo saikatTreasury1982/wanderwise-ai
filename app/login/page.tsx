@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
-import AuthLayout from '@/components/templates/AuthLayout';
-import LoginForm from '@/components/organisms/LoginForm';
+import AuthLayout from '@/app/components/templates/AuthLayout';
+import LoginForm from '@/app/components/organisms/LoginForm';
 
 export const metadata: Metadata = {
   title: 'Sign In | WanderWise',

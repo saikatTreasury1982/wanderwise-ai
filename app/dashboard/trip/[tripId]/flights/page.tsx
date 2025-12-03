@@ -2,13 +2,13 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import PageBackground from '@/components/ui/PageBackground';
-import FloatingActionButton from '@/components/ui/FloatingActionButton';
-import FlightEntryForm from '@/components/organisms/FlightEntryForm';
-import FlightOptionCard from '@/components/organisms/FlightOptionCard';
+import PageBackground from '@/app/components/ui/PageBackground';
+import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
+import FlightEntryForm from '@/app/components/organisms/FlightEntryForm';
+import FlightOptionCard from '@/app/components/organisms/FlightOptionCard';
 import type { FlightOption } from '@/app/lib/types/flight';
 import { formatDateRange } from '@/app/lib/utils';
-import LoadingOverlay from '@/components/ui/LoadingOverlay';
+import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 
 interface Trip {
   trip_id: number;

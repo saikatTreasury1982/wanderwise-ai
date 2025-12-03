@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
+import Input from '@/app/components/ui/Input';
+import Button from '@/app/components/ui/Button';
 import Link from 'next/link';
 
 interface FormErrors {

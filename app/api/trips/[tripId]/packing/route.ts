@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPackingCategoriesByTrip, createPackingCategory, getPackingStats } from '@/lib/services/packing';
+import { getPackingCategoriesByTrip, createPackingCategory, getPackingStats } from '@/app/lib/services/packing';
 
 export async function GET(
   request: NextRequest,

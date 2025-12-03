@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import type { PackingItem } from '@/lib/types/packing';
+import { cn } from '@/app/lib/utils';
+import type { PackingItem } from '@/app/lib/types/packing';
 
 interface PackingItemRowProps {
   item: PackingItem;

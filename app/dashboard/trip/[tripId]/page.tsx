@@ -2,10 +2,10 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import PageBackground from '@/components/ui/PageBackground';
-import HubTile from '@/components/ui/HubTile';
-import { formatDateRange } from '@/lib/utils';
-import TripNotesSection from '@/components/organisms/TripNotesSection';
+import PageBackground from '@/app/components/ui/PageBackground';
+import HubTile from '@/app/components/ui/HubTile';
+import { formatDateRange } from '@/app/lib/utils';
+import TripNotesSection from '@/app/components/organisms/TripNotesSection';
 
 interface Traveler {
   traveler_id: number;

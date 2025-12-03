@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import PageBackground from '@/components/ui/PageBackground';
-import FloatingActionButton from '@/components/ui/FloatingActionButton';
-import TripCard from '@/components/organisms/TripCard';
-import TripForm from '@/components/organisms/TripForm';
-import EmptyState from '@/components/organisms/EmptyState';
+import PageBackground from '@/app/components/ui/PageBackground';
+import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
+import TripCard from '@/app/components/organisms/TripCard';
+import TripForm from '@/app/components/organisms/TripForm';
+import EmptyState from '@/app/components/organisms/EmptyState';
 import { useRouter } from 'next/navigation';
-import TripSummaryModal from '@/components/organisms/TripSummaryModal';
+import TripSummaryModal from '@/app/components/organisms/TripSummaryModal';
 
 interface Trip {
   trip_id: number;

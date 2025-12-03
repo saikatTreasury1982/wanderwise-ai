@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
-import Logo from '@/components/ui/Logo';
-import PageBackground from '@/components/ui/PageBackground';
+import Logo from '@/app/components/ui/Logo';
+import PageBackground from '@/app/components/ui/PageBackground';
 
 export interface AuthLayoutProps {
   children: ReactNode;
