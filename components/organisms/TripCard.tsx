@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { cn, formatDateRange } from '@/lib/utils';
 
 interface Trip {
@@ -46,6 +47,38 @@ export default function TripCard({
   onCardClick,
   onView,
 }: TripCardProps) {
+  const [weather, setWeather] = useState<{
+    tempMin: number;
+    tempMax: number;
+    precipitationChance: number;
+    description: string;
+  } | null>(null);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      const city = trip.destination_city || trip.destination_country;
+      if (!city || !trip.start_date || !trip.end_date) return;
+
+      setIsLoadingWeather(true);
+      try {
+        const response = await fetch(
+          `/api/weather?city=${encodeURIComponent(city)}&startDate=${trip.start_date}&endDate=${trip.end_date}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setWeather(data);
+        }
+      } catch (error) {
+        console.error('Error fetching weather:', error);
+      } finally {
+        setIsLoadingWeather(false);
+      }
+    };
+
+    fetchWeather();
+  }, [trip.destination_city, trip.destination_country, trip.start_date, trip.end_date]);
+
   const statusLabel = statuses.find(s => s.status_code === trip.status_code)?.status_name || 'Unknown';
   const statusStyle = statusStyles[trip.status_code] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   const destination = [trip.destination_city, trip.destination_country]
@@ -91,6 +124,31 @@ export default function TripCard({
           <p className="text-white/60 text-sm">
             {formatDateRange(trip.start_date, trip.end_date, dateFormat)}
           </p>
+
+          {/* Weather */}
+          {isLoadingWeather ? (
+            <div className="mt-2 flex items-center gap-2 text-white/40 text-sm">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-transparent rounded-full animate-spin" />
+              <span>Loading weather...</span>
+            </div>
+          ) : weather ? (
+            <div className="mt-2 flex items-center gap-2 text-sm">
+              <span className="text-lg">
+                {weather.tempMax < 5 ? '❄️' : weather.tempMax < 15 ? '🌤️' : weather.tempMax < 28 ? '☀️' : '🔥'}
+              </span>
+              <span className="text-white/70">
+                {weather.tempMin}° – {weather.tempMax}°C
+              </span>
+              {weather.precipitationChance > 20 && (
+                <span className="text-blue-300">
+                  💧 {weather.precipitationChance}%
+                </span>
+              )}
+              <span className="text-white/50 text-xs">
+                (historical avg)
+              </span>
+            </div>
+          ) : null}
         </div>
 
         {/* Action buttons */}

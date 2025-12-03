@@ -103,14 +103,14 @@ export default function TripSummaryModal({
       {/* Modal */}
       <div
         className={cn(
-          'relative z-10 w-full max-w-lg max-h-[85vh] overflow-y-auto',
+          'relative z-10 w-full max-w-lg md:max-w-5xl',
           'bg-gray-900/95 backdrop-blur-xl',
           'border border-white/20 rounded-2xl',
           'shadow-2xl'
         )}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-gray-900/95 backdrop-blur-xl border-b border-white/10 p-4 flex items-center justify-between">
+        <div className="border-b border-white/10 p-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-white">Trip Summary</h2>
           <button
             onClick={onClose}
@@ -123,70 +123,74 @@ export default function TripSummaryModal({
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4">
-          {/* Trip Details */}
-          <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-            <h3 className="text-lg font-semibold text-white mb-1">{trip.trip_name}</h3>
-            {destination && (
-              <p className="text-white/70 text-sm mb-1">{destination}</p>
-            )}
-            <p className="text-white/60 text-sm mb-2">
-              {formatDateRange(trip.start_date, trip.end_date, dateFormat)}
-            </p>
-            <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
-              {statusLabel}
-            </span>
-          </div>
+        <div className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-[30%_68%] gap-4">
+            {/* Column 1: Trip Details + Description */}
+            <div className="space-y-4">
+              {/* Trip Details */}
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-1">{trip.trip_name}</h3>
+                {destination && (
+                  <p className="text-white/70 text-sm mb-1">{destination}</p>
+                )}
+                <p className="text-white/60 text-sm mb-2">
+                  {formatDateRange(trip.start_date, trip.end_date, dateFormat)}
+                </p>
+                <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
+                  {statusLabel}
+                </span>
+              </div>
 
-          {/* Description */}
-          {trip.trip_description && (
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-              <h4 className="text-sm font-medium text-white/50 uppercase tracking-wide mb-2">Description</h4>
-              <p className="text-white/80 text-sm">{trip.trip_description}</p>
+              {/* Description */}
+              {trip.trip_description && (
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <h4 className="text-sm font-medium text-white/50 uppercase tracking-wide mb-2">Description</h4>
+                  <p className="text-white/80 text-sm">{trip.trip_description}</p>
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Notes */}
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="w-8 h-8 border-3 border-purple-400 border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : (
-            noteTypes.map(type => {
-              const typeNotes = notesByType[type.type_name] || [];
-              if (typeNotes.length === 0) return null;
+            {/* Column 2: Notes */}
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-8 h-8 border-3 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : notes.length === 0 ? (
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
+                  <p className="text-white/50 text-sm">No notes added yet</p>
+                </div>
+              ) : (
+                noteTypes.map(type => {
+                  const typeNotes = notesByType[type.type_name] || [];
+                  if (typeNotes.length === 0) return null;
 
-              return (
-                <div key={type.type_name} className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <h4 className="text-sm font-medium text-white/50 uppercase tracking-wide mb-2 flex items-center gap-2">
-                    <span>{noteTypeIcons[type.type_name] || '📝'}</span>
-                    {type.type_name}
-                  </h4>
-                  <div className="space-y-2">
-                    {typeNotes.map(note => (
-                      <div key={note.note_id} className="text-white/80 text-sm">
-                        {note.content.split('\n').map((line, idx) => (
-                          line.trim() && (
-                            <div key={idx} className="flex items-start gap-2">
-                              <span className="text-purple-400 mt-1">•</span>
-                              <span>{line.trim()}</span>
-                            </div>
-                          )
+                  return (
+                    <div key={type.type_name} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                      <h4 className="text-sm font-medium text-white/50 uppercase tracking-wide mb-2 flex items-center gap-2">
+                        <span>{noteTypeIcons[type.type_name] || '📝'}</span>
+                        {type.type_name}
+                      </h4>
+                      <div className="space-y-2">
+                        {typeNotes.map(note => (
+                          <div key={note.note_id} className="text-white/80 text-sm">
+                            {note.content.split('\n').map((line, idx) => (
+                              line.trim() && (
+                                <div key={idx} className="flex items-start gap-2">
+                                  <span className="text-purple-400 mt-1">•</span>
+                                  <span>{line.trim()}</span>
+                                </div>
+                              )
+                            ))}
+                          </div>
                         ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })
-          )}
-
-          {/* Empty state for notes */}
-          {!isLoading && notes.length === 0 && (
-            <div className="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
-              <p className="text-white/50 text-sm">No notes added yet</p>
+                    </div>
+                  );
+                })
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
