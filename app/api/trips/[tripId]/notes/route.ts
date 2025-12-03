@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTripNotesByTrip, createTripNote } from '@/lib/services/trip-notes';
+import { getTripNotesByTrip, createTripNote } from '@/app/lib/services/trip-notes';
 
 export async function GET(
   request: NextRequest,

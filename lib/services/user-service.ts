@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query } from '@/app/lib/db';
 
 interface CreateUserInput {
   email: string;

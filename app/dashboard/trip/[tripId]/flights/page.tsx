@@ -6,8 +6,8 @@ import PageBackground from '@/components/ui/PageBackground';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import FlightEntryForm from '@/components/organisms/FlightEntryForm';
 import FlightOptionCard from '@/components/organisms/FlightOptionCard';
-import type { FlightOption } from '@/lib/types/flight';
-import { formatDateRange } from '@/lib/utils';
+import type { FlightOption } from '@/app/lib/types/flight';
+import { formatDateRange } from '@/app/lib/utils';
 import LoadingOverlay from '@/components/ui/LoadingOverlay';
 
 interface Trip {

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
-import { getPasskey, updatePasskeyCounter } from '@/lib/services/passkey-service';
-import { createSession } from '@/lib/services/session-service';
+import { getPasskey, updatePasskeyCounter } from '@/app/lib/services/passkey-service';
+import { createSession } from '@/app/lib/services/session-service';
 
 export async function POST(request: Request) {
   try {

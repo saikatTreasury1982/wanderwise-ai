@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAccommodationTypes } from '@/lib/services/accommodation-options';
+import { getAccommodationTypes } from '@/app/lib/services/accommodation-options';
 
 export async function GET() {
   try {

@@ -1,7 +1,7 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-import type { FlightOption } from '@/lib/types/flight';
+import { cn } from '@/app/lib/utils';
+import type { FlightOption } from '@/app/lib/types/flight';
 
 interface FlightOptionCardProps {
   flight: FlightOption;

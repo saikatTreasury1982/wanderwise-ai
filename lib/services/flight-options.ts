@@ -1,10 +1,10 @@
-import { query } from '@/lib/db';
+import { query } from '@/app/lib/db';
 import type {
   FlightOption,
   FlightLeg,
   CreateFlightOptionInput,
   UpdateFlightOptionInput,
-} from '@/lib/types/flight';
+} from '@/app/lib/types/flight';
 
 export async function getFlightOptionsByTrip(tripId: number): Promise<FlightOption[]> {
   const options = await query<FlightOption>(

@@ -1,11 +1,11 @@
-import { query } from '@/lib/db';
+import { query } from '@/app/lib/db';
 import type {
   AccommodationType,
   AccommodationOption,
   AccommodationOptionTraveler,
   CreateAccommodationOptionInput,
   UpdateAccommodationOptionInput,
-} from '@/lib/types/accommodation';
+} from '@/app/lib/types/accommodation';
 
 export async function getAccommodationTypes(): Promise<AccommodationType[]> {
   return query<AccommodationType>(`SELECT * FROM accommodation_types ORDER BY type_name`, []);

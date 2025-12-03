@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllTripStatuses } from '@/lib/services/status-service';
+import { getAllTripStatuses } from '@/app/lib/services/status-service';
 
 export async function GET() {
   try {

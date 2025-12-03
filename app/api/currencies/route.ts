@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllCurrencies } from '@/lib/services/currency-service';
+import { getAllCurrencies } from '@/app/lib/services/currency-service';
 
 export async function GET() {
   try {

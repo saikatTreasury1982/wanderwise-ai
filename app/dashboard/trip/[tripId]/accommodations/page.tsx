@@ -7,8 +7,8 @@ import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import LoadingOverlay from '@/components/ui/LoadingOverlay';
 import AccommodationEntryForm from '@/components/organisms/AccommodationEntryForm';
 import AccommodationOptionCard from '@/components/organisms/AccommodationOptionCard';
-import { formatDateRange } from '@/lib/utils';
-import type { AccommodationOption, AccommodationType } from '@/lib/types/accommodation';
+import { formatDateRange } from '@/app/lib/utils';
+import type { AccommodationOption, AccommodationType } from '@/app/lib/types/accommodation';
 
 interface Trip {
   trip_id: number;

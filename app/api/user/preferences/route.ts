@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getSession } from '@/lib/services/session-service';
-import { getUserPreferences, getDefaultPreferences } from '@/lib/services/user-preferences-service';
+import { getSession } from '@/app/lib/services/session-service';
+import { getUserPreferences, getDefaultPreferences } from '@/app/lib/services/user-preferences-service';
 
 export async function GET() {
   try {

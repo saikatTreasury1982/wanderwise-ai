@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { cn, formatDateRange } from '@/lib/utils';
-import type { TripNote, TripNoteType } from '@/lib/types/trip-note';
+import { cn, formatDateRange } from '@/app/lib/utils';
+import type { TripNote, TripNoteType } from '@/app/lib/types/trip-note';
 
 interface Trip {
   trip_id: number;

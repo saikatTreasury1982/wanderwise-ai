@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateRegistrationOptions } from '@simplewebauthn/server';
-import { getUserById, getUserByEmail } from '@/lib/services/user-service';
+import { getUserById, getUserByEmail } from '@/app/lib/services/user-service';
 
 export async function POST(request: Request) {
   try {

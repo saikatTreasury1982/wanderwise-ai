@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/app/lib/utils';
 import CircleIconButton from '@/components/ui/CircleIconButton';
-import type { FlightOption, CreateFlightLegInput } from '@/lib/types/flight';
+import type { FlightOption, CreateFlightLegInput } from '@/app/lib/types/flight';
 
 interface Traveler {
   traveler_id: number;

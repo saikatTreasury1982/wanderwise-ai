@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFlightOptionsGrouped, createFlightOption } from '@/lib/services/flight-options';
+import { getFlightOptionsGrouped, createFlightOption } from '@/app/lib/services/flight-options';
 
 export async function GET(
   request: NextRequest,

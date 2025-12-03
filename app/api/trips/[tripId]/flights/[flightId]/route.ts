@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFlightOptionById, updateFlightOption, deleteFlightOption, duplicateFlightOption } from '@/lib/services/flight-options';
+import { getFlightOptionById, updateFlightOption, deleteFlightOption, duplicateFlightOption } from '@/app/lib/services/flight-options';
 
 export async function GET(
   request: NextRequest,

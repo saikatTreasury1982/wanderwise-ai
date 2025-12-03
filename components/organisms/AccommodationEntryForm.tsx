@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/app/lib/utils';
 import CircleIconButton from '@/components/ui/CircleIconButton';
-import type { AccommodationOption } from '@/lib/types/accommodation';
+import type { AccommodationOption } from '@/app/lib/types/accommodation';
 
 interface Traveler {
   traveler_id: number;

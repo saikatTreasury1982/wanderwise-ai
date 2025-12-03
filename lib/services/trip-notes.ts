@@ -1,10 +1,10 @@
-import { query } from '@/lib/db';
+import { query } from '@/app/lib/db';
 import type {
   TripNoteType,
   TripNote,
   CreateTripNoteInput,
   UpdateTripNoteInput,
-} from '@/lib/types/trip-note';
+} from '@/app/lib/types/trip-note';
 
 export async function getTripNoteTypes(): Promise<TripNoteType[]> {
   return query<TripNoteType>(

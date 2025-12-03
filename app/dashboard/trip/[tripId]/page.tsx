@@ -43,6 +43,7 @@ export default function TripHubPage({ params }: PageProps) {
   const [travelers, setTravelers] = useState<Traveler[]>([]);
   const [flightStats, setFlightStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
   const [accommodationStats, setAccommodationStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
+  const [packingStats, setPackingStats] = useState<{ totalItems: number; packedItems: number; percentage: number }>({ totalItems: 0, packedItems: 0, percentage: 0 });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,6 +85,13 @@ export default function TripHubPage({ params }: PageProps) {
             shortlisted: accommodations.filter((a: any) => a.status === 'shortlisted').length,
             confirmed: accommodations.filter((a: any) => a.status === 'confirmed').length,
           });
+        }
+
+        // Fetch packing stats
+        const packingResponse = await fetch(`/api/trips/${tripId}/packing`);
+        if (packingResponse.ok) {
+          const packingData = await packingResponse.json();
+          setPackingStats(packingData.stats);
         }
 
         // Fetch preferences
@@ -207,6 +215,23 @@ export default function TripHubPage({ params }: PageProps) {
     </div>
   ) : undefined;
 
+  const packingSubtitle = packingStats.totalItems > 0 ? (
+    <div className="space-y-1 text-xs">
+      <div>
+        <span className="text-green-400">{packingStats.packedItems}</span>
+        <span className="text-white/50"> of </span>
+        <span className="text-white/70">{packingStats.totalItems}</span>
+        <span className="text-white/50"> packed</span>
+      </div>
+      <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-purple-400 transition-all duration-300"
+          style={{ width: `${packingStats.percentage}%` }}
+        />
+      </div>
+    </div>
+  ) : undefined;
+
   return (
     <div className="min-h-screen relative p-6">
       <PageBackground />
@@ -295,6 +320,20 @@ export default function TripHubPage({ params }: PageProps) {
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            }
+          />
+
+          {/* Packing Checklist */}
+          <HubTile
+            title="Packing"
+            onClick={() => router.push(`/dashboard/trip/${tripId}/packing`)}
+            count={packingStats.totalItems > 0 ? packingStats.percentage : undefined}
+            countLabel={packingStats.totalItems > 0 ? "% packed" : undefined}
+            subtitle={packingSubtitle}
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
             }
           />

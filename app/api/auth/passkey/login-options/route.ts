@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { generateAuthenticationOptions, AuthenticatorTransportFuture } from '@simplewebauthn/server';
-import { getUserByEmail } from '@/lib/services/user-service';
-import { getUserPasskeys } from '@/lib/services/passkey-service';
+import { getUserByEmail } from '@/app/lib/services/user-service';
+import { getUserPasskeys } from '@/app/lib/services/passkey-service';
 
 export async function POST(request: Request) {
   try {

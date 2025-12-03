@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAccommodationOptionsByTrip, createAccommodationOption } from '@/lib/services/accommodation-options';
+import { getAccommodationOptionsByTrip, createAccommodationOption } from '@/app/lib/services/accommodation-options';
 
 export async function GET(
   request: NextRequest,

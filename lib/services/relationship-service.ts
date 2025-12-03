@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query } from '@/app/lib/db';
 
 interface Relationship {
   relationship_code: string;

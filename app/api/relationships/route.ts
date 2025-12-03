@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllRelationships } from '@/lib/services/relationship-service';
+import { getAllRelationships } from '@/app/lib/services/relationship-service';
 
 export async function GET() {
   try {

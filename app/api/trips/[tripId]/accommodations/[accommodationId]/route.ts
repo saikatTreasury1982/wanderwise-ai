@@ -4,7 +4,7 @@ import {
   updateAccommodationOption,
   deleteAccommodationOption,
   duplicateAccommodationOption,
-} from '@/lib/services/accommodation-options';
+} from '@/app/lib/services/accommodation-options';
 
 export async function GET(
   request: NextRequest,

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
-import { storePasskey } from '@/lib/services/passkey-service';
-import { createSession } from '@/lib/services/session-service';
-import { getUserById } from '@/lib/services/user-service';
+import { storePasskey } from '@/app/lib/services/passkey-service';
+import { createSession } from '@/app/lib/services/session-service';
+import { getUserById } from '@/app/lib/services/user-service';
 
 export async function POST(request: Request) {
   try {

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getSession } from '@/lib/services/session-service';
-import { getTripById } from '@/lib/services/trip-service';
-import { getTravelerById, updateTraveler, deleteTraveler } from '@/lib/services/traveler-service';
+import { getSession } from '@/app/lib/services/session-service';
+import { getTripById } from '@/app/lib/services/trip-service';
+import { getTravelerById, updateTraveler, deleteTraveler } from '@/app/lib/services/traveler-service';
 
 interface RouteParams {
   params: Promise<{ tripId: string; travelerId: string }>;

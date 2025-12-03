@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query } from '@/app/lib/db';
 
 interface Currency {
   currency_code: string;

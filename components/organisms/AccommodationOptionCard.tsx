@@ -1,7 +1,7 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-import type { AccommodationOption } from '@/lib/types/accommodation';
+import { cn } from '@/app/lib/utils';
+import type { AccommodationOption } from '@/app/lib/types/accommodation';
 
 interface AccommodationOptionCardProps {
   accommodation: AccommodationOption;

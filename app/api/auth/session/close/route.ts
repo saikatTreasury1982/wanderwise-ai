@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { closeSession } from '@/lib/services/session-service';
+import { closeSession } from '@/app/lib/services/session-service';
 
 export async function POST() {
   try {
