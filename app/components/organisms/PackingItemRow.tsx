@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/app/lib/utils';
 import type { PackingItem, PackingPriority } from '@/app/lib/types/packing';
 
@@ -28,8 +29,57 @@ export default function PackingItemRow({
   onDelete,
 }: PackingItemRowProps) {
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(item.item_name);
+  const priorityButtonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showPriorityMenu &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        priorityButtonRef.current &&
+        !priorityButtonRef.current.contains(event.target as Node)
+      ) {
+        setShowPriorityMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPriorityMenu]);
+
+  // Close menu on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (showPriorityMenu) {
+        setShowPriorityMenu(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [showPriorityMenu]);
+
+  const handlePriorityClick = () => {
+    if (!showPriorityMenu && priorityButtonRef.current) {
+      const rect = priorityButtonRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.top,
+        left: rect.right + 8,
+      });
+    }
+    setShowPriorityMenu(!showPriorityMenu);
+  };
 
   const handleSave = () => {
     if (editName.trim() && editName !== item.item_name) {
@@ -50,6 +100,45 @@ export default function PackingItemRow({
       handleCancel();
     }
   };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(item.item_id);
+  };
+
+  const priorityMenu = showPriorityMenu && mounted ? createPortal(
+    <div
+      ref={menuRef}
+      className="fixed z-[9999] bg-gray-800 border border-white/20 rounded-lg shadow-xl"
+      style={{
+        top: menuPosition.top,
+        left: menuPosition.left,
+      }}
+    >
+      {(['critical', 'important', 'normal'] as PackingPriority[]).map(priority => (
+        <button
+          key={priority}
+          onClick={() => {
+            onUpdatePriority(item.item_id, priority);
+            setShowPriorityMenu(false);
+          }}
+          className={cn(
+            'w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-white/10 transition-colors whitespace-nowrap',
+            item.priority === priority && 'bg-white/5'
+          )}
+        >
+          <span>{priorityConfig[priority].icon}</span>
+          <span className="text-white/90">{priorityConfig[priority].label}</span>
+        </button>
+      ))}
+    </div>,
+    document.body
+  ) : null;
 
   return (
     <div
@@ -91,7 +180,7 @@ export default function PackingItemRow({
           <span
             className={cn(
               'text-sm transition-colors',
-              item.is_packed ? 'text-white/50 line-through' : 'text-white/90'
+              item.is_packed ? 'text-white/50' : 'text-white/90'
             )}
           >
             {item.item_name}
@@ -107,46 +196,18 @@ export default function PackingItemRow({
       {/* Action Buttons */}
       {!isEditing && (
         <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
-          {/* Priority Menu */}
-          <div className="relative">
-            <button
-              onClick={() => setShowPriorityMenu(!showPriorityMenu)}
-              className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
-              title="Set priority"
-            >
-              <span className="text-xs">{priorityConfig[item.priority || 'normal'].icon}</span>
-            </button>
-            {showPriorityMenu && (
-              <>
-                {/* Backdrop */}
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowPriorityMenu(false)}
-                />
-                {/* Dropdown */}
-                <div className="absolute right-0 top-9 z-50 bg-gray-800 border border-white/20 rounded-lg shadow-xl">
-                  {(['critical', 'important', 'normal'] as PackingPriority[]).map(priority => (
-                    <button
-                      key={priority}
-                      onClick={() => {
-                        onUpdatePriority(item.item_id, priority);
-                        setShowPriorityMenu(false);
-                      }}
-                      className={cn(
-                        'w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-white/10 transition-colors whitespace-nowrap',
-                        item.priority === priority && 'bg-white/5'
-                      )}
-                    >
-                      <span>{priorityConfig[priority].icon}</span>
-                      <span className="text-white/90">{priorityConfig[priority].label}</span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+          {/* Priority Button */}
           <button
-            onClick={() => setIsEditing(true)}
+            ref={priorityButtonRef}
+            onClick={handlePriorityClick}
+            className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+            title="Set priority"
+          >
+            <span className="text-xs">{priorityConfig[item.priority || 'normal'].icon}</span>
+          </button>
+          
+          <button
+            onClick={handleEdit}
             className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
             title="Edit"
           >
@@ -155,7 +216,7 @@ export default function PackingItemRow({
             </svg>
           </button>
           <button
-            onClick={() => onDelete(item.item_id)}
+            onClick={handleDelete}
             className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-red-400 hover:bg-red-500/10 hover:border-red-400/30 transition-colors"
             title="Delete"
           >
@@ -165,6 +226,9 @@ export default function PackingItemRow({
           </button>
         </div>
       )}
+
+      {/* Priority Menu Portal */}
+      {priorityMenu}
     </div>
   );
 }
