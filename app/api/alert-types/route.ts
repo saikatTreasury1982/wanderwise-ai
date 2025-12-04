@@ -6,14 +6,17 @@ import { cookies } from 'next/headers';
 export async function GET() {
   try {
     const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    const sessionToken = cookieStore.get('session')?.value;
     if (!sessionToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const session = await getSession(sessionToken);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Invalid session' },
+        { status: 401 }
+      );
     }
 
     const alertTypes = await getAlertTypesByUser(session.user_id);
@@ -27,14 +30,21 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    const sessionToken = cookieStore.get('session')?.value;
+
+    console.log ("cookies:",cookieStore);
+    console.log ("sessionToken:",sessionToken);
+
     if (!sessionToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const session = await getSession(sessionToken);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Invalid session' },
+        { status: 401 }
+      );
     }
 
     const body = await request.json();

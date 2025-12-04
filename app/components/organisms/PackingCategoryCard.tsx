@@ -76,7 +76,7 @@ export default function PackingCategoryCard({
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden">
+    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl">
       {/* Header */}
       <div
         className={cn(

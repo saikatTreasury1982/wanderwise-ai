@@ -10,7 +10,7 @@ export async function GET(
   try {
     const { alertCode } = await params;
     const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    const sessionToken = cookieStore.get('session')?.value;
     if (!sessionToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -39,7 +39,7 @@ export async function PUT(
   try {
     const { alertCode } = await params;
     const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    const sessionToken = cookieStore.get('session')?.value;
     if (!sessionToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -69,7 +69,7 @@ export async function DELETE(
   try {
     const { alertCode } = await params;
     const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    const sessionToken = cookieStore.get('session')?.value;
     if (!sessionToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

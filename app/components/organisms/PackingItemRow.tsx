@@ -88,56 +88,64 @@ export default function PackingItemRow({
         />
       ) : (
         <div className="flex-1 flex items-center gap-2">
-            <span
+          <span
             className={cn(
-                'text-sm transition-colors',
-                item.is_packed ? 'text-white/50 line-through' : 'text-white/90'
+              'text-sm transition-colors',
+              item.is_packed ? 'text-white/50 line-through' : 'text-white/90'
             )}
-            >
+          >
             {item.item_name}
-            </span>
-            {item.priority !== 'normal' && (
+          </span>
+          {item.priority !== 'normal' && (
             <span className="text-xs" title={priorityConfig[item.priority].label}>
-                {priorityConfig[item.priority].icon}
+              {priorityConfig[item.priority].icon}
             </span>
-            )}
+          )}
         </div>
-        )}
+      )}
 
       {/* Action Buttons */}
-        {!isEditing && (
+      {!isEditing && (
         <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
-            {/* Priority Menu */}
-            <div className="relative">
+          {/* Priority Menu */}
+          <div className="relative">
             <button
-                onClick={() => setShowPriorityMenu(!showPriorityMenu)}
-                className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
-                title="Set priority"
+              onClick={() => setShowPriorityMenu(!showPriorityMenu)}
+              className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+              title="Set priority"
             >
-                <span className="text-xs">{priorityConfig[item.priority || 'normal'].icon}</span>
+              <span className="text-xs">{priorityConfig[item.priority || 'normal'].icon}</span>
             </button>
             {showPriorityMenu && (
-                <div className="absolute right-0 top-8 z-20 bg-gray-800 border border-white/20 rounded-lg shadow-xl overflow-hidden">
-                {(['critical', 'important', 'normal'] as PackingPriority[]).map(priority => (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowPriorityMenu(false)}
+                />
+                {/* Dropdown */}
+                <div className="absolute right-0 top-9 z-50 bg-gray-800 border border-white/20 rounded-lg shadow-xl">
+                  {(['critical', 'important', 'normal'] as PackingPriority[]).map(priority => (
                     <button
-                    key={priority}
-                    onClick={() => {
+                      key={priority}
+                      onClick={() => {
                         onUpdatePriority(item.item_id, priority);
                         setShowPriorityMenu(false);
-                    }}
-                    className={cn(
-                        'w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-white/10 transition-colors',
+                      }}
+                      className={cn(
+                        'w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-white/10 transition-colors whitespace-nowrap',
                         item.priority === priority && 'bg-white/5'
-                    )}
+                      )}
                     >
-                    <span>{priorityConfig[priority].icon}</span>
-                    <span className="text-white/90">{priorityConfig[priority].label}</span>
+                      <span>{priorityConfig[priority].icon}</span>
+                      <span className="text-white/90">{priorityConfig[priority].label}</span>
                     </button>
-                ))}
+                  ))}
                 </div>
+              </>
             )}
-            </div>
-            <button
+          </div>
+          <button
             onClick={() => setIsEditing(true)}
             className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
             title="Edit"
