@@ -141,10 +141,18 @@ export default function FlightViewModal({
           {/* Price */}
           {flight.total_price && (
             <div className="bg-white/5 rounded-lg border border-white/10 p-3">
-              <p className="text-white/50 text-xs mb-1">Total Fare</p>
-              <p className="text-xl font-bold text-green-400">
-                {flight.currency_code} {flight.total_price.toLocaleString()}
-              </p>
+              <p className="text-white/50 text-xs mb-1">Fare</p>
+              <div className="flex items-baseline gap-3">
+                <p className="text-xl font-bold text-green-400">
+                  {flight.currency_code} {(flight.total_price * (flight.travelers?.length || 1)).toLocaleString()}
+                </p>
+                <span className="text-sm text-white/50">total</span>
+              </div>
+              {flight.travelers && flight.travelers.length > 0 && (
+                <p className="text-sm text-white/50 mt-1">
+                  {flight.currency_code} {flight.total_price.toLocaleString()} × {flight.travelers.length} traveler{flight.travelers.length > 1 ? 's' : ''}
+                </p>
+              )}
             </div>
           )}
 

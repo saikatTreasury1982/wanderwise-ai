@@ -450,33 +450,48 @@ export default function FlightEntryForm({
 
         {/* Fare */}
         <div className="grid grid-cols-2 gap-3">
-        <div>
+          <div>
             <label className="block text-xs text-white/60 mb-1">Unit Fare</label>
             <input
-            type="number"
-            value={totalPrice}
-            onChange={e => setTotalPrice(e.target.value)}
-            placeholder="0.00"
-            step="0.01"
-            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              type="number"
+              value={totalPrice}
+              onChange={e => setTotalPrice(e.target.value)}
+              placeholder="0.00"
+              step="0.01"
+              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
             />
-        </div>
-        <div>
+          </div>
+          <div>
             <label className="block text-xs text-white/60 mb-1">Currency</label>
             <select
-            value={currencyCode}
-            onChange={e => setCurrencyCode(e.target.value)}
-            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+              value={currencyCode}
+              onChange={e => setCurrencyCode(e.target.value)}
+              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
             >
-            <option value="" className="bg-gray-800">Select</option>
-            {currencies.map(c => (
+              <option value="" className="bg-gray-800">Select</option>
+              {currencies.map(c => (
                 <option key={c.currency_code} value={c.currency_code} className="bg-gray-800">
-                {c.currency_code}
+                  {c.currency_code}
                 </option>
-            ))}
+              ))}
             </select>
+          </div>
         </div>
-        </div>
+
+        {/* Total Projected Amount */}
+        {totalPrice && selectedTravelers.length > 0 && (
+          <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-white/70">Total Projected Amount</span>
+              <span className="text-lg font-bold text-purple-300">
+                {currencyCode || ''} {(parseFloat(totalPrice) * selectedTravelers.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <p className="text-xs text-white/50 mt-1">
+              {currencyCode || ''} {parseFloat(totalPrice).toLocaleString()} × {selectedTravelers.length} traveler{selectedTravelers.length > 1 ? 's' : ''}
+            </p>
+          </div>
+        )}
 
         {/* Travelers */}
         {sortedTravelers.length > 0 && (

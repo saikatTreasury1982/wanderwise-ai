@@ -30,6 +30,7 @@ export interface AccommodationOptionTraveler {
   id: number;
   accommodation_option_id: number;
   traveler_id: number;
+  traveler_name: string;
 }
 
 export interface CreateAccommodationOptionInput {

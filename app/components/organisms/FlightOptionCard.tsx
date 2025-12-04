@@ -122,13 +122,23 @@ export default function FlightOptionCard({
 
           {/* Price */}
           {flight.total_price && (
-            <div className="text-lg font-bold text-purple-300">
-              {flight.currency_code} {flight.total_price.toLocaleString()}
+            <div className="mt-2">
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-bold text-purple-300">
+                  {flight.currency_code} {(flight.total_price * (flight.travelers?.length || 1)).toLocaleString()}
+                </span>
+                <span className="text-xs text-white/50">total</span>
+              </div>
+              {flight.travelers && flight.travelers.length > 0 && (
+                <p className="text-xs text-white/50 mt-0.5">
+                  {flight.currency_code} {flight.total_price.toLocaleString()} × {flight.travelers.length} traveler{flight.travelers.length > 1 ? 's' : ''}
+                </p>
+              )}
             </div>
           )}
 
-          {/* Travelers count */}
-          {flight.travelers && flight.travelers.length > 0 && (
+          {/* Travelers count (only show if no price) */}
+          {!flight.total_price && flight.travelers && flight.travelers.length > 0 && (
             <div className="mt-1 text-xs text-white/50">
               {flight.travelers.length} traveler{flight.travelers.length > 1 ? 's' : ''}
             </div>

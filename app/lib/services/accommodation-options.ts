@@ -21,7 +21,10 @@ export async function getAccommodationOptionsByTrip(tripId: number): Promise<Acc
 
   for (const row of options) {
     const travelers = await query<AccommodationOptionTraveler>(
-      `SELECT * FROM accommodation_option_travelers WHERE accommodation_option_id = ?`,
+      `SELECT aot.id, aot.accommodation_option_id, aot.traveler_id, tt.traveler_name 
+      FROM accommodation_option_travelers aot
+      JOIN trip_travelers tt ON aot.traveler_id = tt.traveler_id
+      WHERE aot.accommodation_option_id = ?`,
       [row.accommodation_option_id]
     );
 
@@ -43,7 +46,10 @@ export async function getAccommodationOptionById(accommodationOptionId: number):
   if (rows.length === 0) return null;
 
   const travelers = await query<AccommodationOptionTraveler>(
-    `SELECT * FROM accommodation_option_travelers WHERE accommodation_option_id = ?`,
+    `SELECT aot.id, aot.accommodation_option_id, aot.traveler_id, tt.traveler_name 
+    FROM accommodation_option_travelers aot
+    JOIN trip_travelers tt ON aot.traveler_id = tt.traveler_id
+    WHERE aot.accommodation_option_id = ?`,
     [accommodationOptionId]
   );
 

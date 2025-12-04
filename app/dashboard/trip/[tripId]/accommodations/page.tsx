@@ -7,6 +7,7 @@ import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import AccommodationEntryForm from '@/app/components/organisms/AccommodationEntryForm';
 import AccommodationOptionCard from '@/app/components/organisms/AccommodationOptionCard';
+import AccommodationViewModal from '@/app/components/organisms/AccommodationViewModal';
 import { formatDateRange } from '@/app/lib/utils';
 import type { AccommodationOption, AccommodationType } from '@/app/lib/types/accommodation';
 
@@ -51,6 +52,7 @@ export default function AccommodationsPage({ params }: PageProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingAccommodation, setEditingAccommodation] = useState<AccommodationOption | null>(null);
+  const [viewingAccommodation, setViewingAccommodation] = useState<AccommodationOption | null>(null);
 
   const fetchAccommodations = async () => {
     try {
@@ -121,6 +123,10 @@ export default function AccommodationsPage({ params }: PageProps) {
 
     fetchData();
   }, [tripId, router]);
+
+  const handleView = (accommodation: AccommodationOption) => {
+    setViewingAccommodation(accommodation);
+  };
 
   const handleEdit = (accommodation: AccommodationOption) => {
     setEditingAccommodation(accommodation);
@@ -233,6 +239,7 @@ export default function AccommodationsPage({ params }: PageProps) {
             <AccommodationOptionCard
               key={accommodation.accommodation_option_id}
               accommodation={accommodation}
+              onView={handleView}
               onEdit={handleEdit}
               onCopy={handleCopy}
               onDelete={handleDelete}
@@ -322,13 +329,20 @@ export default function AccommodationsPage({ params }: PageProps) {
       {/* FAB */}
       {!showForm && (
         <FloatingActionButton
-        onClick={() => {
+          onClick={() => {
             setEditingAccommodation(null);
             setShowForm(true);
-        }}
-        ariaLabel="Add accommodation"
+          }}
+          ariaLabel="Add accommodation"
         />
       )}
+
+      {/* Accommodation View Modal */}
+      <AccommodationViewModal
+        isOpen={viewingAccommodation !== null}
+        onClose={() => setViewingAccommodation(null)}
+        accommodation={viewingAccommodation}
+      />
     </div>
   );
 }

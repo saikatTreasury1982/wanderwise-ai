@@ -5,6 +5,7 @@ import type { AccommodationOption } from '@/app/lib/types/accommodation';
 
 interface AccommodationOptionCardProps {
   accommodation: AccommodationOption;
+  onView: (accommodation: AccommodationOption) => void;
   onEdit: (accommodation: AccommodationOption) => void;
   onCopy: (accommodation: AccommodationOption) => void;
   onDelete: (accommodationId: number) => void;
@@ -13,6 +14,7 @@ interface AccommodationOptionCardProps {
 
 export default function AccommodationOptionCard({
   accommodation,
+  onView,
   onEdit,
   onCopy,
   onDelete,
@@ -173,6 +175,18 @@ export default function AccommodationOptionCard({
               </svg>
             </button>
           )}
+
+          {/* View */}
+          <button
+            onClick={() => onView(accommodation)}
+            className="p-2 rounded-full text-white/70 hover:text-purple-400 hover:bg-purple-500/10 transition-colors"
+            title="View details"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
 
           {/* Edit */}
           <button
