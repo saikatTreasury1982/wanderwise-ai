@@ -1,10 +1,5 @@
 import { query } from '@/app/lib/db';
-import type {
-  FlightOption,
-  FlightLeg,
-  CreateFlightOptionInput,
-  UpdateFlightOptionInput,
-} from '@/app/lib/types/flight';
+import type { FlightOption, FlightLeg, CreateFlightOptionInput, UpdateFlightOptionInput, } from '@/app/lib/types/flight';
 
 export async function getFlightOptionsByTrip(tripId: number): Promise<FlightOption[]> {
   const options = await query<FlightOption>(
@@ -20,8 +15,11 @@ export async function getFlightOptionsByTrip(tripId: number): Promise<FlightOpti
       [row.flight_option_id]
     );
 
-    const travelers = await query<{ id: number; flight_option_id: number; traveler_id: number }>(
-      `SELECT * FROM flight_option_travelers WHERE flight_option_id = ?`,
+    const travelers = await query<{ id: number; flight_option_id: number; traveler_id: number; traveler_name: string }>(
+      `SELECT fot.id, fot.flight_option_id, fot.traveler_id, tt.traveler_name 
+      FROM flight_option_travelers fot
+      JOIN trip_travelers tt ON fot.traveler_id = tt.traveler_id
+      WHERE fot.flight_option_id = ?`,
       [row.flight_option_id]
     );
 
@@ -48,8 +46,11 @@ export async function getFlightOptionById(flightOptionId: number): Promise<Fligh
     [flightOptionId]
   );
 
-  const travelers = await query<{ id: number; flight_option_id: number; traveler_id: number }>(
-    `SELECT * FROM flight_option_travelers WHERE flight_option_id = ?`,
+  const travelers = await query<{ id: number; flight_option_id: number; traveler_id: number; traveler_name: string }>(
+    `SELECT fot.id, fot.flight_option_id, fot.traveler_id, tt.traveler_name 
+    FROM flight_option_travelers fot
+    JOIN trip_travelers tt ON fot.traveler_id = tt.traveler_id
+    WHERE fot.flight_option_id = ?`,
     [flightOptionId]
   );
 

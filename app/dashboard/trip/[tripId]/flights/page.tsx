@@ -6,6 +6,7 @@ import PageBackground from '@/app/components/ui/PageBackground';
 import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
 import FlightEntryForm from '@/app/components/organisms/FlightEntryForm';
 import FlightOptionCard from '@/app/components/organisms/FlightOptionCard';
+import FlightViewModal from '@/app/components/organisms/FlightViewModal';
 import type { FlightOption } from '@/app/lib/types/flight';
 import { formatDateRange } from '@/app/lib/utils';
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
@@ -43,6 +44,7 @@ export default function FlightsPage({ params }: PageProps) {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFlight, setSelectedFlight] = useState<FlightOption | null>(null);
+  const [viewingFlight, setViewingFlight] = useState<FlightOption | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [preferences, setPreferences] = useState<{ date_format: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY' }>({
@@ -125,6 +127,10 @@ export default function FlightsPage({ params }: PageProps) {
     };
     loadData();
   }, [tripId]);
+
+  const handleView = (flight: FlightOption) => {
+    setViewingFlight(flight);
+  };
 
   const handleEdit = (flight: FlightOption) => {
     setSelectedFlight(flight);
@@ -307,6 +313,7 @@ export default function FlightsPage({ params }: PageProps) {
                         <FlightOptionCard
                           key={flight.flight_option_id}
                           flight={flight}
+                          onView={handleView}
                           onEdit={handleEdit}
                           onCopy={handleCopy}
                           onDelete={handleDelete}
@@ -326,6 +333,7 @@ export default function FlightsPage({ params }: PageProps) {
                         <FlightOptionCard
                           key={flight.flight_option_id}
                           flight={flight}
+                          onView={handleView}
                           onEdit={handleEdit}
                           onCopy={handleCopy}
                           onDelete={handleDelete}
@@ -345,12 +353,13 @@ export default function FlightsPage({ params }: PageProps) {
                         <FlightOptionCard
                           key={flight.flight_option_id}
                           flight={flight}
+                          onView={handleView}
                           onEdit={handleEdit}
                           onCopy={handleCopy}
                           onDelete={handleDelete}
                           onStatusChange={handleStatusChange}
                         />
-                      ))}
+                      ))} 
                     </div>
                   </div>
                 )}
@@ -364,6 +373,7 @@ export default function FlightsPage({ params }: PageProps) {
                         <FlightOptionCard
                           key={flight.flight_option_id}
                           flight={flight}
+                          onView={handleView}
                           onEdit={handleEdit}
                           onCopy={handleCopy}
                           onDelete={handleDelete}
@@ -386,6 +396,14 @@ export default function FlightsPage({ params }: PageProps) {
           ariaLabel="Add flight option"
         />
       )}
+
+      {/* Flight View Modal */}
+      <FlightViewModal
+        isOpen={viewingFlight !== null}
+        onClose={() => setViewingFlight(null)}
+        flight={viewingFlight}
+        dateFormat={preferences.date_format}
+      />
     </div>
   );
 }

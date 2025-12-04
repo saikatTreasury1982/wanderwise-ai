@@ -397,7 +397,8 @@ export default function FlightEntryForm({
     </div>
   );
 
-  const activeTravelers = travelers.filter(t => t.is_active === 1);
+  // Sort travelers: active first, then inactive
+  const sortedTravelers = [...travelers].sort((a, b) => b.is_active - a.is_active);
 
   return (
     <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6">
@@ -478,14 +479,17 @@ export default function FlightEntryForm({
         </div>
 
         {/* Travelers */}
-        {activeTravelers.length > 0 && (
+        {sortedTravelers.length > 0 && (
           <div>
             <label className="block text-sm text-white/70 mb-2">Travelers</label>
             <div className="space-y-2">
-              {activeTravelers.map(t => (
+              {sortedTravelers.map(t => (
                 <label
                   key={t.traveler_id}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className={cn(
+                    "flex items-center gap-2 cursor-pointer",
+                    t.is_active === 0 && "opacity-60"
+                  )}
                 >
                   <input
                     type="checkbox"
@@ -494,6 +498,11 @@ export default function FlightEntryForm({
                     className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-400"
                   />
                   <span className="text-sm text-white/80">{t.traveler_name}</span>
+                  {t.is_active === 0 && (
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-400/30">
+                      inactive
+                    </span>
+                  )}
                 </label>
               ))}
             </div>
