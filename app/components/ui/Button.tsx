@@ -6,6 +6,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   isLoading?: boolean;
+  pill?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -16,15 +17,18 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       size = 'md',
       fullWidth = false,
       isLoading = false,
+      pill = false,
       disabled,
       children,
       ...props
     },
     ref
   ) => {
-    const baseStyles =
-      'inline-flex items-center justify-center rounded-xl font-medium transition-all duration-250 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-
+    const baseStyles = cn(
+      'inline-flex items-center justify-center font-medium transition-all duration-250 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
+      pill ? 'rounded-full' : 'rounded-xl'
+    );
+    
     const variants = {
       primary:
         'bg-primary-500 text-white hover:bg-primary-600 active:bg-primary-700 focus:ring-primary-300 shadow-md hover:shadow-lg',

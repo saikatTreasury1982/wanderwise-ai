@@ -326,7 +326,7 @@ export default function TripHubPage({ params }: PageProps) {
 
           {/* Packing Checklist */}
           <HubTile
-            title="Packing"
+            title="Checklist"
             onClick={() => router.push(`/dashboard/trip/${tripId}/packing`)}
             count={packingStats.totalItems > 0 ? packingStats.percentage : undefined}
             countLabel={packingStats.totalItems > 0 ? "% packed" : undefined}

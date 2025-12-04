@@ -260,7 +260,7 @@ export default function PackingChecklistPage({ params }: PageProps) {
             Back to Trip Hub
           </button>
 
-          <h1 className="text-3xl font-bold text-white mb-2">Packing Checklist</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Checklist</h1>
           <p className="text-white/70">
             {[trip.trip_name, destination, formatDateRange(trip.start_date, trip.end_date, preferences.date_format)]
               .filter(Boolean)

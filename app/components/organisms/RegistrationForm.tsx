@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
-import Button from '@/app/components/ui/Button';
-import Link from 'next/link';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
+import Link from 'next/link';;
 
 interface Country {
   country_code: string;
@@ -250,16 +250,19 @@ const handleSubmit = async (e: React.FormEvent) => {
         }
       />
 
-      <Button
-        type="submit"
-        variant="primary"
-        size="lg"
-        fullWidth
-        isLoading={isLoading}
-        className="mt-6"
-      >
-        Create Account
-      </Button>
+      <div className="flex justify-center mt-6">
+        <CircleIconButton
+          type="submit"
+          variant="primary"
+          isLoading={isLoading}
+          title="Create Account"
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          }
+        />
+      </div>
 
       <div className="text-center pt-4 border-t border-white/20">
         <p className="text-sm text-white/90">
