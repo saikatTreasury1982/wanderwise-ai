@@ -44,6 +44,7 @@ export default function TripHubPage({ params }: PageProps) {
   const [flightStats, setFlightStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
   const [accommodationStats, setAccommodationStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
   const [packingStats, setPackingStats] = useState<{ totalItems: number; packedItems: number; percentage: number }>({ totalItems: 0, packedItems: 0, percentage: 0 });
+  const [itineraryStats, setItineraryStats] = useState<{ daysPlanned: number; totalDays: number; activitiesCount: number }>({ daysPlanned: 0, totalDays: 0, activitiesCount: 0 });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,6 +86,26 @@ export default function TripHubPage({ params }: PageProps) {
             shortlisted: accommodations.filter((a: any) => a.status === 'shortlisted').length,
             confirmed: accommodations.filter((a: any) => a.status === 'confirmed').length,
           });
+        }
+
+        // Fetch itinerary stats
+        const itineraryResponse = await fetch(`/api/trips/${tripId}/itinerary`);
+        if (itineraryResponse.ok) {
+          const itineraryData = await itineraryResponse.json();
+          const daysPlanned = itineraryData.length;
+          const activitiesCount = itineraryData.reduce((sum: number, day: any) => {
+            return sum + (day.categories?.reduce((catSum: number, cat: any) => catSum + (cat.activities?.length || 0), 0) || 0);
+          }, 0);
+          
+          // Calculate total days from trip dates
+          let totalDays = 0;
+          if (trip) {
+            const start = new Date(trip.start_date);
+            const end = new Date(trip.end_date);
+            totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+          }
+          
+          setItineraryStats({ daysPlanned, totalDays, activitiesCount });
         }
 
         // Fetch packing stats
@@ -215,6 +236,23 @@ export default function TripHubPage({ params }: PageProps) {
     </div>
   ) : undefined;
 
+  const itinerarySubtitle = itineraryStats.daysPlanned > 0 ? (
+    <div className="space-y-1 text-xs">
+      <div>
+        <span className="text-green-400">{itineraryStats.daysPlanned}</span>
+        <span className="text-white/50"> of </span>
+        <span className="text-white/70">{itineraryStats.totalDays}</span>
+        <span className="text-white/50"> days planned</span>
+      </div>
+      {itineraryStats.activitiesCount > 0 && (
+        <div>
+          <span className="text-purple-400">{itineraryStats.activitiesCount}</span>
+          <span className="text-white/50"> activities</span>
+        </div>
+      )}
+    </div>
+  ) : undefined;
+
   const packingSubtitle = packingStats.totalItems > 0 ? (
     <div className="space-y-1 text-xs">
       <div>
@@ -316,7 +354,10 @@ export default function TripHubPage({ params }: PageProps) {
           {/* Build Itinerary */}
           <HubTile
             title="Itinerary"
-            onClick={() => {}}
+            onClick={() => router.push(`/dashboard/trip/${tripId}/itinerary`)}
+            count={itineraryStats.daysPlanned > 0 ? itineraryStats.daysPlanned : undefined}
+            countLabel={itineraryStats.daysPlanned > 0 ? "Days Planned" : undefined}
+            subtitle={itinerarySubtitle}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
