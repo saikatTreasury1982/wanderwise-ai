@@ -22,17 +22,25 @@ export default function ItineraryDayCard({ tripId, day, dayDate, onUpdate, defau
 
   // Calculate day totals by currency
   const getDayTotals = (): CostSummary[] => {
-    const totals: Record<string, number> = {};
-    
+  const totals: Record<string, number> = {};
+  
     day.categories?.forEach(category => {
       if (category.category_cost !== null && category.currency_code) {
         // Use category-level cost
-        totals[category.currency_code] = (totals[category.currency_code] || 0) + category.category_cost;
+        let cost = category.category_cost;
+        if (category.cost_type === 'per_head' && category.headcount) {
+          cost = category.category_cost * category.headcount;
+        }
+        totals[category.currency_code] = (totals[category.currency_code] || 0) + cost;
       } else {
         // Sum activity costs
         category.activities?.forEach(activity => {
           if (activity.activity_cost !== null && activity.currency_code) {
-            totals[activity.currency_code] = (totals[activity.currency_code] || 0) + activity.activity_cost;
+            let cost = activity.activity_cost;
+            if (activity.cost_type === 'per_head' && activity.headcount) {
+              cost = activity.activity_cost * activity.headcount;
+            }
+            totals[activity.currency_code] = (totals[activity.currency_code] || 0) + cost;
           }
         });
       }

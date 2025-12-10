@@ -166,6 +166,14 @@ export async function updateItineraryCategory(categoryId: number, input: UpdateI
     updates.push('is_expanded = ?');
     args.push(input.is_expanded);
   }
+  if (input.cost_type !== undefined) {
+  updates.push('cost_type = ?');
+  args.push(input.cost_type);
+  }
+  if (input.headcount !== undefined) {
+    updates.push('headcount = ?');
+    args.push(input.headcount);
+  }
 
   if (updates.length > 0) {
     args.push(categoryId);
@@ -292,6 +300,14 @@ export async function updateItineraryActivity(activityId: number, input: UpdateI
   if (input.is_completed !== undefined) {
     updates.push('is_completed = ?');
     args.push(input.is_completed);
+  }
+  if (input.cost_type !== undefined) {
+  updates.push('cost_type = ?');
+  args.push(input.cost_type);
+  }
+  if (input.headcount !== undefined) {
+    updates.push('headcount = ?');
+    args.push(input.headcount);
   }
 
   // Auto-calculate duration if times changed

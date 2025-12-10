@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, ChevronDown } from 'lucide-react';
+import { Calendar, ChevronDown, Users } from 'lucide-react';
 import ItineraryDayCard from '@/app/components/organisms/ItineraryDayCard';
 import type { ItineraryDay } from '@/app/lib/types/itinerary';
 import PageBackground from '@/app/components/ui/PageBackground';
@@ -14,6 +14,12 @@ interface Trip {
   destination_country: string | null;
   start_date: string | null;
   end_date: string | null;
+}
+
+interface Traveler {
+  traveler_id: number;
+  traveler_name: string;
+  is_active: number;
 }
 
 interface PageProps {
@@ -30,6 +36,7 @@ export default function ItineraryPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'day' | 'full'>('day');
+  const [travelers, setTravelers] = useState<Traveler[]>([]);
 
   // Calculate total days from trip duration
   const getTripDays = (): { dayNumber: number; date: string }[] => {
@@ -79,6 +86,13 @@ export default function ItineraryPage({ params }: PageProps) {
       if (!daysRes.ok) throw new Error('Failed to fetch itinerary');
       const daysData = await daysRes.json();
       setDays(daysData);
+
+      // Fetch travelers
+      const travelersRes = await fetch(`/api/trips/${tripId}/travelers`);
+      if (travelersRes.ok) {
+        const travelersData = await travelersRes.json();
+        setTravelers(travelersData.travelers || []);
+      }
 
       // Auto-select first day if none selected
       if (daysData.length > 0 && !selectedDayNumber) {
@@ -189,32 +203,55 @@ export default function ItineraryPage({ params }: PageProps) {
           </p>
         </div>
 
-        {/* View Mode Toggle */}
-        <div className="flex items-center gap-2 mb-4">
-          <button
-            onClick={() => setViewMode('day')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-              viewMode === 'day'
-                ? 'bg-purple-500/30 text-white border border-purple-400/50'
-                : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            Day View
-          </button>
-          <button
-            onClick={() => setViewMode('full')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-              viewMode === 'full'
-                ? 'bg-purple-500/30 text-white border border-purple-400/50'
-                : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
-            Full View
-          </button>
+        {/* View Mode Toggle & Travelers */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('day')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                viewMode === 'day'
+                  ? 'bg-purple-500/30 text-white border border-purple-400/50'
+                  : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              Day View
+            </button>
+            <button
+              onClick={() => setViewMode('full')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                viewMode === 'full'
+                  ? 'bg-purple-500/30 text-white border border-purple-400/50'
+                  : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              Full View
+            </button>
+          </div>
+
+          {/* Travelers */}
+          {travelers.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-purple-300" />
+              <div className="flex items-center gap-1">
+                {travelers.map((traveler, idx) => (
+                  <span
+                    key={traveler.traveler_id}
+                    className={`text-sm ${traveler.is_active ? 'text-white' : 'text-white/50'}`}
+                  >
+                    {traveler.traveler_name}
+                    {traveler.is_active === 0 && (
+                      <span className="text-xs text-red-400 ml-1">(inactive)</span>
+                    )}
+                    {idx < travelers.length - 1 && <span className="text-white/30 mx-1">•</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Day Selector - Only show in Day View */}

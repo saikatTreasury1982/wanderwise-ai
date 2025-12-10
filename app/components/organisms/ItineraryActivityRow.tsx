@@ -29,6 +29,8 @@ export default function ItineraryActivityRow({
   const [editEndTime, setEditEndTime] = useState(activity.end_time || '');
   const [editCost, setEditCost] = useState(activity.activity_cost?.toString() || '');
   const [editCurrency, setEditCurrency] = useState(activity.currency_code || '');
+  const [editCostType, setEditCostType] = useState<'total' | 'per_head'>(activity.cost_type || 'total');
+  const [editHeadcount, setEditHeadcount] = useState(activity.headcount?.toString() || '');
   const [editNotes, setEditNotes] = useState(activity.notes || '');
 
   const formatDuration = (minutes: number): string => {
@@ -68,6 +70,8 @@ export default function ItineraryActivityRow({
             end_time: editEndTime || null,
             activity_cost: !disableCost && editCost ? parseFloat(editCost) : null,
             currency_code: !disableCost && editCost ? editCurrency || null : null,
+            cost_type: !disableCost && editCost ? editCostType : 'total',
+            headcount: !disableCost && editCost && editCostType === 'per_head' && editHeadcount ? parseInt(editHeadcount) : null,
             notes: editNotes || null,
           }),
         }
@@ -143,6 +147,24 @@ export default function ItineraryActivityRow({
                 maxLength={3}
                 className="w-14 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm uppercase"
               />
+              <select
+                value={editCostType}
+                onChange={(e) => setEditCostType(e.target.value as 'total' | 'per_head')}
+                className="px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
+              >
+                <option value="total" className="bg-gray-800 text-white">Total</option>
+                <option value="per_head" className="bg-gray-800 text-white">Per Head</option>
+              </select>
+              {editCostType === 'per_head' && (
+                <input
+                  type="number"
+                  value={editHeadcount}
+                  onChange={(e) => setEditHeadcount(e.target.value)}
+                  placeholder="×"
+                  className="w-12 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
+                  min="1"
+                />
+              )}
             </div>
           )}
         </div>
@@ -211,7 +233,15 @@ export default function ItineraryActivityRow({
       {/* Cost */}
       {!disableCost && activity.activity_cost !== null && activity.currency_code && (
         <div className="text-sm text-purple-200">
-          {activity.currency_code} {activity.activity_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {activity.cost_type === 'per_head' && activity.headcount ? (
+            <>
+              {activity.currency_code} {activity.activity_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {activity.headcount} = {activity.currency_code} {(activity.activity_cost * activity.headcount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </>
+          ) : (
+            <>
+              {activity.currency_code} {activity.activity_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </>
+          )}
         </div>
       )}
 

@@ -15,6 +15,8 @@ export interface ItineraryDayCategory {
   category_name: string;
   category_cost: number | null;
   currency_code: string | null;
+  cost_type: 'total' | 'per_head';
+  headcount: number | null;
   display_order: number;
   is_expanded: number;
   created_at: string;
@@ -30,6 +32,8 @@ export interface ItineraryActivity {
   duration_minutes: number | null;
   activity_cost: number | null;
   currency_code: string | null;
+  cost_type: 'total' | 'per_head';
+  headcount: number | null;
   notes: string | null;
   display_order: number;
   is_completed: number;
@@ -60,6 +64,8 @@ export interface UpdateItineraryCategoryInput {
   category_name?: string;
   category_cost?: number | null;
   currency_code?: string | null;
+  cost_type?: 'total' | 'per_head';
+  headcount?: number | null;
   display_order?: number;
   is_expanded?: number;
 }
@@ -83,6 +89,8 @@ export interface UpdateItineraryActivityInput {
   duration_minutes?: number | null;
   activity_cost?: number | null;
   currency_code?: string | null;
+  cost_type?: 'total' | 'per_head';
+  headcount?: number | null;
   notes?: string | null;
   display_order?: number;
   is_completed?: number;

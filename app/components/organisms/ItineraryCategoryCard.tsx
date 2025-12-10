@@ -19,6 +19,8 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   const [editName, setEditName] = useState(category.category_name);
   const [editCost, setEditCost] = useState(category.category_cost?.toString() || '');
   const [editCurrency, setEditCurrency] = useState(category.currency_code || '');
+  const [editCostType, setEditCostType] = useState<'total' | 'per_head'>(category.cost_type || 'total');
+  const [editHeadcount, setEditHeadcount] = useState(category.headcount?.toString() || '');
   const [isAddingActivity, setIsAddingActivity] = useState(false);
   const [isBulkAdding, setIsBulkAdding] = useState(false);
   const [newActivityName, setNewActivityName] = useState('');
@@ -26,14 +28,22 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
 
   // Calculate category totals
   const getCategoryTotals = (): CostSummary[] => {
-    if (category.category_cost !== null && category.currency_code) {
-      return [{ currency_code: category.currency_code, total: category.category_cost }];
+  if (category.category_cost !== null && category.currency_code) {
+    let cost = category.category_cost;
+    if (category.cost_type === 'per_head' && category.headcount) {
+      cost = category.category_cost * category.headcount;
     }
+    return [{ currency_code: category.currency_code, total: cost }];
+  }
 
-    const totals: Record<string, number> = {};
+  const totals: Record<string, number> = {};
     category.activities?.forEach(activity => {
       if (activity.activity_cost !== null && activity.currency_code) {
-        totals[activity.currency_code] = (totals[activity.currency_code] || 0) + activity.activity_cost;
+        let cost = activity.activity_cost;
+        if (activity.cost_type === 'per_head' && activity.headcount) {
+          cost = activity.activity_cost * activity.headcount;
+        }
+        totals[activity.currency_code] = (totals[activity.currency_code] || 0) + cost;
       }
     });
 
@@ -69,6 +79,8 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
           category_name: editName,
           category_cost: editCost ? parseFloat(editCost) : null,
           currency_code: editCost ? editCurrency || null : null,
+          cost_type: editCost ? editCostType : 'total',
+          headcount: editCost && editCostType === 'per_head' && editHeadcount ? parseInt(editHeadcount) : null,
         }),
       });
 
@@ -202,6 +214,24 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               maxLength={3}
               className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm uppercase"
             />
+            <select
+              value={editCostType}
+              onChange={(e) => setEditCostType(e.target.value as 'total' | 'per_head')}
+              className="px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
+            >
+              <option value="total" className="bg-gray-800 text-white">Total</option>
+              <option value="per_head" className="bg-gray-800 text-white">Per Head</option>
+            </select>
+            {editCostType === 'per_head' && (
+              <input
+                type="number"
+                value={editHeadcount}
+                onChange={(e) => setEditHeadcount(e.target.value)}
+                placeholder="×"
+                className="w-12 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
+                min="1"
+              />
+            )}
             <button onClick={handleSaveEdit} className="p-1 rounded bg-green-500/20 text-green-300 hover:bg-green-500/30">
               <Check className="w-4 h-4" />
             </button>
@@ -226,12 +256,18 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
             {categoryTotals.length > 0 && (
               <div className="flex items-center gap-1 text-sm">
                 <DollarSign className="w-3 h-3 text-purple-300" />
-                {categoryTotals.map(({ currency_code, total }, idx) => (
-                  <span key={currency_code} className="text-purple-200">
-                    {idx > 0 && ' + '}
-                    {currency_code} {total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {category.category_cost !== null && category.cost_type === 'per_head' && category.headcount ? (
+                  <span className="text-purple-200">
+                    {category.currency_code} {category.category_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {category.headcount} = {category.currency_code} {(category.category_cost * category.headcount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
-                ))}
+                ) : (
+                  categoryTotals.map(({ currency_code, total }, idx) => (
+                    <span key={currency_code} className="text-purple-200">
+                      {idx > 0 && ' + '}
+                      {currency_code} {total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  ))
+                )}
               </div>
             )}
 
