@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Edit2, Check, X } from 'lucide-react';
+import { Plus, Edit2, Check, X, ChevronDown, ChevronRight } from 'lucide-react';
 import type { ItineraryDay, ItineraryDayCategory, CostSummary } from '@/app/lib/types/itinerary';
 import ItineraryCategoryCard from './ItineraryCategoryCard';
 
@@ -10,9 +10,11 @@ interface ItineraryDayCardProps {
   day: ItineraryDay;
   dayDate: string;
   onUpdate: (day: ItineraryDay) => void;
+  defaultCollapsed?: boolean;
 }
 
-export default function ItineraryDayCard({ tripId, day, dayDate, onUpdate }: ItineraryDayCardProps) {
+export default function ItineraryDayCard({ tripId, day, dayDate, onUpdate, defaultCollapsed = false }: ItineraryDayCardProps) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [description, setDescription] = useState(day.description || '');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
@@ -115,9 +117,25 @@ export default function ItineraryDayCard({ tripId, day, dayDate, onUpdate }: Iti
   return (
     <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
       {/* Day Header */}
-      <div className="px-6 py-4 border-b border-white/10">
+      <div 
+        className={`px-6 py-4 ${!isCollapsed ? 'border-b border-white/10' : ''} cursor-pointer`}
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
+            <button
+              className="p-1 rounded hover:bg-white/10 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCollapsed(!isCollapsed);
+              }}
+            >
+              {isCollapsed ? (
+                <ChevronRight className="w-5 h-5 text-purple-300" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-purple-300" />
+              )}
+            </button>
             <div className="w-12 h-12 rounded-full bg-purple-500/30 flex items-center justify-center">
               <span className="text-xl font-bold text-white">{day.day_number}</span>
             </div>
@@ -140,7 +158,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, onUpdate }: Iti
         </div>
 
         {/* Description */}
-        {isEditingDescription ? (
+        {!isCollapsed && (isEditingDescription ? (
           <div className="flex items-center gap-2 mt-3">
             <input
               type="text"
@@ -173,13 +191,14 @@ export default function ItineraryDayCard({ tripId, day, dayDate, onUpdate }: Iti
             className="flex items-center gap-2 mt-3 text-sm text-purple-300 hover:text-white transition-colors"
           >
             <Edit2 className="w-3 h-3" />
-            {day.description || 'Add description...'}
-          </button>
-        )}
-      </div>
+        {day.description || 'Add description...'}
+        </button>
+      ))}
+    </div>
 
       {/* Categories */}
-      <div className="p-4 space-y-4">
+      {!isCollapsed && (
+      <div className="p-4 space-y-4"> 
         {day.categories && day.categories.length > 0 ? (
           day.categories.map((category) => (
             <ItineraryCategoryCard
@@ -242,6 +261,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, onUpdate }: Iti
           </button>
         )}
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
 }
