@@ -5,6 +5,7 @@ import type { FlightOption } from '@/app/lib/types/flight';
 
 interface FlightOptionCardProps {
   flight: FlightOption;
+  dateFormat?: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY';
   onView: (flight: FlightOption) => void;
   onEdit: (flight: FlightOption) => void;
   onCopy: (flight: FlightOption) => void;
@@ -14,6 +15,7 @@ interface FlightOptionCardProps {
 
 export default function FlightOptionCard({
   flight,
+  dateFormat = 'DD Mmm YYYY',
   onView,
   onEdit,
   onCopy,
@@ -28,6 +30,29 @@ export default function FlightOptionCard({
     shortlisted: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
     confirmed: 'bg-green-500/20 text-green-300 border-green-400/30',
     not_selected: 'bg-red-500/20 text-red-300 border-red-400/30',
+  };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthName = monthNames[date.getMonth()];
+
+    switch (dateFormat) {
+      case 'YYYY-MM-DD':
+        return `${year}-${month}-${day}`;
+      case 'DD-MM-YYYY':
+        return `${day}-${month}-${year}`;
+      case 'MM-DD-YYYY':
+        return `${month}-${day}-${year}`;
+      case 'DD Mmm YYYY':
+      default:
+        return `${day} ${monthName} ${year}`;
+    }
   };
 
   const formatDuration = (minutes: number | null) => {
@@ -93,10 +118,29 @@ export default function FlightOptionCard({
               {formatRoute(flight.legs)}
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
-              {outboundLeg?.departure_date && <span>{outboundLeg.departure_date}</span>}
-              {outboundLeg?.departure_time && <span>{outboundLeg.departure_time}</span>}
-              {getTotalDuration(flight.legs) > 0 && <span>{formatDuration(getTotalDuration(flight.legs))}</span>}
+              {/* Departure */}
+              {outboundLeg?.departure_date && (
+                <span>
+                  {formatDate(outboundLeg.departure_date)}
+                  {outboundLeg.departure_time && ` ${outboundLeg.departure_time}`}
+                </span>
+              )}
+              {/* Arrow */}
+              {outboundLeg?.departure_date && outboundLeg?.arrival_date && <span>→</span>}
+              {/* Arrival */}
+              {outboundLeg?.arrival_date && (
+                <span>
+                  {formatDate(outboundLeg.arrival_date)}
+                  {outboundLeg.arrival_time && ` ${outboundLeg.arrival_time}`}
+                </span>
+              )}
+              {/* Duration */}
+              {getTotalDuration(flight.legs) > 0 && (
+                <span className="text-purple-300">({formatDuration(getTotalDuration(flight.legs))})</span>
+              )}
+              {/* Stops */}
               <span>{getTotalStops(flight.legs) === 0 ? 'Direct' : `${getTotalStops(flight.legs)} stop${getTotalStops(flight.legs) > 1 ? 's' : ''}`}</span>
+              {/* Airline */}
               {outboundLeg?.airline && <span>{outboundLeg.airline}</span>}
             </div>
           </div>
@@ -111,10 +155,29 @@ export default function FlightOptionCard({
                 {formatRoute(flight.return_legs)}
               </div>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
-                {returnLeg.departure_date && <span>{returnLeg.departure_date}</span>}
-                {returnLeg.departure_time && <span>{returnLeg.departure_time}</span>}
-                {getTotalDuration(flight.return_legs) > 0 && <span>{formatDuration(getTotalDuration(flight.return_legs))}</span>}
+                {/* Departure */}
+                {returnLeg.departure_date && (
+                  <span>
+                    {formatDate(returnLeg.departure_date)}
+                    {returnLeg.departure_time && ` ${returnLeg.departure_time}`}
+                  </span>
+                )}
+                {/* Arrow */}
+                {returnLeg.departure_date && returnLeg.arrival_date && <span>→</span>}
+                {/* Arrival */}
+                {returnLeg.arrival_date && (
+                  <span>
+                    {formatDate(returnLeg.arrival_date)}
+                    {returnLeg.arrival_time && ` ${returnLeg.arrival_time}`}
+                  </span>
+                )}
+                {/* Duration */}
+                {getTotalDuration(flight.return_legs) > 0 && (
+                  <span className="text-purple-300">({formatDuration(getTotalDuration(flight.return_legs))})</span>
+                )}
+                {/* Stops */}
                 <span>{getTotalStops(flight.return_legs) === 0 ? 'Direct' : `${getTotalStops(flight.return_legs)} stop${getTotalStops(flight.return_legs) > 1 ? 's' : ''}`}</span>
+                {/* Airline */}
                 {returnLeg.airline && <span>{returnLeg.airline}</span>}
               </div>
             </div>

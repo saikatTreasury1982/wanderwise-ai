@@ -5,6 +5,7 @@ import type { AccommodationOption } from '@/app/lib/types/accommodation';
 
 interface AccommodationOptionCardProps {
   accommodation: AccommodationOption;
+  dateFormat?: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY';
   onView: (accommodation: AccommodationOption) => void;
   onEdit: (accommodation: AccommodationOption) => void;
   onCopy: (accommodation: AccommodationOption) => void;
@@ -14,6 +15,7 @@ interface AccommodationOptionCardProps {
 
 export default function AccommodationOptionCard({
   accommodation,
+  dateFormat = 'DD Mmm YYYY',
   onView,
   onEdit,
   onCopy,
@@ -27,9 +29,27 @@ export default function AccommodationOptionCard({
     not_selected: 'bg-red-500/20 text-red-300 border-red-400/30',
   };
 
-  const formatDate = (date: string | null) => {
-    if (!date) return '';
-    return date;
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthName = monthNames[date.getMonth()];
+
+    switch (dateFormat) {
+      case 'YYYY-MM-DD':
+        return `${year}-${month}-${day}`;
+      case 'DD-MM-YYYY':
+        return `${day}-${month}-${year}`;
+      case 'MM-DD-YYYY':
+        return `${month}-${day}-${year}`;
+      case 'DD Mmm YYYY':
+      default:
+        return `${day} ${monthName} ${year}`;
+    }
   };
 
   const calculateNights = () => {

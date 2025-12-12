@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { cn, formatDateRange } from '@/app/lib/utils';
+import { Users, Wallet, Calendar, Plane } from 'lucide-react';
 
 interface Trip {
   trip_id: number;
@@ -17,6 +18,13 @@ interface Trip {
 interface TripStatus {
   status_code: number;
   status_name: string;
+}
+
+interface TripStats {
+  activeTravelers: number;
+  costSharers: number;
+  totalCost: number | null;
+  baseCurrency: string | null;
 }
 
 interface TripCardProps {
@@ -54,6 +62,7 @@ export default function TripCard({
     description: string;
   } | null>(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
+  const [stats, setStats] = useState<TripStats | null>(null);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -79,6 +88,46 @@ export default function TripCard({
     fetchWeather();
   }, [trip.destination_city, trip.destination_country, trip.start_date, trip.end_date]);
 
+  // Fetch trip statistics
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch travelers
+        const travelersRes = await fetch(`/api/trips/${trip.trip_id}/travelers`);
+        let activeTravelers = 0;
+        let costSharers = 0;
+        
+        if (travelersRes.ok) {
+          const travelersData = await travelersRes.json();
+          const travelers = travelersData.travelers || [];
+          activeTravelers = travelers.filter((t: any) => t.is_active === 1).length;
+          costSharers = travelers.filter((t: any) => t.is_cost_sharer === 1 && t.is_active === 1).length;
+        }
+
+        // Fetch cost forecast
+        let totalCost: number | null = null;
+        let baseCurrency: string | null = null;
+        
+        const costRes = await fetch(`/api/trips/${trip.trip_id}/cost-forecast`);
+        if (costRes.ok) {
+          const costData = await costRes.json();
+          if (costData.total_cost) {
+            totalCost = costData.total_cost;
+            baseCurrency = costData.base_currency;
+          }
+        }
+
+        setStats({ activeTravelers, costSharers, totalCost, baseCurrency });
+      } catch (error) {
+        console.error('Error fetching trip stats:', error);
+      }
+    };
+
+    if (trip.status_code !== 1) {
+      fetchStats();
+    }
+  }, [trip.trip_id, trip.status_code]);
+
   const statusLabel = statuses.find(s => s.status_code === trip.status_code)?.status_name || 'Unknown';
   const statusStyle = statusStyles[trip.status_code] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   const destination = [trip.destination_city, trip.destination_country]
@@ -86,6 +135,27 @@ export default function TripCard({
     .join(', ');
 
   const isDraft = trip.status_code === 1;
+
+  // Calculate trip duration
+  const calculateDuration = () => {
+    if (!trip.start_date || !trip.end_date) return null;
+    const start = new Date(trip.start_date);
+    const end = new Date(trip.end_date);
+    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const nights = days - 1;
+    return { days, nights };
+  };
+
+  const duration = calculateDuration();
+
+  const formatCost = (amount: number, currency: string) => {
+    if (amount >= 1000000) {
+      return `${currency} ${(amount / 1000000).toFixed(1)}M`;
+    } else if (amount >= 1000) {
+      return `${currency} ${(amount / 1000).toFixed(1)}K`;
+    }
+    return `${currency} ${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  };
 
   return (
     <div
@@ -100,7 +170,8 @@ export default function TripCard({
           : 'hover:bg-white/15 hover:border-white/30 cursor-pointer'
       )}
     >
-      <div className="flex items-start justify-between gap-4">
+      {/* Top Section: Title, Status, Actions */}
+      <div className="flex items-start justify-between gap-4 mb-3">
         {/* Left content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -109,7 +180,7 @@ export default function TripCard({
             </h3>
             <span
               className={cn(
-                'px-2 py-0.5 text-xs font-medium rounded-full border',
+                'px-2 py-0.5 text-xs font-medium rounded-full border shrink-0',
                 statusStyle
               )}
             >
@@ -118,41 +189,12 @@ export default function TripCard({
           </div>
 
           {destination && (
-            <p className="text-white/70 text-sm mb-1 truncate">{destination}</p>
+            <p className="text-white/70 text-sm truncate">{destination}</p>
           )}
-
-          <p className="text-white/60 text-sm">
-            {formatDateRange(trip.start_date, trip.end_date, dateFormat)}
-          </p>
-
-          {/* Weather */}
-          {isLoadingWeather ? (
-            <div className="mt-2 flex items-center gap-2 text-white/40 text-sm">
-              <div className="w-4 h-4 border-2 border-white/30 border-t-transparent rounded-full animate-spin" />
-              <span>Loading weather...</span>
-            </div>
-          ) : weather ? (
-            <div className="mt-2 flex items-center gap-2 text-sm">
-              <span className="text-lg">
-                {weather.tempMax < 5 ? '❄️' : weather.tempMax < 15 ? '🌤️' : weather.tempMax < 28 ? '☀️' : '🔥'}
-              </span>
-              <span className="text-white/70">
-                {weather.tempMin}° – {weather.tempMax}°C
-              </span>
-              {weather.precipitationChance > 20 && (
-                <span className="text-blue-300">
-                  💧 {weather.precipitationChance}%
-                </span>
-              )}
-              <span className="text-white/50 text-xs">
-                (historical avg)
-              </span>
-            </div>
-          ) : null}
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 shrink-0">
           {/* View */}
           <button
             onClick={(e) => { e.stopPropagation(); onView(trip); }}
@@ -254,6 +296,66 @@ export default function TripCard({
             </>
           )}
         </div>
+      </div>
+
+      {/* Middle Section: Date Range */}
+      <p className="text-white/60 text-sm mb-3">
+        {formatDateRange(trip.start_date, trip.end_date, dateFormat)}
+      </p>
+
+      {/* Stats Row */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        {/* Duration */}
+        {duration && (
+          <div className="flex items-center gap-1.5 text-purple-200">
+            <Calendar className="w-4 h-4 text-purple-400" />
+            <span>{duration.days}D / {duration.nights}N</span>
+          </div>
+        )}
+
+        {/* Travelers */}
+        {stats && stats.activeTravelers > 0 && (
+          <div className="flex items-center gap-1.5 text-purple-200">
+            <Users className="w-4 h-4 text-blue-400" />
+            <span>
+              {stats.activeTravelers}
+              {stats.costSharers > 0 && stats.costSharers !== stats.activeTravelers && (
+                <span className="text-white/50"> ({stats.costSharers} sharing)</span>
+              )}
+            </span>
+          </div>
+        )}
+
+        {/* Total Cost */}
+        {stats && stats.totalCost !== null && stats.baseCurrency && (
+          <div className="flex items-center gap-1.5">
+            <Wallet className="w-4 h-4 text-green-400" />
+            <span className="text-green-300 font-medium">
+              {formatCost(stats.totalCost, stats.baseCurrency)}
+            </span>
+          </div>
+        )}
+
+        {/* Weather */}
+        {isLoadingWeather ? (
+          <div className="flex items-center gap-1.5 text-white/40">
+            <div className="w-4 h-4 border-2 border-white/30 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : weather ? (
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">
+              {weather.tempMax < 5 ? '❄️' : weather.tempMax < 15 ? '🌤️' : weather.tempMax < 28 ? '☀️' : '🔥'}
+            </span>
+            <span className="text-white/70">
+              {weather.tempMin}°–{weather.tempMax}°C
+            </span>
+            {weather.precipitationChance > 20 && (
+              <span className="text-blue-300">
+                💧{weather.precipitationChance}%
+              </span>
+            )}
+          </div>
+        ) : null}
       </div>
     </div>
   );

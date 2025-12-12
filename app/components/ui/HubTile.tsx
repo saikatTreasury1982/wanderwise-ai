@@ -40,7 +40,7 @@ export default function HubTile({
       {/* Count badge */}
       {count !== undefined && count > 0 && (
         <div 
-          className="absolute top-3 right-3 min-w-6 h-6 px-2 flex items-center justify-center rounded-full bg-purple-500/80 text-white text-xs font-semibold"
+          className="absolute bottom-3 right-3 min-w-8 h-8 px-2 flex items-center justify-center rounded-full bg-purple-500/80 text-white text-xs font-semibold"
           title={countLabel || 'Total'}
         >
           {count}

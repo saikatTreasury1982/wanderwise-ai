@@ -6,6 +6,11 @@ import { Calendar, ChevronDown, Users } from 'lucide-react';
 import ItineraryDayCard from '@/app/components/organisms/ItineraryDayCard';
 import type { ItineraryDay } from '@/app/lib/types/itinerary';
 import PageBackground from '@/app/components/ui/PageBackground';
+import { formatDateRange } from '@/app/lib/utils';
+import TripReferencePanel from '@/app/components/organisms/TripReferencePanel';
+import type { FlightOption } from '@/app/lib/types/flight';
+import type { AccommodationOption } from '@/app/lib/types/accommodation';
+import { Pin } from 'lucide-react';
 
 interface Trip {
   trip_id: number;
@@ -37,6 +42,10 @@ export default function ItineraryPage({ params }: PageProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'day' | 'full'>('day');
   const [travelers, setTravelers] = useState<Traveler[]>([]);
+  const [dateFormat, setDateFormat] = useState<'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY'>('DD Mmm YYYY');
+  const [flights, setFlights] = useState<FlightOption[]>([]);
+  const [accommodations, setAccommodations] = useState<AccommodationOption[]>([]);
+  const [isReferencePanelOpen, setIsReferencePanelOpen] = useState(false);
 
   // Calculate total days from trip duration
   const getTripDays = (): { dayNumber: number; date: string }[] => {
@@ -92,6 +101,27 @@ export default function ItineraryPage({ params }: PageProps) {
       if (travelersRes.ok) {
         const travelersData = await travelersRes.json();
         setTravelers(travelersData.travelers || []);
+      }
+
+      // Fetch preferences
+      const prefRes = await fetch('/api/user/preferences');
+      if (prefRes.ok) {
+        const prefData = await prefRes.json();
+        setDateFormat(prefData.preferences?.date_format || 'DD Mmm YYYY');
+      }
+
+      // Fetch flights
+      const flightsRes = await fetch(`/api/trips/${tripId}/flights`);
+      if (flightsRes.ok) {
+        const flightsData = await flightsRes.json();
+        setFlights(flightsData || []);
+      }
+
+      // Fetch accommodations
+      const accommodationsRes = await fetch(`/api/trips/${tripId}/accommodations`);
+      if (accommodationsRes.ok) {
+        const accommodationsData = await accommodationsRes.json();
+        setAccommodations(accommodationsData || []);
       }
 
       // Auto-select first day if none selected
@@ -195,12 +225,43 @@ export default function ItineraryPage({ params }: PageProps) {
             Back to Trip Hub
           </button>
 
-          <h1 className="text-3xl font-bold text-white mb-2">Itinerary</h1>
-          <p className="text-white/70 text-lg">
-            {trip.trip_name}
-            {trip.destination_city || trip.destination_country ? ` | ${[trip.destination_city, trip.destination_country].filter(Boolean).join(', ')}` : ''}
-            {trip.start_date && trip.end_date && ` | ${formatHeaderDate(trip.start_date)} – ${formatHeaderDate(trip.end_date)}`}
-          </p>
+          <h1 className="text-3xl font-bold text-white mb-3">Itinerary</h1>
+          <p className="text-white/70 text-lg mb-3">{trip.trip_name}</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            {(trip.destination_city || trip.destination_country) && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
+                <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span className="text-sm text-white/90">{[trip.destination_city, trip.destination_country].filter(Boolean).join(', ')}</span>
+              </div>
+            )}
+            
+            {trip.start_date && trip.end_date && (
+              <>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
+                  <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm text-white/90">{formatDateRange(trip.start_date, trip.end_date, dateFormat)}</span>
+                </div>
+                
+                {(() => {
+                  const start = new Date(trip.start_date);
+                  const end = new Date(trip.end_date);
+                  const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                  const nights = days - 1;
+                  return (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 rounded-full border border-purple-400/30">
+                      <span className="text-sm font-medium text-purple-200">{days}D / {nights}N</span>
+                    </div>
+                  );
+                })()}
+              </>
+            )}
+          </div>
         </div>
 
         {/* View Mode Toggle & Travelers */}
@@ -232,26 +293,38 @@ export default function ItineraryPage({ params }: PageProps) {
             </button>
           </div>
 
-          {/* Travelers */}
-          {travelers.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-purple-300" />
-              <div className="flex items-center gap-1">
-                {travelers.map((traveler, idx) => (
-                  <span
-                    key={traveler.traveler_id}
-                    className={`text-sm ${traveler.is_active ? 'text-white' : 'text-white/50'}`}
-                  >
-                    {traveler.traveler_name}
-                    {traveler.is_active === 0 && (
-                      <span className="text-xs text-red-400 ml-1">(inactive)</span>
-                    )}
-                    {idx < travelers.length - 1 && <span className="text-white/30 mx-1">•</span>}
-                  </span>
-                ))}
+          <div className="flex items-center gap-4">
+            {/* Reference Panel Toggle */}
+            <button
+              onClick={() => setIsReferencePanelOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-white/10 text-white/70 border border-white/20 rounded-lg hover:bg-white/20 hover:text-white transition-colors"
+              title="Trip Reference"
+            >
+              <Pin className="w-4 h-4" />
+              <span className="text-sm">Reference</span>
+            </button>
+
+            {/* Travelers */}
+            {travelers.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-purple-300" />
+                <div className="flex items-center gap-1">
+                  {travelers.map((traveler, idx) => (
+                    <span
+                      key={traveler.traveler_id}
+                      className={`text-sm ${traveler.is_active ? 'text-white' : 'text-white/50'}`}
+                    >
+                      {traveler.traveler_name}
+                      {traveler.is_active === 0 && (
+                        <span className="text-xs text-red-400 ml-1">(inactive)</span>
+                      )}
+                      {idx < travelers.length - 1 && <span className="text-white/30 mx-1">•</span>}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Day Selector - Only show in Day View */}
@@ -373,6 +446,15 @@ export default function ItineraryPage({ params }: PageProps) {
           )}
         </div>
       </div>
+      
+      {/* Trip Reference Panel */}
+      <TripReferencePanel
+        isOpen={isReferencePanelOpen}
+        onClose={() => setIsReferencePanelOpen(false)}
+        flights={flights}
+        accommodations={accommodations}
+        dateFormat={dateFormat}
+      />
     </div>
   );
 }
