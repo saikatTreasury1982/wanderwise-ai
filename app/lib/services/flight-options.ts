@@ -104,7 +104,7 @@ export async function createFlightOption(input: CreateFlightOptionInput): Promis
   await query(
     `INSERT INTO flight_options (trip_id, flight_type, total_price, currency_code, notes)
      VALUES (?, ?, ?, ?, ?)`,
-    [input.trip_id, input.flight_type, input.total_price ?? null, input.currency_code ?? null, input.notes ?? null]
+    [input.trip_id, input.flight_type, input.unit_fare ?? null, input.currency_code ?? null, input.notes ?? null]
   );
 
   const [{ id: flightOptionId }] = await query<{ id: number }>(`SELECT last_insert_rowid() as id`, []);
@@ -184,9 +184,9 @@ export async function updateFlightOption(flightOptionId: number, input: UpdateFl
   if (!current) return null;
   const args: (string | number | null)[] = [];
 
-  if (input.total_price !== undefined) {
-    updates.push('total_price = ?');
-    args.push(input.total_price);
+  if (input.unit_fare !== undefined) {
+    updates.push('unit_fare = ?');
+    args.push(input.unit_fare);
   }
   if (input.currency_code !== undefined) {
     updates.push('currency_code = ?');
@@ -309,7 +309,7 @@ export async function duplicateFlightOption(flightOptionId: number): Promise<Fli
   const input: CreateFlightOptionInput = {
     trip_id: original.trip_id,
     flight_type: original.flight_type,
-    total_price: original.total_price ?? undefined,
+    unit_fare: original.unit_fare ?? undefined,
     currency_code: original.currency_code ?? undefined,
     notes: original.notes ? `${original.notes} (copy)` : '(copy)',
     legs: original.legs?.map(leg => ({

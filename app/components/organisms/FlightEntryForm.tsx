@@ -62,7 +62,7 @@ export default function FlightEntryForm({
   const [flightType, setFlightType] = useState<'one_way' | 'round_trip' | 'multi_city'>('one_way');
   const [outboundLegs, setOutboundLegs] = useState<LegFormData[]>([{ ...emptyLeg }]);
   const [returnLegs, setReturnLegs] = useState<LegFormData[]>([{ ...emptyLeg }]);
-  const [totalPrice, setTotalPrice] = useState<string>('');
+  const [unitFare, setUnitFare] = useState<string>('');
   const [currencyCode, setCurrencyCode] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [selectedTravelers, setSelectedTravelers] = useState<number[]>([]);
@@ -75,7 +75,7 @@ export default function FlightEntryForm({
   useEffect(() => {
     if (flight) {
       setFlightType(flight.flight_type);
-      setTotalPrice(flight.total_price?.toString() || '');
+      setUnitFare(flight.unit_fare?.toString() || '');
       setCurrencyCode(flight.currency_code || '');
       setNotes(flight.notes || '');
       setSelectedTravelers(flight.travelers?.map(t => t.traveler_id) || []);
@@ -124,7 +124,7 @@ export default function FlightEntryForm({
     setFlightType('one_way');
     setOutboundLegs([{ ...emptyLeg }]);
     setReturnLegs([{ ...emptyLeg }]);
-    setTotalPrice('');
+    setUnitFare('');
     setCurrencyCode('');
     setNotes('');
     setSelectedTravelers([]);
@@ -193,7 +193,7 @@ export default function FlightEntryForm({
 
       const payload: any = {
         flight_type: flightType,
-        total_price: totalPrice ? parseFloat(totalPrice) : undefined,
+        unit_fare: unitFare  ? parseFloat(unitFare) : undefined,
         currency_code: currencyCode || undefined,
         notes: notes || undefined,
         legs: formatLegs(outboundLegs),
@@ -454,8 +454,8 @@ export default function FlightEntryForm({
             <label className="block text-xs text-white/60 mb-1">Unit Fare</label>
             <input
               type="number"
-              value={totalPrice}
-              onChange={e => setTotalPrice(e.target.value)}
+              value={unitFare}
+              onChange={e => setUnitFare(e.target.value)}
               placeholder="0.00"
               step="0.01"
               className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
@@ -479,16 +479,16 @@ export default function FlightEntryForm({
         </div>
 
         {/* Total Projected Amount */}
-        {totalPrice && selectedTravelers.length > 0 && (
+        {unitFare && selectedTravelers.length > 0 && (
           <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-white/70">Total Projected Amount</span>
               <span className="text-lg font-bold text-purple-300">
-                {currencyCode || ''} {(parseFloat(totalPrice) * selectedTravelers.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {currencyCode || ''} {(parseFloat(unitFare) * selectedTravelers.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <p className="text-xs text-white/50 mt-1">
-              {currencyCode || ''} {parseFloat(totalPrice).toLocaleString()} × {selectedTravelers.length} traveler{selectedTravelers.length > 1 ? 's' : ''}
+              {currencyCode || ''} {parseFloat(unitFare).toLocaleString()} × {selectedTravelers.length} traveler{selectedTravelers.length > 1 ? 's' : ''}
             </p>
           </div>
         )}

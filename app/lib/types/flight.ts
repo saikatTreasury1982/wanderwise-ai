@@ -3,7 +3,7 @@ export interface FlightOption {
   trip_id: number;
   flight_type: 'one_way' | 'round_trip' | 'multi_city';
   linked_flight_id: number | null;
-  total_price: number | null;
+  unit_fare: number | null;
   currency_code: string | null;
   status: 'draft' | 'shortlisted' | 'confirmed' | 'not_selected';
   notes: string | null;
@@ -42,7 +42,7 @@ export interface FlightOptionTraveler {
 export interface CreateFlightOptionInput {
   trip_id: number;
   flight_type: 'one_way' | 'round_trip' | 'multi_city';
-  total_price?: number;
+  unit_fare?: number;
   currency_code?: string;
   notes?: string;
   legs: CreateFlightLegInput[];
@@ -67,7 +67,7 @@ export interface CreateFlightLegInput {
 }
 
 export interface UpdateFlightOptionInput {
-  total_price?: number;
+  unit_fare?: number;
   currency_code?: string;
   status?: 'draft' | 'shortlisted' | 'confirmed' | 'not_selected';
   notes?: string;

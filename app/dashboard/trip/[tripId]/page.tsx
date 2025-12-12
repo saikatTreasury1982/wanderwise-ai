@@ -45,10 +45,13 @@ export default function TripHubPage({ params }: PageProps) {
   const [accommodationStats, setAccommodationStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
   const [packingStats, setPackingStats] = useState<{ totalItems: number; packedItems: number; percentage: number }>({ totalItems: 0, packedItems: 0, percentage: 0 });
   const [itineraryStats, setItineraryStats] = useState<{ daysPlanned: number; totalDays: number; activitiesCount: number }>({ daysPlanned: 0, totalDays: 0, activitiesCount: 0 });
+  const [costForecastStats, setCostForecastStats] = useState<{ totalCost: number; baseCurrency: string; itemsCount: number; lastCollected: string | null }>({ totalCost: 0, baseCurrency: '', itemsCount: 0, lastCollected: null });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        let tripData: any = null;
+        
         // Fetch trip
         const tripResponse = await fetch(`/api/trips/${tripId}`);
         if (tripResponse.status === 401) {
@@ -59,10 +62,11 @@ export default function TripHubPage({ params }: PageProps) {
           router.push('/dashboard');
           return;
         }
+  
         if (tripResponse.ok) {
-          const tripData = await tripResponse.json();
+          tripData = await tripResponse.json();
           setTrip(tripData.trip);
-        }
+        } 
 
         // Fetch flights
         const flightsResponse = await fetch(`/api/trips/${tripId}/flights`);
@@ -97,11 +101,11 @@ export default function TripHubPage({ params }: PageProps) {
             return sum + (day.categories?.reduce((catSum: number, cat: any) => catSum + (cat.activities?.length || 0), 0) || 0);
           }, 0);
           
-          // Calculate total days from trip dates
+          // Calculate total days from trip dates (use tripData which we already fetched)
           let totalDays = 0;
-          if (trip) {
-            const start = new Date(trip.start_date);
-            const end = new Date(trip.end_date);
+          if (tripData?.trip) {
+            const start = new Date(tripData.trip.start_date);
+            const end = new Date(tripData.trip.end_date);
             totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
           }
           
@@ -128,6 +132,20 @@ export default function TripHubPage({ params }: PageProps) {
           const travelersData = await travelersResponse.json();
           setTravelers(travelersData.travelers);
         }
+
+        // Fetch cost forecast stats
+        const costForecastResponse = await fetch(`/api/trips/${tripId}/cost-forecast`);
+        if (costForecastResponse.ok) {
+          const costData = await costForecastResponse.json();
+          const itemsCount = costData.module_breakdown?.reduce((sum: number, m: any) => sum + m.items_count, 0) || 0;
+          setCostForecastStats({
+            totalCost: costData.total_cost || 0,
+            baseCurrency: costData.base_currency || '',
+            itemsCount,
+            lastCollected: costData.generated_at || null,
+          });
+        }
+
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -268,7 +286,19 @@ export default function TripHubPage({ params }: PageProps) {
         />
       </div>
     </div>
-  ) : undefined;
+    ) : undefined;
+
+    const costForecastSubtitle = costForecastStats.totalCost > 0 ? (
+      <div className="space-y-1">
+        <div>
+          <span className="text-green-400 text-sm font-bold">{costForecastStats.baseCurrency} {costForecastStats.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+        <div className="text-xs">
+          <span className="text-purple-400">{costForecastStats.itemsCount}</span>
+          <span className="text-white/50"> items</span>
+        </div>
+      </div>
+    ) : undefined;
 
   return (
     <div className="min-h-screen relative p-6">
@@ -302,6 +332,9 @@ export default function TripHubPage({ params }: PageProps) {
           <HubTile
             title="Cost Forecast"
             onClick={() => router.push(`/dashboard/trip/${tripId}/cost-forecast`)}
+            count={costForecastStats.itemsCount > 0 ? costForecastStats.itemsCount : undefined}
+            countLabel={costForecastStats.itemsCount > 0 ? "Items" : undefined}
+            subtitle={costForecastSubtitle}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
