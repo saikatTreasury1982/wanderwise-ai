@@ -102,7 +102,7 @@ export async function getFlightOptionsGrouped(tripId: number): Promise<FlightOpt
 export async function createFlightOption(input: CreateFlightOptionInput): Promise<FlightOption> {
   // Create main flight option
   await query(
-    `INSERT INTO flight_options (trip_id, flight_type, total_price, currency_code, notes)
+    `INSERT INTO flight_options (trip_id, flight_type, unit_fare, currency_code, notes)
      VALUES (?, ?, ?, ?, ?)`,
     [input.trip_id, input.flight_type, input.unit_fare ?? null, input.currency_code ?? null, input.notes ?? null]
   );
@@ -136,7 +136,7 @@ export async function createFlightOption(input: CreateFlightOptionInput): Promis
   // Handle round_trip: create return flight and link
   if (input.flight_type === 'round_trip' && input.return_legs?.length) {
     await query(
-      `INSERT INTO flight_options (trip_id, flight_type, linked_flight_id, total_price, currency_code, notes)
+      `INSERT INTO flight_options (trip_id, flight_type, linked_flight_id, unit_fare, currency_code, notes)
        VALUES (?, 'round_trip', ?, ?, ?, ?)`,
       [input.trip_id, flightOptionId, input.return_price ?? null, input.currency_code ?? null, input.notes ?? null]
     );
