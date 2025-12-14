@@ -269,7 +269,7 @@ export default function AccommodationsPage({ params }: PageProps) {
             Back to Trip Hub
           </button>
 
-          <h1 className="text-3xl font-bold text-white mb-3">Flight Options</h1>
+          <h1 className="text-3xl font-bold text-white mb-3">Accomodation Options</h1>
           <p className="text-white/70 text-lg mb-3">{trip.trip_name}</p>
           
           <div className="flex flex-wrap items-center gap-3">
