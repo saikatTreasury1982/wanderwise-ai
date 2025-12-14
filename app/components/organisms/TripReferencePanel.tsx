@@ -164,7 +164,7 @@ export default function TripReferencePanel({
                           {flight.legs[0].departure_airport} → {flight.legs[flight.legs.length - 1].arrival_airport}
                         </div>
                         <div className="flex items-center gap-3 text-sm text-white/70">
-                          <span>📅 {formatDate(flight.legs[0].departure_date)}</span>
+                          <span>📅 {formatDate(flight.legs[0].departure_date)} → {formatDate(flight.legs[0].arrival_date)}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-white/70">
                           <span>🕐 {flight.legs[0].departure_time || '--:--'} → {flight.legs[flight.legs.length - 1].arrival_time || '--:--'}</span>
@@ -191,7 +191,7 @@ export default function TripReferencePanel({
                           {flight.return_legs[0].departure_airport} → {flight.return_legs[flight.return_legs.length - 1].arrival_airport}
                         </div>
                         <div className="flex items-center gap-3 text-sm text-white/70">
-                          <span>📅 {formatDate(flight.return_legs[0].departure_date)}</span>
+                          <span>📅 {formatDate(flight.return_legs[0].departure_date)} → {formatDate(flight.return_legs[0].arrival_date)}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-white/70">
                           <span>🕐 {flight.return_legs[0].departure_time || '--:--'} → {flight.return_legs[flight.return_legs.length - 1].arrival_time || '--:--'}</span>
