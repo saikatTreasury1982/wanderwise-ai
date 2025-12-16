@@ -8,7 +8,7 @@ import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import PackingCategoryCard from '@/app/components/organisms/PackingCategoryCard';
 import TripAlertSettingsModal from '@/app/components/organisms/TripAlertSettingsModal';
 import { formatDateRange } from '@/app/lib/utils';
-import type { PackingCategory, PackingStats, PackingPriority } from '@/app/lib/types/packing';
+import type { PackingCategory, PackingStats } from '@/app/lib/types/packing';
 
 
 interface Trip {
@@ -198,7 +198,7 @@ export default function PackingChecklistPage({ params }: PageProps) {
     }
   };
 
-  const handleUpdateItemPriority = async (itemId: number, priority: PackingPriority) => {
+  const handleUpdateItemPriority = async (itemId: number, priority: string) => {
     try {
       const response = await fetch(`/api/trips/${tripId}/packing/items/${itemId}`, {
         method: 'PUT',
