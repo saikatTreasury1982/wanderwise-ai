@@ -7,14 +7,12 @@ export interface PackingCategory {
   items?: PackingItem[];
 }
 
-export type PackingPriority = 'critical' | 'important' | 'normal';
-
 export interface PackingItem {
   item_id: number;
   category_id: number;
   item_name: string;
   is_packed: number;
-  priority: PackingPriority;
+  priority: string;
   display_order: number;
   created_at: string;
 }
@@ -39,7 +37,7 @@ export interface CreatePackingItemInput {
 export interface UpdatePackingItemInput {
   item_name?: string;
   is_packed?: number;
-  priority?: PackingPriority;
+  priority?: string;
   display_order?: number;
 }
 

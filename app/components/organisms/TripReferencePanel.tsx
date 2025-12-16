@@ -27,29 +27,6 @@ export default function TripReferencePanel({
   const [flightsCollapsed, setFlightsCollapsed] = useState(true);
   const [accommodationsCollapsed, setAccommodationsCollapsed] = useState(true);
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthName = monthNames[date.getMonth()];
-
-    switch (dateFormat) {
-      case 'YYYY-MM-DD':
-        return `${year}-${month}-${day}`;
-      case 'DD-MM-YYYY':
-        return `${day}-${month}-${year}`;
-      case 'MM-DD-YYYY':
-        return `${month}-${day}-${year}`;
-      case 'DD Mmm YYYY':
-      default:
-        return `${day} ${monthName} ${year}`;
-    }
-  };
-
   const formatDuration = (minutes: number | null) => {
     if (!minutes) return '';
     const h = Math.floor(minutes / 60);
@@ -77,7 +54,14 @@ export default function TripReferencePanel({
   };
 
   // Filter to only show confirmed and shortlisted
-  const relevantFlights = flights.filter(f => f.status === 'confirmed' || f.status === 'shortlisted');
+  const relevantFlights = flights
+  .filter(f => f.status === 'confirmed' || f.status === 'shortlisted')
+  .sort((a, b) => {
+    const dateA = a.legs && a.legs.length > 0 ? new Date(a.legs[0].departure_date || '') : new Date(0);
+    const dateB = b.legs && b.legs.length > 0 ? new Date(b.legs[0].departure_date || '') : new Date(0);
+    return dateA.getTime() - dateB.getTime();
+  });
+
   const relevantAccommodations = accommodations
     .filter(a => a.status === 'confirmed' || a.status === 'shortlisted')
     .sort((a, b) => {
@@ -165,7 +149,7 @@ export default function TripReferencePanel({
                           {flight.legs[0].departure_airport} → {flight.legs[flight.legs.length - 1].arrival_airport}
                         </div>
                         <div className="flex items-center gap-3 text-sm text-white/70">
-                          <span>📅 {formatDate(flight.legs[0].departure_date)} → {formatDate(flight.legs[0].arrival_date)}</span>
+                          <span>📅 {formatDateRange(flight.legs[0].departure_date, flight.legs[0].arrival_date, dateFormat)}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-white/70">
                           <span>🕐 {flight.legs[0].departure_time || '--:--'} → {flight.legs[flight.legs.length - 1].arrival_time || '--:--'}</span>
@@ -192,7 +176,7 @@ export default function TripReferencePanel({
                           {flight.return_legs[0].departure_airport} → {flight.return_legs[flight.return_legs.length - 1].arrival_airport}
                         </div>
                         <div className="flex items-center gap-3 text-sm text-white/70">
-                          <span>📅 {formatDate(flight.return_legs[0].departure_date)} → {formatDate(flight.return_legs[0].arrival_date)}</span>
+                          <span>📅 {formatDateRange(flight.return_legs[0].departure_date, flight.return_legs[0].arrival_date, dateFormat)}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-white/70">
                           <span>🕐 {flight.return_legs[0].departure_time || '--:--'} → {flight.return_legs[flight.return_legs.length - 1].arrival_time || '--:--'}</span>
@@ -272,7 +256,7 @@ export default function TripReferencePanel({
 
                       {/* Dates */}
                       <div className="flex items-center gap-2 text-sm text-white/70">
-                        <span>📅 {formatDate(accommodation.check_in_date)} → {formatDate(accommodation.check_out_date)}</span>
+                        <span>📅 {formatDateRange(accommodation.check_in_date, accommodation.check_out_date, dateFormat)}</span>
                         {nights && (
                           <span className="text-purple-300">({nights}N)</span>
                         )}
