@@ -83,3 +83,18 @@ export async function closeSession(sessionToken: string): Promise<void> {
     throw error;
   }
 }
+
+export async function verifySession(sessionToken: string): Promise<boolean> {
+  try {
+    const sessions = await query<Session>(
+      `SELECT session_id FROM auth_sessions 
+       WHERE session_token = ? 
+       AND session_status = 'OPEN'`,
+      [sessionToken]
+    );
+    return sessions.length > 0;
+  } catch (error) {
+    console.error('Error verifying session:', error);
+    return false;
+  }
+}

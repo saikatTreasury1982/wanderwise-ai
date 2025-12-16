@@ -3,21 +3,27 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/app/lib/utils';
-import type { PackingItem, PackingPriority } from '@/app/lib/types/packing';
+import type { PackingItem } from '@/app/lib/types/packing';
+
+interface AlertType {
+  alert_code: string;
+  alert_description: string;
+  category_code: string;
+}
 
 interface PackingItemRowProps {
   item: PackingItem;
   tripId: number;
   onToggle: (itemId: number) => void;
   onUpdate: (itemId: number, name: string) => void;
-  onUpdatePriority: (itemId: number, priority: PackingPriority) => void;
+  onUpdatePriority: (itemId: number, priority: string) => void;
   onDelete: (itemId: number) => void;
 }
 
-const priorityConfig: Record<PackingPriority, { icon: string; color: string; label: string }> = {
-  critical: { icon: '🔴', color: 'text-red-400', label: 'Critical' },
-  important: { icon: '🟡', color: 'text-yellow-400', label: 'Important' },
-  normal: { icon: '⚪', color: 'text-white/40', label: 'Normal' },
+const categoryIcons: Record<string, { icon: string; color: string }> = {
+  critical: { icon: '🔴', color: 'text-red-400' },
+  important: { icon: '🟡', color: 'text-yellow-400' },
+  normal: { icon: '⚪', color: 'text-white/40' },
 };
 
 export default function PackingItemRow({
@@ -32,12 +38,31 @@ export default function PackingItemRow({
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(item.item_name);
+  const [alertTypes, setAlertTypes] = useState<AlertType[]>([]);
   const priorityButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Fetch alert types
+  useEffect(() => {
+    const fetchAlertTypes = async () => {
+      try {
+        const response = await fetch('/api/alert-types');
+        if (response.ok) {
+          const data = await response.json();
+          // Your API returns array directly, not wrapped in { alertTypes }
+          setAlertTypes(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching alert types:', error);
+      }
+    };
+
+    fetchAlertTypes();
   }, []);
 
   // Close menu when clicking outside
@@ -111,31 +136,43 @@ export default function PackingItemRow({
     onDelete(item.item_id);
   };
 
+  // Get current alert type details
+  const currentAlertType = alertTypes.find(at => at.alert_code === item.priority);
+  const currentCategory = currentAlertType?.category_code || 'normal';
+  const currentIcon = categoryIcons[currentCategory] || categoryIcons.normal;
+
   const priorityMenu = showPriorityMenu && mounted ? createPortal(
     <div
       ref={menuRef}
-      className="fixed z-[9999] bg-gray-800 border border-white/20 rounded-lg shadow-xl"
+      className="fixed z-[9999] bg-gray-800 border border-white/20 rounded-lg shadow-xl max-h-64 overflow-y-auto"
       style={{
         top: menuPosition.top,
         left: menuPosition.left,
       }}
     >
-      {(['critical', 'important', 'normal'] as PackingPriority[]).map(priority => (
-        <button
-          key={priority}
-          onClick={() => {
-            onUpdatePriority(item.item_id, priority);
-            setShowPriorityMenu(false);
-          }}
-          className={cn(
-            'w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-white/10 transition-colors whitespace-nowrap',
-            item.priority === priority && 'bg-white/5'
-          )}
-        >
-          <span>{priorityConfig[priority].icon}</span>
-          <span className="text-white/90">{priorityConfig[priority].label}</span>
-        </button>
-      ))}
+      {alertTypes.map(alertType => {
+        const categoryIcon = categoryIcons[alertType.category_code] || categoryIcons.normal;
+        return (
+          <button
+            key={alertType.alert_code}
+            onClick={() => {
+              onUpdatePriority(item.item_id, alertType.alert_code);
+              setShowPriorityMenu(false);
+            }}
+            className={cn(
+              'w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-white/10 transition-colors whitespace-nowrap',
+              item.priority === alertType.alert_code && 'bg-white/5'
+            )}
+          >
+            <span>{categoryIcon.icon}</span>
+            <span className="text-white/90">
+              <span className="text-purple-300 font-medium">{alertType.alert_code}</span>
+              <span className="text-white/50"> - </span>
+              <span>{alertType.alert_description}</span>
+            </span>
+          </button>
+        );
+      })}
     </div>,
     document.body
   ) : null;
@@ -185,9 +222,9 @@ export default function PackingItemRow({
           >
             {item.item_name}
           </span>
-          {item.priority !== 'normal' && (
-            <span className="text-xs" title={priorityConfig[item.priority].label}>
-              {priorityConfig[item.priority].icon}
+          {item.priority && item.priority !== 'normal' && currentAlertType && (
+            <span className="text-xs" title={currentAlertType.alert_description}>
+              {currentIcon.icon}
             </span>
           )}
         </div>
@@ -203,7 +240,7 @@ export default function PackingItemRow({
             className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
             title="Set priority"
           >
-            <span className="text-xs">{priorityConfig[item.priority || 'normal'].icon}</span>
+            <span className="text-xs">{currentIcon.icon}</span>
           </button>
           
           <button

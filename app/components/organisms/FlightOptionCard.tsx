@@ -117,36 +117,47 @@ export default function FlightOptionCard({
             <div className="text-base font-semibold text-white mb-1">
               {formatRoute(flight.legs)}
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
-              {/* Departure */}
-              {outboundLeg?.departure_date && (
-                <span>
-                  {formatDate(outboundLeg.departure_date)}
-                  {outboundLeg.departure_time && ` ${outboundLeg.departure_time}`}
-                </span>
-              )}
-              {/* Arrow */}
-              {outboundLeg?.departure_date && outboundLeg?.arrival_date && <span>→</span>}
-              {/* Arrival */}
-              {outboundLeg?.arrival_date && (
-                <span>
-                  {formatDate(outboundLeg.arrival_date)}
-                  {outboundLeg.arrival_time && ` ${outboundLeg.arrival_time}`}
-                </span>
-              )}
-              {/* Duration */}
-              {getTotalDuration(flight.legs) > 0 && (
-                <span className="text-purple-300">({formatDuration(getTotalDuration(flight.legs))})</span>
-              )}
-              {/* Stops */}
-              <span>{getTotalStops(flight.legs) === 0 ? 'Direct' : `${getTotalStops(flight.legs)} stop${getTotalStops(flight.legs) > 1 ? 's' : ''}`}</span>
-              {/* Airline */}
-              {outboundLeg?.airline && <span>{outboundLeg.airline}</span>}
-            </div>
+            
+            {/* Show each leg for multi-city */}
+            {flight.legs && flight.legs.map((leg, index) => (
+              <div key={index} className={cn(
+                "flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60",
+                flight.legs && flight.legs.length > 1 && "pl-2 border-l-2 border-purple-500/30 mb-2"
+              )}>
+                {flight.legs && flight.legs.length > 1 && (
+                  <span className="text-xs text-purple-300 font-medium w-full">Leg {index + 1}</span>
+                )}
+                
+                {/* Departure */}
+                {leg.departure_date && (
+                  <span>
+                    {formatDate(leg.departure_date)}
+                    {leg.departure_time && ` ${leg.departure_time}`}
+                  </span>
+                )}
+                {/* Arrow */}
+                {leg.departure_date && leg.arrival_date && <span>→</span>}
+                {/* Arrival */}
+                {leg.arrival_date && (
+                  <span>
+                    {formatDate(leg.arrival_date)}
+                    {leg.arrival_time && ` ${leg.arrival_time}`}
+                  </span>
+                )}
+                {/* Duration */}
+                {leg.duration_minutes && leg.duration_minutes > 0 && (
+                  <span className="text-purple-300">({formatDuration(leg.duration_minutes)})</span>
+                )}
+                {/* Stops */}
+                <span>{leg.stops_count === 0 ? 'Direct' : `${leg.stops_count} stop${leg.stops_count > 1 ? 's' : ''}`}</span>
+                {/* Airline */}
+                {leg.airline && <span>{leg.airline}</span>}
+              </div>
+            ))}
           </div>
 
           {/* Return Flight (for round-trip) */}
-          {isRoundTrip && returnLeg && (
+          {isRoundTrip && flight.return_legs && flight.return_legs.length > 0 && (
             <div className="mb-3 pt-3 border-t border-white/10">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs text-white/50 uppercase">Return</span>
@@ -154,32 +165,43 @@ export default function FlightOptionCard({
               <div className="text-base font-semibold text-white mb-1">
                 {formatRoute(flight.return_legs)}
               </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
-                {/* Departure */}
-                {returnLeg.departure_date && (
-                  <span>
-                    {formatDate(returnLeg.departure_date)}
-                    {returnLeg.departure_time && ` ${returnLeg.departure_time}`}
-                  </span>
-                )}
-                {/* Arrow */}
-                {returnLeg.departure_date && returnLeg.arrival_date && <span>→</span>}
-                {/* Arrival */}
-                {returnLeg.arrival_date && (
-                  <span>
-                    {formatDate(returnLeg.arrival_date)}
-                    {returnLeg.arrival_time && ` ${returnLeg.arrival_time}`}
-                  </span>
-                )}
-                {/* Duration */}
-                {getTotalDuration(flight.return_legs) > 0 && (
-                  <span className="text-purple-300">({formatDuration(getTotalDuration(flight.return_legs))})</span>
-                )}
-                {/* Stops */}
-                <span>{getTotalStops(flight.return_legs) === 0 ? 'Direct' : `${getTotalStops(flight.return_legs)} stop${getTotalStops(flight.return_legs) > 1 ? 's' : ''}`}</span>
-                {/* Airline */}
-                {returnLeg.airline && <span>{returnLeg.airline}</span>}
-              </div>
+              
+              {/* Show each leg for multi-city */}
+              {flight.return_legs.map((leg, index) => (
+                <div key={index} className={cn(
+                  "flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60",
+                  flight.return_legs && flight.return_legs.length > 1 && "pl-2 border-l-2 border-purple-500/30 mb-2"
+                )}>
+                  {flight.return_legs && flight.return_legs.length > 1 && (
+                    <span className="text-xs text-purple-300 font-medium w-full">Leg {index + 1}</span>
+                  )}
+                  
+                  {/* Departure */}
+                  {leg.departure_date && (
+                    <span>
+                      {formatDate(leg.departure_date)}
+                      {leg.departure_time && ` ${leg.departure_time}`}
+                    </span>
+                  )}
+                  {/* Arrow */}
+                  {leg.departure_date && leg.arrival_date && <span>→</span>}
+                  {/* Arrival */}
+                  {leg.arrival_date && (
+                    <span>
+                      {formatDate(leg.arrival_date)}
+                      {leg.arrival_time && ` ${leg.arrival_time}`}
+                    </span>
+                  )}
+                  {/* Duration */}
+                  {leg.duration_minutes && leg.duration_minutes > 0 && (
+                    <span className="text-purple-300">({formatDuration(leg.duration_minutes)})</span>
+                  )}
+                  {/* Stops */}
+                  <span>{leg.stops_count === 0 ? 'Direct' : `${leg.stops_count} stop${leg.stops_count > 1 ? 's' : ''}`}</span>
+                  {/* Airline */}
+                  {leg.airline && <span>{leg.airline}</span>}
+                </div>
+              ))}
             </div>
           )}
 

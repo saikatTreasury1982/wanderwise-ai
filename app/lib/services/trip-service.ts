@@ -22,6 +22,7 @@ interface CreateTripInput {
   destination_city?: string | null;
   start_date: string;
   end_date: string;
+  status_code?: number;
 }
 
 interface UpdateTripInput {
@@ -39,8 +40,8 @@ export async function createTrip(input: CreateTripInput): Promise<Trip> {
     await query(
       `INSERT INTO trips (
         user_id, trip_name, trip_description, destination_country, 
-        destination_city, start_date, end_date
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        destination_city, start_date, end_date, status_code
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         input.user_id,
         input.trip_name,
@@ -49,6 +50,7 @@ export async function createTrip(input: CreateTripInput): Promise<Trip> {
         input.destination_city || null,
         input.start_date,
         input.end_date,
+        input.status_code || 1, // ADD THIS LINE - default to 1 if not provided
       ]
     );
 

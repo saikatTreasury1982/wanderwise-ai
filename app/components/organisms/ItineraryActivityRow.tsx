@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, Edit2, Trash2, Check, X } from 'lucide-react';
 import type { ItineraryActivity } from '@/app/lib/types/itinerary';
+import { Link as LinkIcon } from 'lucide-react';
+import ActivityLinksModal from '@/app/components/organisms/ActivityLinksModal';
 
 interface ItineraryActivityRowProps {
   tripId: number;
@@ -32,6 +34,8 @@ export default function ItineraryActivityRow({
   const [editCostType, setEditCostType] = useState<'total' | 'per_head'>(activity.cost_type || 'total');
   const [editHeadcount, setEditHeadcount] = useState(activity.headcount?.toString() || '');
   const [editNotes, setEditNotes] = useState(activity.notes || '');
+  const [showLinksModal, setShowLinksModal] = useState(false);
+  const [linkCount, setLinkCount] = useState(0);
 
   const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
@@ -40,6 +44,24 @@ export default function ItineraryActivityRow({
     if (mins === 0) return `${hours}h`;
     return `${hours}h ${mins}m`;
   };
+
+  useEffect(() => {
+  const fetchLinkCount = async () => {
+    try {
+      const res = await fetch(
+        `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}/links`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setLinkCount(data.links?.length || 0);
+      }
+    } catch (err) {
+      console.error('Error fetching link count:', err);
+    }
+  };
+
+  fetchLinkCount();
+}, [tripId, dayId, categoryId, activity.activity_id]);
 
   const handleToggle = async () => {
     try {
@@ -248,6 +270,18 @@ export default function ItineraryActivityRow({
       {/* Actions */}
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
+          onClick={() => setShowLinksModal(true)}
+          className="p-1 rounded hover:bg-white/10 text-purple-300 hover:text-white relative"
+          title="Manage links"
+        >
+          <LinkIcon className="w-3 h-3" />
+          {linkCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 text-white text-[8px] rounded-full flex items-center justify-center">
+              {linkCount}
+            </span>
+          )}
+        </button>
+        <button
           onClick={() => setIsEditing(true)}
           className="p-1 rounded hover:bg-white/10 text-purple-300 hover:text-white"
         >
@@ -260,6 +294,33 @@ export default function ItineraryActivityRow({
           <Trash2 className="w-3 h-3" />
         </button>
       </div>
+
+      <ActivityLinksModal
+        isOpen={showLinksModal}
+        onClose={() => {
+          setShowLinksModal(false);
+          // Refresh link count
+          const fetchLinkCount = async () => {
+            try {
+              const res = await fetch(
+                `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}/links`
+              );
+              if (res.ok) {
+                const data = await res.json();
+                setLinkCount(data.links?.length || 0);
+              }
+            } catch (err) {
+              console.error('Error fetching link count:', err);
+            }
+          };
+          fetchLinkCount();
+        }}
+        tripId={tripId}
+        dayId={dayId}
+        categoryId={categoryId}
+        activityId={activity.activity_id}
+        activityName={activity.activity_name}
+      />
     </div>
   );
 }
