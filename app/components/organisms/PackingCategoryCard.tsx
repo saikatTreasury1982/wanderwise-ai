@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/app/lib/utils';
 import PackingItemRow from './PackingItemRow';
-import type { PackingCategory, PackingPriority } from '@/app/lib/types/packing';
+import type { PackingCategory } from '@/app/lib/types/packing';
 
 interface PackingCategoryCardProps {
   category: PackingCategory;
@@ -13,7 +13,7 @@ interface PackingCategoryCardProps {
   onAddItem: (categoryId: number, itemName: string) => void;
   onToggleItem: (itemId: number) => void;
   onUpdateItem: (itemId: number, name: string) => void;
-  onUpdateItemPriority: (itemId: number, priority: PackingPriority) => void;
+  onUpdateItemPriority: (itemId: number, priority: string) => void;
   onDeleteItem: (itemId: number) => void;
 }
 
