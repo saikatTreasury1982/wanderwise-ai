@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Input from '@/app/components/ui/Input';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import Link from 'next/link';
+import PasswordModal from '@/app/components/ui/PasswordModal';
 
 interface FormErrors {
   email?: string;
@@ -18,6 +19,12 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [showPasskeySetup, setShowPasskeySetup] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordRequirements, setPasswordRequirements] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordModalMode, setPasswordModalMode] = useState<'login' | 'create'>('login');
+  const [passwordSuccessMessage, setPasswordSuccessMessage] = useState('');
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -36,6 +43,24 @@ export default function LoginForm() {
       return false;
     }
     return true;
+  };
+
+  const checkUserAuthMethods = async (userEmail: string) => {
+    try {
+      const response = await fetch('/api/auth/check-auth-methods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+      return { hasPasskey: false, hasPassword: false };
+    } catch (error) {
+      return { hasPasskey: false, hasPassword: false };
+    }
   };
 
   const createPasskey = async () => {
@@ -116,43 +141,53 @@ export default function LoginForm() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateEmail()) return;
-
+  const handlePasswordAction = async (password: string) => {
+    setPasswordError('');
+    setPasswordSuccessMessage('');
     setIsLoading(true);
-    setErrors({});
+    
+    if (passwordModalMode === 'create') {
+      // Create password
+      try {
+        const response = await fetch('/api/auth/password/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
 
-    try {
-      // Check if user exists and has passkey
-      const checkRes = await fetch('/api/auth/passkey/login-options', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      if (checkRes.status === 404) {
-        const error = await checkRes.json();
-        
-        if (error.error.includes('No passkeys') && error.userId) {
-          // User exists but needs passkey - userId already returned
-          setUserId(error.userId);
-          setShowPasskeySetup(true);
-          setIsLoading(false);
-          return;
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to create password');
         }
-        
-        throw new Error('User not found. Please register first.');
+
+        setPasswordSuccessMessage('Password created successfully! Please login with your new password.');
+      } catch (error: any) {
+        setPasswordError(error.message || 'Failed to create password');
+        throw error;
+      } finally {
+        setIsLoading(false);
       }
+    } else {
+      // Login with password
+      try {
+        const response = await fetch('/api/auth/password/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
 
-      if (!checkRes.ok) throw new Error('Failed to check user');
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Login failed');
+        }
 
-      // User has passkey, proceed with login
-      setIsLoading(false);
-      await loginWithPasskey();
-    } catch (error: any) {
-      setErrors({ general: error.message || 'An error occurred' });
-      setIsLoading(false);
+        // Keep loading spinner while navigating
+        router.push('/dashboard');
+      } catch (error: any) {
+        setPasswordError(error.message || 'Login failed');
+        setIsLoading(false);
+        throw error;
+      }
     }
   };
 
@@ -200,7 +235,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-4">
       {errors.general && (
         <div className="p-3 rounded-lg bg-red-500/20 border border-red-500/30 text-red-200 text-sm">
           {errors.general}
@@ -227,14 +262,83 @@ export default function LoginForm() {
             }
           />
         </div>
+        
+        {/* Two buttons side by side */}
         <CircleIconButton
-          type="submit"
+          onClick={async () => {
+            if (!validateEmail()) return;
+            
+            setIsLoading(true);
+            setErrors({});
+
+            try {
+              const checkRes = await fetch('/api/auth/passkey/login-options', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+              });
+
+              if (checkRes.status === 404) {
+                const error = await checkRes.json();
+                
+                if (error.error.includes('No passkeys') && error.userId) {
+                  setUserId(error.userId);
+                  setShowPasskeySetup(true);
+                  setIsLoading(false);
+                  return;
+                }
+                
+                throw new Error('User not found. Please register first.');
+              }
+
+              if (!checkRes.ok) throw new Error('Failed to check user');
+
+              setIsLoading(false);
+              await loginWithPasskey();
+            } catch (error: any) {
+              setErrors({ general: error.message || 'An error occurred' });
+              setIsLoading(false);
+            }
+          }}
           variant="primary"
           isLoading={isLoading}
-          title="Continue"
+          title="Continue with Passkey"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+            </svg>
+          }
+        />
+        <CircleIconButton
+          onClick={async () => {
+            if (!validateEmail()) return;
+            
+            setIsCheckingAuth(true);
+
+            // Check if user has password
+            const authMethods = await checkUserAuthMethods(email);
+            
+            if (authMethods.hasPassword) {
+              setPasswordModalMode('login');
+            } else {
+              setPasswordModalMode('create');
+            }
+            
+            // Fetch password requirements
+            const res = await fetch('/api/auth/password/requirements');
+            const data = await res.json();
+            setPasswordRequirements(data.description);
+            setPasswordSuccessMessage('');
+            
+            setIsCheckingAuth(false);
+            setShowPasswordModal(true);
+          }}
+          variant="default"
+          isLoading={isCheckingAuth}
+          title="Continue with Password"
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           }
         />
@@ -248,6 +352,27 @@ export default function LoginForm() {
           </Link>
         </p>
       </div>
-    </form>
+
+      {/* Password Modal */}
+      <PasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => {
+          setShowPasswordModal(false);
+          setPasswordError('');
+          setPasswordSuccessMessage('');
+        }}
+        onSubmit={handlePasswordAction}
+        title="Password"
+        description={passwordModalMode === 'create' 
+          ? "You haven't set up a password yet. Create one to continue."
+          : "Sign in to continue your travel planning"
+        }
+        passwordRequirements={passwordRequirements}
+        isLoading={isLoading}
+        error={passwordError}
+        mode={passwordModalMode}
+        successMessage={passwordSuccessMessage}
+      />
+    </div>
   );
 }

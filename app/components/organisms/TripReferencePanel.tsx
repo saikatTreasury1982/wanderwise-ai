@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X, Plane, Building2, ChevronRight, ChevronDown } from 'lucide-react';
 import type { FlightOption } from '@/app/lib/types/flight';
 import type { AccommodationOption } from '@/app/lib/types/accommodation';
+import { formatDateRange } from '@/app/lib/utils';
 
 interface TripReferencePanelProps {
   isOpen: boolean;
