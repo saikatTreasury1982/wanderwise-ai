@@ -4,6 +4,24 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Edit2, Trash2, List, Check, X, DollarSign, Copy, Eye, EyeOff } from 'lucide-react';
 import type { ItineraryDayCategory, ItineraryActivity, CostSummary } from '@/app/lib/types/itinerary';
 import ItineraryActivityRow from './ItineraryActivityRow';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface ItineraryCategoryCardProps {
   tripId: number;
@@ -29,6 +47,65 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   const [isActive, setIsActive] = useState(category.is_active !== 0);
   const [isCopying, setIsCopying] = useState(false);
   const [isTogglingActive, setIsTogglingActive] = useState(false);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+      isDragging,
+  } = useSortable({ id: category.category_id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const activitySensors = useSensors(
+  useSensor(PointerSensor),
+  useSensor(KeyboardSensor, {
+    coordinateGetter: sortableKeyboardCoordinates,
+  })
+);
+
+  const handleActivityDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const activities = category.activities || [];
+    const oldIndex = activities.findIndex(a => a.activity_id === active.id);
+    const newIndex = activities.findIndex(a => a.activity_id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reorderedActivities = arrayMove(activities, oldIndex, newIndex);
+    
+    // Update local state
+    onUpdate({
+      ...category,
+      activities: reorderedActivities,
+    });
+
+    // Update database
+    const activityOrders = reorderedActivities.map((act, index) => ({
+      activity_id: act.activity_id,
+      display_order: index,
+    }));
+
+    try {
+      await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/activities/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activityOrders }),
+      });
+    } catch (err) {
+      console.error('Error saving activity order:', err);
+    }
+  };
 
   // Calculate category totals
   const getCategoryTotals = (): CostSummary[] => {
@@ -232,7 +309,11 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   };
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+    <div 
+      ref={setNodeRef}
+      style={style}
+      className="bg-white/5 border border-white/10 rounded-xl overflow-hidden"
+    >
       {/* Category Header */}
       <div 
         className={`px-4 py-3 flex items-center gap-3 transition-opacity ${
@@ -258,6 +339,16 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
           ) : (
             <EyeOff className="w-5 h-5 text-white/40" />
           )}
+        </button>
+
+        {/* ADD DRAG HANDLE HERE */}
+        <button
+          {...attributes}
+          {...listeners}
+          className="p-1 rounded hover:bg-white/10 transition-colors cursor-grab active:cursor-grabbing"
+          title="Drag to reorder"
+        >
+          <GripVertical className="w-5 h-5 text-purple-300" />
         </button>
 
         <button
@@ -446,21 +537,32 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
 
           {/* Activity List */}
           {category.activities && category.activities.length > 0 ? (
-            <div className="divide-y divide-white/5">
-              {category.activities.map((activity) => (
-                <ItineraryActivityRow
-                  key={activity.activity_id}
-                  tripId={tripId}
-                  dayId={dayId}
-                  categoryId={category.category_id}
-                  activity={activity}
-                  disableCost={hasCategoryCost}
-                  isActive={isActive}
-                  onUpdate={handleActivityUpdate}
-                  onDelete={handleActivityDelete}
-                />
-              ))}
-            </div>
+            <DndContext
+              sensors={activitySensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleActivityDragEnd}
+            >
+              <SortableContext
+                items={category.activities.map(a => a.activity_id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="divide-y divide-white/5">
+                  {category.activities.map((activity) => (
+                    <ItineraryActivityRow
+                      key={activity.activity_id}
+                      tripId={tripId}
+                      dayId={dayId}
+                      categoryId={category.category_id}
+                      activity={activity}
+                      disableCost={hasCategoryCost}
+                      isActive={isActive}
+                      onUpdate={handleActivityUpdate}
+                      onDelete={handleActivityDelete}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           ) : !isBulkAdding && !isAddingActivity && (
             <div className="px-4 py-6 text-center text-sm text-purple-300">
               No activities yet

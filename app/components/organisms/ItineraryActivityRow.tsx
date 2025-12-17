@@ -5,6 +5,9 @@ import { Clock, Edit2, Trash2, Check, X } from 'lucide-react';
 import type { ItineraryActivity } from '@/app/lib/types/itinerary';
 import { Link as LinkIcon } from 'lucide-react';
 import ActivityLinksModal from '@/app/components/organisms/ActivityLinksModal';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
 
 interface ItineraryActivityRowProps {
   tripId: number;
@@ -38,6 +41,20 @@ export default function ItineraryActivityRow({
   const [editNotes, setEditNotes] = useState(activity.notes || '');
   const [showLinksModal, setShowLinksModal] = useState(false);
   const [linkCount, setLinkCount] = useState(0);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: activity.activity_id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
@@ -219,9 +236,22 @@ export default function ItineraryActivityRow({
   }
 
     return (
-    <div className={`px-4 py-3 flex items-center gap-3 group hover:bg-white/5 ${activity.is_completed ? 'opacity-60' : ''} ${!isActive ? 'opacity-40' : ''}`}>
-      {/* Checkbox */}
-      <button
+      <div 
+        ref={setNodeRef}
+        style={style}
+        className={`px-4 py-3 flex items-center gap-3 group hover:bg-white/5 ${activity.is_completed ? 'opacity-60' : ''} ${!isActive ? 'opacity-40' : ''}`}
+      >
+        {/* Drag Handle */}
+        <button
+          {...attributes}
+          {...listeners}
+          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing"
+        >
+          <GripVertical className="w-4 h-4 text-purple-300" />
+        </button>
+
+        {/* Checkbox */}
+        <button
         onClick={handleToggle}
         className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
           activity.is_completed

@@ -4,6 +4,21 @@ import { useState } from 'react';
 import { Plus, Edit2, Check, X, ChevronDown, ChevronRight } from 'lucide-react';
 import type { ItineraryDay, ItineraryDayCategory, CostSummary } from '@/app/lib/types/itinerary';
 import ItineraryCategoryCard from './ItineraryCategoryCard';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface ItineraryDayCardProps {
   tripId: number;
@@ -20,6 +35,51 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
   const [description, setDescription] = useState(day.description || '');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Add drag function here
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = day.categories?.findIndex(c => c.category_id === active.id) ?? -1;
+    const newIndex = day.categories?.findIndex(c => c.category_id === over.id) ?? -1;
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reorderedCategories = arrayMove(day.categories || [], oldIndex, newIndex);
+    
+    // Update local state immediately for smooth UX
+    onUpdate({
+      ...day,
+      categories: reorderedCategories,
+    });
+
+    // Update display orders in database
+    const categoryOrders = reorderedCategories.map((cat, index) => ({
+      category_id: cat.category_id,
+      display_order: index,
+    }));
+
+    try {
+      await fetch(`/api/trips/${tripId}/itinerary/${day.day_id}/categories/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryOrders }),
+      });
+    } catch (err) {
+      console.error('Error saving category order:', err);
+      // Optionally revert on error
+    }
+  };
 
   // Add refetch function here
   const refetchDay = async () => {
@@ -267,17 +327,28 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
       {!isCollapsed && (
         <div className="p-4 space-y-4"> 
           {day.categories && day.categories.length > 0 ? (
-            day.categories.map((category) => (
-              <ItineraryCategoryCard
-                key={category.category_id}
-                tripId={tripId}
-                dayId={day.day_id}
-                category={category}
-                onUpdate={handleCategoryUpdate}
-                onDelete={handleCategoryDelete}
-                onRefetch={refetchDay}
-              />
-            ))
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={day.categories.map(c => c.category_id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {day.categories.map((category) => (
+                  <ItineraryCategoryCard
+                    key={category.category_id}
+                    tripId={tripId}
+                    dayId={day.day_id}
+                    category={category}
+                    onUpdate={handleCategoryUpdate}
+                    onDelete={handleCategoryDelete}
+                    onRefetch={refetchDay}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           ) : (
             <div className="text-center py-8 text-purple-300">
               <p>No categories yet. Add one to start planning!</p>
