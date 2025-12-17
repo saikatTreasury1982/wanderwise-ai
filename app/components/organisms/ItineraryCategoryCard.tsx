@@ -28,6 +28,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   const [bulkActivities, setBulkActivities] = useState('');
   const [isActive, setIsActive] = useState(category.is_active !== 0);
   const [isCopying, setIsCopying] = useState(false);
+  const [isTogglingActive, setIsTogglingActive] = useState(false);
 
   // Calculate category totals
   const getCategoryTotals = (): CostSummary[] => {
@@ -75,14 +76,16 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
 
   const handleToggleActive = async () => {
     const newActive = !isActive;
-    setIsActive(newActive);
-
+    setIsTogglingActive(true);
+    
     try {
       await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_active: newActive ? 1 : 0 }),
       });
+      
+      setIsActive(newActive);
       
       // Update parent
       onUpdate({
@@ -91,6 +94,8 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
       });
     } catch (err) {
       console.error('Error updating active state:', err);
+    } finally {
+      setIsTogglingActive(false);
     }
   };
 
@@ -134,7 +139,9 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
     }
   };
 
-  const handleCopy = async () => {   
+  const handleCopy = async () => {
+    setIsCopying(true);
+    
     try {
       const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/copy`, {
         method: 'POST',
@@ -143,13 +150,14 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
       if (!res.ok) {
         const error = await res.json();
         console.error('Copy failed:', error);
-        alert(`Failed to copy: ${JSON.stringify(error)}`);
+        alert(`Failed to copy: ${error.error || 'Unknown error'}`);
+        setIsCopying(false);
         return;
       }
-      
-      // Refetch the entire day to get the new category
+
+      // Show success immediately
       await onRefetch();
-      alert('Category copied successfully!');
+      alert('✓ Category copied successfully!');
     } catch (err) {
       console.error('Error copying category:', err);
       alert('Failed to copy category');
@@ -231,13 +239,21 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
           !isActive ? 'opacity-50' : 'opacity-100'
         }`}
       >
+        
         {/* Active/Inactive Toggle */}
         <button
           onClick={handleToggleActive}
-          className="p-1 rounded hover:bg-white/10 transition-colors"
-          title={isActive ? 'Mark as inactive' : 'Mark as active'}
+          disabled={isTogglingActive}
+          className={`p-1 rounded transition-colors ${
+            isTogglingActive 
+              ? 'cursor-wait' 
+              : 'hover:bg-white/10'
+          }`}
+          title={isTogglingActive ? 'Processing...' : (isActive ? 'Mark as inactive' : 'Mark as active')}
         >
-          {isActive ? (
+          {isTogglingActive ? (
+            <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+          ) : isActive ? (
             <Eye className="w-5 h-5 text-green-400" />
           ) : (
             <EyeOff className="w-5 h-5 text-white/40" />
@@ -362,8 +378,12 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               <button
                 onClick={handleCopy}
                 disabled={isCopying}
-                className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Copy category"
+                className={`p-1.5 rounded-full transition-colors ${
+                  isCopying 
+                    ? 'bg-purple-500/30 text-purple-200 cursor-wait' 
+                    : 'hover:bg-white/10 text-purple-300 hover:text-white'
+                }`}
+                title={isCopying ? 'Copying...' : 'Copy category'}
               >
                 {isCopying ? (
                   <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
