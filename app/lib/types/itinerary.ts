@@ -19,6 +19,7 @@ export interface ItineraryDayCategory {
   headcount: number | null;
   display_order: number;
   is_expanded: number;
+  is_active: number;
   created_at: string;
   activities?: ItineraryActivity[];
 }

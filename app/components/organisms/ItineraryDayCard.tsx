@@ -21,11 +21,27 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
+  // Add refetch function here
+  const refetchDay = async () => {
+    try {
+      const res = await fetch(`/api/trips/${tripId}/itinerary/${day.day_id}`);
+      if (res.ok) {
+        const updatedDay = await res.json();
+        onUpdate(updatedDay);
+      }
+    } catch (err) {
+      console.error('Error refetching day:', err);
+    }
+  };
+
   // Calculate day totals by currency
   const getDayTotals = (): CostSummary[] => {
     const totals: Record<string, number> = {};
-  
+
     day.categories?.forEach(category => {
+      // Skip inactive categories
+      if (category.is_active === 0) return;
+
       if (category.category_cost !== null && category.currency_code) {
         // Use category-level cost
         let cost = category.category_cost;
@@ -259,6 +275,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
                 category={category}
                 onUpdate={handleCategoryUpdate}
                 onDelete={handleCategoryDelete}
+                onRefetch={refetchDay}
               />
             ))
           ) : (

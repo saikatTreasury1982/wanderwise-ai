@@ -12,6 +12,7 @@ interface ItineraryActivityRowProps {
   categoryId: number;
   activity: ItineraryActivity;
   disableCost: boolean;
+  isActive: boolean;
   onUpdate: (activity: ItineraryActivity) => void;
   onDelete: (activityId: number) => void;
 }
@@ -22,6 +23,7 @@ export default function ItineraryActivityRow({
   categoryId,
   activity,
   disableCost,
+  isActive,
   onUpdate,
   onDelete,
 }: ItineraryActivityRowProps) {
@@ -216,8 +218,8 @@ export default function ItineraryActivityRow({
     );
   }
 
-  return (
-    <div className={`px-4 py-3 flex items-center gap-3 group hover:bg-white/5 ${activity.is_completed ? 'opacity-60' : ''}`}>
+    return (
+    <div className={`px-4 py-3 flex items-center gap-3 group hover:bg-white/5 ${activity.is_completed ? 'opacity-60' : ''} ${!isActive ? 'opacity-40' : ''}`}>
       {/* Checkbox */}
       <button
         onClick={handleToggle}

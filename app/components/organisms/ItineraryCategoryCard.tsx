@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Edit2, Trash2, List, Check, X, DollarSign } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Edit2, Trash2, List, Check, X, DollarSign, Copy, Eye, EyeOff } from 'lucide-react';
 import type { ItineraryDayCategory, ItineraryActivity, CostSummary } from '@/app/lib/types/itinerary';
 import ItineraryActivityRow from './ItineraryActivityRow';
 
@@ -11,9 +11,10 @@ interface ItineraryCategoryCardProps {
   category: ItineraryDayCategory;
   onUpdate: (category: ItineraryDayCategory) => void;
   onDelete: (categoryId: number) => void;
+  onRefetch: () => Promise<void>;
 }
 
-export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdate, onDelete }: ItineraryCategoryCardProps) {
+export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdate, onDelete, onRefetch }: ItineraryCategoryCardProps) {
   const [isExpanded, setIsExpanded] = useState(category.is_expanded === 1);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(category.category_name);
@@ -25,6 +26,8 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   const [isBulkAdding, setIsBulkAdding] = useState(false);
   const [newActivityName, setNewActivityName] = useState('');
   const [bulkActivities, setBulkActivities] = useState('');
+  const [isActive, setIsActive] = useState(category.is_active !== 0);
+  const [isCopying, setIsCopying] = useState(false);
 
   // Calculate category totals
   const getCategoryTotals = (): CostSummary[] => {
@@ -70,6 +73,27 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
     }
   };
 
+  const handleToggleActive = async () => {
+    const newActive = !isActive;
+    setIsActive(newActive);
+
+    try {
+      await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: newActive ? 1 : 0 }),
+      });
+      
+      // Update parent
+      onUpdate({
+        ...category,
+        is_active: newActive ? 1 : 0,
+      });
+    } catch (err) {
+      console.error('Error updating active state:', err);
+    }
+  };
+
   const handleSaveEdit = async () => {
     try {
       const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
@@ -109,6 +133,30 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
       console.error('Error deleting category:', err);
     }
   };
+
+  const handleCopy = async () => {   
+    try {
+      const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/copy`, {
+        method: 'POST',
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        console.error('Copy failed:', error);
+        alert(`Failed to copy: ${JSON.stringify(error)}`);
+        return;
+      }
+      
+      // Refetch the entire day to get the new category
+      await onRefetch();
+      alert('Category copied successfully!');
+    } catch (err) {
+      console.error('Error copying category:', err);
+      alert('Failed to copy category');
+    } finally {
+      setIsCopying(false);
+    }
+  };  
 
   const handleAddActivity = async () => {
     if (!newActivityName.trim()) return;
@@ -178,7 +226,24 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   return (
     <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
       {/* Category Header */}
-      <div className="px-4 py-3 flex items-center gap-3">
+      <div 
+        className={`px-4 py-3 flex items-center gap-3 transition-opacity ${
+          !isActive ? 'opacity-50' : 'opacity-100'
+        }`}
+      >
+        {/* Active/Inactive Toggle */}
+        <button
+          onClick={handleToggleActive}
+          className="p-1 rounded hover:bg-white/10 transition-colors"
+          title={isActive ? 'Mark as inactive' : 'Mark as active'}
+        >
+          {isActive ? (
+            <Eye className="w-5 h-5 text-green-400" />
+          ) : (
+            <EyeOff className="w-5 h-5 text-white/40" />
+          )}
+        </button>
+
         <button
           onClick={handleToggleExpand}
           className="p-1 rounded hover:bg-white/10 transition-colors"
@@ -243,7 +308,14 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
           <>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-white font-medium">{category.category_name}</span>
+                <span className={`font-medium ${isActive ? 'text-white' : 'text-white/50'}`}>
+                  {category.category_name}
+                </span>
+                {!isActive && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/50">
+                    Inactive
+                  </span>
+                )}
                 {totalCount > 0 && (
                   <span className="text-xs text-purple-300">
                     ({completedCount}/{totalCount})
@@ -252,8 +324,8 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               </div>
             </div>
 
-            {/* Category Totals */}
-            {categoryTotals.length > 0 && (
+            {/* Category Totals - Only show for active categories */}
+            {isActive && categoryTotals.length > 0 && (
               <div className="flex items-center gap-1 text-sm">
                 <DollarSign className="w-3 h-3 text-purple-300" />
                 {category.category_cost !== null && category.cost_type === 'per_head' && category.headcount ? (
@@ -286,6 +358,18 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                 title="Bulk add"
               >
                 <List className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleCopy}
+                disabled={isCopying}
+                className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Copy category"
+              >
+                {isCopying ? (
+                  <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
               </button>
               <button
                 onClick={() => setIsEditing(true)}
@@ -351,6 +435,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                   categoryId={category.category_id}
                   activity={activity}
                   disableCost={hasCategoryCost}
+                  isActive={isActive}
                   onUpdate={handleActivityUpdate}
                   onDelete={handleActivityDelete}
                 />
