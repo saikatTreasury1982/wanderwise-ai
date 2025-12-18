@@ -4,6 +4,9 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/app/lib/utils';
 import type { PackingItem } from '@/app/lib/types/packing';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
 
 interface AlertType {
   alert_code: string;
@@ -14,6 +17,7 @@ interface AlertType {
 interface PackingItemRowProps {
   item: PackingItem;
   tripId: number;
+  categoryId: number;
   onToggle: (itemId: number) => void;
   onUpdate: (itemId: number, name: string) => void;
   onUpdatePriority: (itemId: number, priority: string) => void;
@@ -29,6 +33,7 @@ const categoryIcons: Record<string, { icon: string; color: string }> = {
 export default function PackingItemRow({
   item,
   tripId,
+  categoryId,
   onToggle,
   onUpdate,
   onUpdatePriority,
@@ -42,6 +47,20 @@ export default function PackingItemRow({
   const priorityButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.item_id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -179,11 +198,22 @@ export default function PackingItemRow({
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       className={cn(
         'group flex items-center gap-3 px-3 py-2 rounded-lg',
         'hover:bg-white/5 transition-colors'
       )}
     >
+      {/* Drag Handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing"
+      >
+        <GripVertical className="w-4 h-4 text-purple-300" />
+      </button>
+
       {/* Checkbox */}
       <button
         onClick={() => onToggle(item.item_id)}

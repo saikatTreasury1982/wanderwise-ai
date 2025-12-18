@@ -8,7 +8,7 @@ import {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ tripId: string; itemId: string }> }
+  { params }: { params: Promise<{ tripId: string; categoryId: string; itemId: string }> }
 ) {
   try {
     const { itemId } = await params;
@@ -25,7 +25,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ tripId: string; itemId: string }> }
+  { params }: { params: Promise<{ tripId: string; categoryId: string; itemId: string }> }
 ) {
   try {
     const { itemId } = await params;
@@ -43,7 +43,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ tripId: string; itemId: string }> }
+  { params }: { params: Promise<{ tripId: string; categoryId: string; itemId: string }> }
 ) {
   try {
     const { itemId } = await params;
@@ -60,7 +60,7 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ tripId: string; itemId: string }> }
+  { params }: { params: Promise<{ tripId: string; categoryId: string; itemId: string }> }
 ) {
   try {
     const { itemId } = await params;
