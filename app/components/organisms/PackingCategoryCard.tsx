@@ -4,6 +4,24 @@ import { useState } from 'react';
 import { cn } from '@/app/lib/utils';
 import PackingItemRow from './PackingItemRow';
 import type { PackingCategory } from '@/app/lib/types/packing';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface PackingCategoryCardProps {
   category: PackingCategory;
@@ -15,6 +33,7 @@ interface PackingCategoryCardProps {
   onUpdateItem: (itemId: number, name: string) => void;
   onUpdateItemPriority: (itemId: number, priority: string) => void;
   onDeleteItem: (itemId: number) => void;
+  onReorderItems: (categoryId: number, reorderedItems: any[]) => void;
 }
 
 export default function PackingCategoryCard({
@@ -27,6 +46,7 @@ export default function PackingCategoryCard({
   onUpdateItem,
   onUpdateItemPriority,
   onDeleteItem,
+  onReorderItems,
 }: PackingCategoryCardProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -35,10 +55,66 @@ export default function PackingCategoryCard({
   const [newItemName, setNewItemName] = useState('');
   const [isBulkAdding, setIsBulkAdding] = useState(false);
   const [bulkItems, setBulkItems] = useState('');
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.category_id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const items = category.items || [];
   const packedCount = items.filter(i => i.is_packed === 1).length;
   const totalCount = items.length;
+
+  const itemSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleItemDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = items.findIndex(i => i.item_id === active.id);
+    const newIndex = items.findIndex(i => i.item_id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reorderedItems = arrayMove(items, oldIndex, newIndex);
+    
+    // Update parent state immediately (optimistic update)
+    onReorderItems(category.category_id, reorderedItems);
+    
+    // Update display orders in database
+    const itemOrders = reorderedItems.map((item, index) => ({
+      item_id: item.item_id,
+      display_order: index,
+    }));
+
+    try {
+      await fetch(`/api/trips/${tripId}/packing/categories/${category.category_id}/items/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemOrders }),
+      });
+    } catch (err) {
+      console.error('Error saving item order:', err);
+      // Could revert here if needed
+    }
+  };
 
   const handleSaveName = () => {
     if (editName.trim() && editName !== category.category_name) {
@@ -76,7 +152,11 @@ export default function PackingCategoryCard({
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl relative">
+    <div 
+      ref={setNodeRef}
+      style={style}
+      className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl relative"
+    >
       {/* Header */}
       <div
         className={cn(
@@ -85,6 +165,17 @@ export default function PackingCategoryCard({
         )}
         onClick={() => !isEditingName && setIsExpanded(!isExpanded)}
       >
+        {/* Drag Handle */}
+        <button
+          {...attributes}
+          {...listeners}
+          onClick={(e) => e.stopPropagation()}
+          className="p-1 rounded hover:bg-white/10 transition-colors cursor-grab active:cursor-grabbing"
+          title="Drag to reorder"
+        >
+          <GripVertical className="w-4 h-4 text-purple-300" />
+        </button>
+
         {/* Expand/Collapse Icon */}
         <svg
           className={cn(
@@ -184,19 +275,31 @@ export default function PackingCategoryCard({
           {items.length === 0 && !isAddingItem ? (
             <p className="text-white/40 text-sm text-center py-3">No items yet</p>
           ) : (
-            <div className="space-y-1">
-              {items.map(item => (
-                <PackingItemRow
-                  key={item.item_id}
-                  item={item}
-                  tripId={tripId}
-                  onToggle={onToggleItem}
-                  onUpdate={onUpdateItem}
-                  onUpdatePriority={onUpdateItemPriority}
-                  onDelete={onDeleteItem}
-                />
-              ))}
-            </div>
+            <DndContext
+              sensors={itemSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleItemDragEnd}
+            >
+              <SortableContext
+                items={items.map(i => i.item_id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-1">
+                  {items.map(item => (
+                    <PackingItemRow
+                      key={item.item_id}
+                      item={item}
+                      tripId={tripId}
+                      categoryId={category.category_id}
+                      onToggle={onToggleItem}
+                      onUpdate={onUpdateItem}
+                      onUpdatePriority={onUpdateItemPriority}
+                      onDelete={onDeleteItem}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
 
           {/* Add Item Form */}

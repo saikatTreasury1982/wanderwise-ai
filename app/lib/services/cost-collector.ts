@@ -377,7 +377,8 @@ async function collectAndSaveItineraryCosts(
      FROM itinerary_activities ia
      JOIN itinerary_day_categories idc ON ia.category_id = idc.category_id
      JOIN itinerary_days id ON idc.day_id = id.day_id
-     WHERE id.trip_id = ? AND ia.activity_cost IS NOT NULL AND ia.currency_code IS NOT NULL`,
+     WHERE id.trip_id = ? AND ia.activity_cost IS NOT NULL AND ia.currency_code IS NOT NULL
+     AND idc.is_active = 1`,
     [tripId]
   );
 
@@ -433,7 +434,8 @@ async function collectAndSaveItineraryCosts(
       id.day_number
      FROM itinerary_day_categories idc
      JOIN itinerary_days id ON idc.day_id = id.day_id
-     WHERE id.trip_id = ? AND idc.category_cost IS NOT NULL AND idc.currency_code IS NOT NULL`,
+     WHERE id.trip_id = ? AND idc.category_cost IS NOT NULL AND idc.currency_code IS NOT NULL
+     AND idc.is_active = 1`,
     [tripId]
   );
 

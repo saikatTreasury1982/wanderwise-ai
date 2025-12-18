@@ -8,7 +8,22 @@ import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import PackingCategoryCard from '@/app/components/organisms/PackingCategoryCard';
 import TripAlertSettingsModal from '@/app/components/organisms/TripAlertSettingsModal';
 import { formatDateRange } from '@/app/lib/utils';
-import type { PackingCategory, PackingStats } from '@/app/lib/types/packing';
+import type { PackingCategory, PackingStats, PackingItem } from '@/app/lib/types/packing';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 
 interface Trip {
@@ -40,6 +55,12 @@ export default function PackingChecklistPage({ params }: PageProps) {
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAlertSettingsOpen, setIsAlertSettingsOpen] = useState(false);
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const fetchPackingList = async () => {
     try {
@@ -51,6 +72,42 @@ export default function PackingChecklistPage({ params }: PageProps) {
       }
     } catch (error) {
       console.error('Error fetching packing list:', error);
+    }
+  };
+
+  const handleCategoryDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = categories.findIndex(c => c.category_id === active.id);
+    const newIndex = categories.findIndex(c => c.category_id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reorderedCategories = arrayMove(categories, oldIndex, newIndex);
+    
+    // Update local state immediately
+    setCategories(reorderedCategories);
+
+    // Update database
+    const categoryOrders = reorderedCategories.map((cat, index) => ({
+      category_id: cat.category_id,
+      display_order: index,
+    }));
+
+    try {
+      await fetch(`/api/trips/${tripId}/packing/categories/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryOrders }),
+      });
+    } catch (err) {
+      console.error('Error saving category order:', err);
+      // Revert on error
+      await fetchPackingList();
     }
   };
 
@@ -116,7 +173,7 @@ export default function PackingChecklistPage({ params }: PageProps) {
   const handleUpdateCategory = async (categoryId: number, name: string) => {
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/trips/${tripId}/packing/${categoryId}`, {
+      const response = await fetch(`/api/trips/${tripId}/packing/categories/${categoryId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ category_name: name }),
@@ -136,7 +193,7 @@ export default function PackingChecklistPage({ params }: PageProps) {
 
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/trips/${tripId}/packing/${categoryId}`, {
+      const response = await fetch(`/api/trips/${tripId}/packing/categories/${categoryId}`, {
         method: 'DELETE',
       });
       if (response.ok) {
@@ -148,11 +205,22 @@ export default function PackingChecklistPage({ params }: PageProps) {
       setIsProcessing(false);
     }
   };
+  
+  const handleReorderItems = async (categoryId: number, reorderedItems: PackingItem[]) => {
+    // Optimistically update local state
+    setCategories(prev => 
+      prev.map(cat => 
+        cat.category_id === categoryId 
+          ? { ...cat, items: reorderedItems }
+          : cat
+      )
+    );
+  };
 
   const handleAddItem = async (categoryId: number, itemName: string) => {
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/trips/${tripId}/packing/${categoryId}`, {
+      const response = await fetch(`/api/trips/${tripId}/packing/categories/${categoryId}/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ item_name: itemName }),
@@ -167,9 +235,9 @@ export default function PackingChecklistPage({ params }: PageProps) {
     }
   };
 
-  const handleToggleItem = async (itemId: number) => {
+  const handleToggleItem = async (itemId: number, categoryId: number) => {
     try {
-      const response = await fetch(`/api/trips/${tripId}/packing/items/${itemId}`, {
+      const response = await fetch(`/api/trips/${tripId}/packing/categories/${categoryId}/items/${itemId}`, {
         method: 'PATCH',
       });
       if (response.ok) {
@@ -180,10 +248,10 @@ export default function PackingChecklistPage({ params }: PageProps) {
     }
   };
 
-  const handleUpdateItem = async (itemId: number, name: string) => {
+  const handleUpdateItem = async (itemId: number, name: string, categoryId: number) => {
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/trips/${tripId}/packing/items/${itemId}`, {
+      const response = await fetch(`/api/trips/${tripId}/packing/categories/${categoryId}/items/${itemId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ item_name: name }),
@@ -198,9 +266,9 @@ export default function PackingChecklistPage({ params }: PageProps) {
     }
   };
 
-  const handleUpdateItemPriority = async (itemId: number, priority: string) => {
+  const handleUpdateItemPriority = async (itemId: number, priority: string, categoryId: number) => {
     try {
-      const response = await fetch(`/api/trips/${tripId}/packing/items/${itemId}`, {
+      const response = await fetch(`/api/trips/${tripId}/packing/categories/${categoryId}/items/${itemId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priority }),
@@ -213,10 +281,10 @@ export default function PackingChecklistPage({ params }: PageProps) {
     }
   };
 
-  const handleDeleteItem = async (itemId: number) => {
+  const handleDeleteItem = async (itemId: number, categoryId: number) => {
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/trips/${tripId}/packing/items/${itemId}`, {
+      const response = await fetch(`/api/trips/${tripId}/packing/categories/${categoryId}/items/${itemId}`, {
         method: 'DELETE',
       });
       if (response.ok) {
@@ -348,20 +416,32 @@ export default function PackingChecklistPage({ params }: PageProps) {
               <p className="text-white/60">Click the + button to add your first category</p>
             </div>
           ) : (
-            categories.map(category => (
-              <PackingCategoryCard
-                key={category.category_id}
-                category={category}
-                tripId={Number(tripId)}
-                onUpdateCategory={handleUpdateCategory}
-                onDeleteCategory={handleDeleteCategory}
-                onAddItem={handleAddItem}
-                onToggleItem={handleToggleItem}
-                onUpdateItem={handleUpdateItem}
-                onUpdateItemPriority={handleUpdateItemPriority}
-                onDeleteItem={handleDeleteItem}
-              />
-            ))
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleCategoryDragEnd}
+            >
+              <SortableContext
+                items={categories.map(c => c.category_id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {categories.map(category => (
+                  <PackingCategoryCard
+                    key={category.category_id}
+                    category={category}
+                    tripId={Number(tripId)}
+                    onUpdateCategory={handleUpdateCategory}
+                    onDeleteCategory={handleDeleteCategory}
+                    onAddItem={handleAddItem}
+                    onToggleItem={(itemId) => handleToggleItem(itemId, category.category_id)}
+                    onUpdateItem={(itemId, name) => handleUpdateItem(itemId, name, category.category_id)}
+                    onUpdateItemPriority={(itemId, priority) => handleUpdateItemPriority(itemId, priority, category.category_id)}
+                    onDeleteItem={(itemId) => handleDeleteItem(itemId, category.category_id)}
+                    onReorderItems={handleReorderItems}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           )}
 
           {/* Add Category Form */}
