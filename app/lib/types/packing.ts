@@ -12,7 +12,7 @@ export interface PackingItem {
   category_id: number;
   item_name: string;
   is_packed: number;
-  priority: string;
+  priority: string | null;
   display_order: number;
   created_at: string;
 }

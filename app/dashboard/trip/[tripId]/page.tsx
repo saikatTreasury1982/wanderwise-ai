@@ -50,10 +50,28 @@ export default function TripHubPage({ params }: PageProps) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        let tripData: any = null;
-        
-        // Fetch trip
-        const tripResponse = await fetch(`/api/trips/${tripId}`);
+        // Fire ALL requests in parallel
+        const [
+          tripResponse,
+          flightsResponse,
+          accommodationsResponse,
+          itineraryResponse,
+          packingResponse,
+          prefResponse,
+          travelersResponse,
+          costForecastResponse,
+        ] = await Promise.all([
+          fetch(`/api/trips/${tripId}`),
+          fetch(`/api/trips/${tripId}/flights`),
+          fetch(`/api/trips/${tripId}/accommodations`),
+          fetch(`/api/trips/${tripId}/itinerary`),
+          fetch(`/api/trips/${tripId}/packing`),
+          fetch('/api/user/preferences'),
+          fetch(`/api/trips/${tripId}/travelers`),
+          fetch(`/api/trips/${tripId}/cost-forecast`),
+        ]);
+
+        // Handle auth redirects
         if (tripResponse.status === 401) {
           router.push('/login');
           return;
@@ -62,16 +80,48 @@ export default function TripHubPage({ params }: PageProps) {
           router.push('/dashboard');
           return;
         }
-  
-        if (tripResponse.ok) {
-          tripData = await tripResponse.json();
-          setTrip(tripData.trip);
-        } 
 
-        // Fetch flights
-        const flightsResponse = await fetch(`/api/trips/${tripId}/flights`);
-        if (flightsResponse.ok) {
-          const flightsData = await flightsResponse.json();
+        // Parse all responses in parallel
+        const [
+          tripData,
+          flightsData,
+          accommodationsData,
+          itineraryData,
+          packingData,
+          prefData,
+          travelersData,
+          costData,
+        ] = await Promise.all([
+          tripResponse.ok ? tripResponse.json() : null,
+          flightsResponse.ok ? flightsResponse.json() : null,
+          accommodationsResponse.ok ? accommodationsResponse.json() : null,
+          itineraryResponse.ok ? itineraryResponse.json() : null,
+          packingResponse.ok ? packingResponse.json() : null,
+          prefResponse.ok ? prefResponse.json() : null,
+          travelersResponse.ok ? travelersResponse.json() : null,
+          costForecastResponse.ok ? costForecastResponse.json() : null,
+        ]);
+
+        // Set all state
+        if (tripData?.trip) {
+          setTrip(tripData.trip);
+          
+          // Calculate total days
+          const start = new Date(tripData.trip.start_date);
+          const end = new Date(tripData.trip.end_date);
+          const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+          
+          // Set itinerary stats with calculated days
+          if (itineraryData) {
+            const daysPlanned = itineraryData.length;
+            const activitiesCount = itineraryData.reduce((sum: number, day: any) => {
+              return sum + (day.categories?.reduce((catSum: number, cat: any) => catSum + (cat.activities?.length || 0), 0) || 0);
+            }, 0);
+            setItineraryStats({ daysPlanned, totalDays, activitiesCount });
+          }
+        }
+
+        if (flightsData) {
           const flights = flightsData || [];
           setFlightStats({
             total: flights.length,
@@ -80,10 +130,7 @@ export default function TripHubPage({ params }: PageProps) {
           });
         }
 
-        // Fetch accommodations
-        const accommodationsResponse = await fetch(`/api/trips/${tripId}/accommodations`);
-        if (accommodationsResponse.ok) {
-          const accommodationsData = await accommodationsResponse.json();
+        if (accommodationsData) {
           const accommodations = accommodationsData || [];
           setAccommodationStats({
             total: accommodations.length,
@@ -92,51 +139,19 @@ export default function TripHubPage({ params }: PageProps) {
           });
         }
 
-        // Fetch itinerary stats
-        const itineraryResponse = await fetch(`/api/trips/${tripId}/itinerary`);
-        if (itineraryResponse.ok) {
-          const itineraryData = await itineraryResponse.json();
-          const daysPlanned = itineraryData.length;
-          const activitiesCount = itineraryData.reduce((sum: number, day: any) => {
-            return sum + (day.categories?.reduce((catSum: number, cat: any) => catSum + (cat.activities?.length || 0), 0) || 0);
-          }, 0);
-          
-          // Calculate total days from trip dates (use tripData which we already fetched)
-          let totalDays = 0;
-          if (tripData?.trip) {
-            const start = new Date(tripData.trip.start_date);
-            const end = new Date(tripData.trip.end_date);
-            totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-          }
-          
-          setItineraryStats({ daysPlanned, totalDays, activitiesCount });
-        }
-
-        // Fetch packing stats
-        const packingResponse = await fetch(`/api/trips/${tripId}/packing`);
-        if (packingResponse.ok) {
-          const packingData = await packingResponse.json();
+        if (packingData?.stats) {
           setPackingStats(packingData.stats);
         }
 
-        // Fetch preferences
-        const prefResponse = await fetch('/api/user/preferences');
-        if (prefResponse.ok) {
-          const prefData = await prefResponse.json();
+        if (prefData?.preferences) {
           setPreferences(prefData.preferences);
         }
 
-        // Fetch travelers
-        const travelersResponse = await fetch(`/api/trips/${tripId}/travelers`);
-        if (travelersResponse.ok) {
-          const travelersData = await travelersResponse.json();
+        if (travelersData?.travelers) {
           setTravelers(travelersData.travelers);
         }
 
-        // Fetch cost forecast stats
-        const costForecastResponse = await fetch(`/api/trips/${tripId}/cost-forecast`);
-        if (costForecastResponse.ok) {
-          const costData = await costForecastResponse.json();
+        if (costData) {
           const itemsCount = costData.module_breakdown?.reduce((sum: number, m: any) => sum + m.items_count, 0) || 0;
           setCostForecastStats({
             totalCost: costData.total_cost || 0,

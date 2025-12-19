@@ -2,35 +2,120 @@ import { query } from '@/app/lib/db';
 import type { FlightOption, FlightLeg, CreateFlightOptionInput, UpdateFlightOptionInput, } from '@/app/lib/types/flight';
 
 export async function getFlightOptionsByTrip(tripId: number): Promise<FlightOption[]> {
-  const options = await query<FlightOption>(
-    `SELECT * FROM flight_options WHERE trip_id = ? ORDER BY created_at DESC`,
+  // Single query with LEFT JOINs for legs and travelers
+  const rows = await query<{
+    flight_option_id: number;
+    trip_id: number;
+    flight_type: string;
+    linked_flight_id: number | null;
+    unit_fare: number | null;
+    currency_code: string | null;
+    status: string;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+    leg_id: number | null;
+    leg_order: number | null;
+    departure_airport: string | null;
+    arrival_airport: string | null;
+    departure_date: string | null;
+    departure_time: string | null;
+    arrival_date: string | null;
+    arrival_time: string | null;
+    airline: string | null;
+    flight_number: string | null;
+    stops_count: number | null;
+    duration_minutes: number | null;
+    traveler_link_id: number | null;
+    traveler_id: number | null;
+    traveler_name: string | null;
+  }>(
+    `SELECT 
+      fo.*,
+      fl.leg_id,
+      fl.leg_order,
+      fl.departure_airport,
+      fl.arrival_airport,
+      fl.departure_date,
+      fl.departure_time,
+      fl.arrival_date,
+      fl.arrival_time,
+      fl.airline,
+      fl.flight_number,
+      fl.stops_count,
+      fl.duration_minutes,
+      fot.id as traveler_link_id,
+      fot.traveler_id,
+      tt.traveler_name
+     FROM flight_options fo
+     LEFT JOIN flight_legs fl ON fo.flight_option_id = fl.flight_option_id
+     LEFT JOIN flight_option_travelers fot ON fo.flight_option_id = fot.flight_option_id
+     LEFT JOIN trip_travelers tt ON fot.traveler_id = tt.traveler_id
+     WHERE fo.trip_id = ?
+     ORDER BY fo.created_at DESC, fl.leg_order, fot.id`,
     [tripId]
   );
 
-  const flightOptions: FlightOption[] = [];
+  const flightMap = new Map<number, FlightOption>();
+  const legsMap = new Map<number, Set<number>>(); // Track which legs we've added
+  const travelersMap = new Map<number, Set<number>>(); // Track which travelers we've added
 
-  for (const row of options) {
-    const legs = await query<FlightLeg>(
-      `SELECT * FROM flight_legs WHERE flight_option_id = ? ORDER BY leg_order`,
-      [row.flight_option_id]
-    );
+  for (const row of rows) {
+    // Create flight option if not exists
+    if (!flightMap.has(row.flight_option_id)) {
+      flightMap.set(row.flight_option_id, {
+        flight_option_id: row.flight_option_id,
+        trip_id: row.trip_id,
+        flight_type: row.flight_type as 'one_way' | 'round_trip' | 'multi_city',
+        linked_flight_id: row.linked_flight_id,
+        unit_fare: row.unit_fare,
+        currency_code: row.currency_code,
+        status: row.status as 'draft' | 'shortlisted' | 'confirmed' | 'not_selected',
+        notes: row.notes,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        legs: [],
+        travelers: [],
+      });
+      legsMap.set(row.flight_option_id, new Set());
+      travelersMap.set(row.flight_option_id, new Set());
+    }
 
-    const travelers = await query<{ id: number; flight_option_id: number; traveler_id: number; traveler_name: string }>(
-      `SELECT fot.id, fot.flight_option_id, fot.traveler_id, tt.traveler_name 
-      FROM flight_option_travelers fot
-      JOIN trip_travelers tt ON fot.traveler_id = tt.traveler_id
-      WHERE fot.flight_option_id = ?`,
-      [row.flight_option_id]
-    );
+    const flight = flightMap.get(row.flight_option_id)!;
 
-    flightOptions.push({
-      ...row,
-      legs,
-      travelers,
-    });
+    // Add leg if exists and not already added
+    if (row.leg_id && !legsMap.get(row.flight_option_id)!.has(row.leg_id)) {
+      flight.legs!.push({
+        leg_id: row.leg_id,
+        flight_option_id: row.flight_option_id,
+        leg_order: row.leg_order!,
+        departure_airport: row.departure_airport!,
+        arrival_airport: row.arrival_airport!,
+        departure_date: row.departure_date!,
+        departure_time: row.departure_time,
+        arrival_date: row.arrival_date!,
+        arrival_time: row.arrival_time,
+        airline: row.airline,
+        flight_number: row.flight_number,
+        stops_count: row.stops_count!,
+        duration_minutes: row.duration_minutes,
+      });
+      legsMap.get(row.flight_option_id)!.add(row.leg_id);
+    }
+
+    // Add traveler if exists and not already added
+    if (row.traveler_id && !travelersMap.get(row.flight_option_id)!.has(row.traveler_id)) {
+      flight.travelers!.push({
+        id: row.traveler_link_id!,
+        flight_option_id: row.flight_option_id,
+        traveler_id: row.traveler_id,
+        traveler_name: row.traveler_name!,
+      });
+      travelersMap.get(row.flight_option_id)!.add(row.traveler_id);
+    }
   }
 
-  return flightOptions;
+  return Array.from(flightMap.values());
 }
 
 export async function getFlightOptionById(flightOptionId: number): Promise<FlightOption | null> {

@@ -12,29 +12,85 @@ export async function getAccommodationTypes(): Promise<AccommodationType[]> {
 }
 
 export async function getAccommodationOptionsByTrip(tripId: number): Promise<AccommodationOption[]> {
-  const options = await query<AccommodationOption>(
-    `SELECT * FROM accommodation_options WHERE trip_id = ? ORDER BY check_in_date, created_at DESC`,
+  // Single query with LEFT JOIN for travelers
+  const rows = await query<{
+    accommodation_option_id: number;
+    trip_id: number;
+    type_name: string | null;
+    accommodation_name: string | null;
+    address: string | null;
+    location: string | null;
+    check_in_date: string | null;
+    check_in_time: string | null;
+    check_out_date: string | null;
+    check_out_time: string | null;
+    num_rooms: number;
+    price_per_night: number | null;
+    total_price: number | null;
+    currency_code: string | null;
+    status: string;
+    booking_reference: string | null;
+    booking_source: string | null;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+    traveler_link_id: number | null;
+    traveler_id: number | null;
+    traveler_name: string | null;
+  }>(
+    `SELECT 
+      ao.*,
+      aot.id as traveler_link_id,
+      aot.traveler_id,
+      tt.traveler_name
+     FROM accommodation_options ao
+     LEFT JOIN accommodation_option_travelers aot ON ao.accommodation_option_id = aot.accommodation_option_id
+     LEFT JOIN trip_travelers tt ON aot.traveler_id = tt.traveler_id
+     WHERE ao.trip_id = ?
+     ORDER BY ao.check_in_date, ao.created_at DESC, aot.id`,
     [tripId]
   );
 
-  const accommodationOptions: AccommodationOption[] = [];
+  const accommodationMap = new Map<number, AccommodationOption>();
 
-  for (const row of options) {
-    const travelers = await query<AccommodationOptionTraveler>(
-      `SELECT aot.id, aot.accommodation_option_id, aot.traveler_id, tt.traveler_name 
-      FROM accommodation_option_travelers aot
-      JOIN trip_travelers tt ON aot.traveler_id = tt.traveler_id
-      WHERE aot.accommodation_option_id = ?`,
-      [row.accommodation_option_id]
-    );
+  for (const row of rows) {
+    if (!accommodationMap.has(row.accommodation_option_id)) {
+      accommodationMap.set(row.accommodation_option_id, {
+        accommodation_option_id: row.accommodation_option_id,
+        trip_id: row.trip_id,
+        type_name: row.type_name,
+        accommodation_name: row.accommodation_name,
+        address: row.address,
+        location: row.location,
+        check_in_date: row.check_in_date,
+        check_in_time: row.check_in_time,
+        check_out_date: row.check_out_date,
+        check_out_time: row.check_out_time,
+        num_rooms: row.num_rooms,
+        price_per_night: row.price_per_night,
+        total_price: row.total_price,
+        currency_code: row.currency_code,
+        status: row.status as 'draft' | 'shortlisted' | 'confirmed' | 'not_selected',
+        booking_reference: row.booking_reference,
+        booking_source: row.booking_source,
+        notes: row.notes,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        travelers: [],
+      });
+    }
 
-    accommodationOptions.push({
-      ...row,
-      travelers,
-    });
+    if (row.traveler_id) {
+      accommodationMap.get(row.accommodation_option_id)!.travelers!.push({
+        id: row.traveler_link_id!,
+        accommodation_option_id: row.accommodation_option_id,
+        traveler_id: row.traveler_id,
+        traveler_name: row.traveler_name!,
+      });
+    }
   }
 
-  return accommodationOptions;
+  return Array.from(accommodationMap.values());
 }
 
 export async function getAccommodationOptionById(accommodationOptionId: number): Promise<AccommodationOption | null> {

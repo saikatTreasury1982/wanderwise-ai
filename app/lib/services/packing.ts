@@ -13,26 +13,68 @@ import type {
 // Categories
 
 export async function getPackingCategoriesByTrip(tripId: number): Promise<PackingCategory[]> {
-  const categories = await query<PackingCategory>(
-    `SELECT * FROM packing_categories WHERE trip_id = ? ORDER BY display_order, created_at`,
+  // Single query with LEFT JOIN
+  const rows = await query<{
+    category_id: number;
+    trip_id: number;
+    category_name: string;
+    display_order: number;
+    created_at: string;
+    item_id: number | null;
+    item_name: string | null;
+    is_packed: number | null;
+    priority: string | null;
+    item_display_order: number | null;
+    item_created_at: string | null;
+  }>(
+    `SELECT 
+      pc.category_id,
+      pc.trip_id,
+      pc.category_name,
+      pc.display_order,
+      pc.created_at,
+      pi.item_id,
+      pi.item_name,
+      pi.is_packed,
+      pi.priority,
+      pi.display_order as item_display_order,
+      pi.created_at as item_created_at
+     FROM packing_categories pc
+     LEFT JOIN packing_items pi ON pc.category_id = pi.category_id
+     WHERE pc.trip_id = ?
+     ORDER BY pc.display_order, pc.created_at, pi.display_order, pi.created_at`,
     [tripId]
   );
 
-  const categoriesWithItems: PackingCategory[] = [];
-
-  for (const category of categories) {
-    const items = await query<PackingItem>(
-      `SELECT * FROM packing_items WHERE category_id = ? ORDER BY display_order, created_at`,
-      [category.category_id]
-    );
-
-    categoriesWithItems.push({
-      ...category,
-      items,
-    });
+  // Group by category
+  const categoryMap = new Map<number, PackingCategory>();
+  
+  for (const row of rows) {
+    if (!categoryMap.has(row.category_id)) {
+      categoryMap.set(row.category_id, {
+        category_id: row.category_id,
+        trip_id: row.trip_id,
+        category_name: row.category_name,
+        display_order: row.display_order,
+        created_at: row.created_at,
+        items: [],
+      });
+    }
+    
+    if (row.item_id) {
+      categoryMap.get(row.category_id)!.items!.push({
+        item_id: row.item_id,
+        category_id: row.category_id,
+        item_name: row.item_name!,
+        is_packed: row.is_packed!,
+        priority: row.priority as string | null,
+        display_order: row.item_display_order!,
+        created_at: row.item_created_at!,
+      });
+    }
   }
-
-  return categoriesWithItems;
+  
+  return Array.from(categoryMap.values());
 }
 
 export async function getPackingCategoryById(categoryId: number): Promise<PackingCategory | null> {
