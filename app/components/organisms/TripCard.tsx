@@ -63,20 +63,34 @@ export default function TripCard({
   } | null>(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [stats, setStats] = useState<TripStats | null>(null);
+  const [destinations, setDestinations] = useState<string>('');
 
+  // Fetch weather independently
   useEffect(() => {
     const fetchWeather = async () => {
-      const city = trip.destination_city || trip.destination_country;
-      if (!city || !trip.start_date || !trip.end_date) return;
-
-      setIsLoadingWeather(true);
       try {
-        const response = await fetch(
+        // Get first destination
+        const destRes = await fetch(`/api/trips/${trip.trip_id}/destinations`);
+        if (!destRes.ok) return;
+
+        const destData = await destRes.json();
+        if (!destData.destinations || destData.destinations.length === 0) return;
+
+        const firstDest = destData.destinations[0];
+        const city = firstDest.city || firstDest.country;
+
+        if (!city || !trip.start_date || !trip.end_date) return;
+
+        setIsLoadingWeather(true);
+        const weatherRes = await fetch(
           `/api/weather?city=${encodeURIComponent(city)}&startDate=${trip.start_date}&endDate=${trip.end_date}`
         );
-        if (response.ok) {
-          const data = await response.json();
-          setWeather(data);
+
+        if (weatherRes.ok) {
+          const weatherData = await weatherRes.json();
+          if (weatherData) {
+            setWeather(weatherData);
+          }
         }
       } catch (error) {
         console.error('Error fetching weather:', error);
@@ -86,11 +100,11 @@ export default function TripCard({
     };
 
     fetchWeather();
-  }, [trip.destination_city, trip.destination_country, trip.start_date, trip.end_date]);
+  }, [trip.trip_id, trip.start_date, trip.end_date]);
 
-  // Fetch trip statistics
+  // Fetch destinations and statistics for ALL trips
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
         // Fetch travelers
         const travelersRes = await fetch(`/api/trips/${trip.trip_id}/travelers`);
@@ -117,22 +131,30 @@ export default function TripCard({
           }
         }
 
+        // Fetch destinations
+        let destinationsText = '';
+        const destRes = await fetch(`/api/trips/${trip.trip_id}/destinations`);
+        if (destRes.ok) {
+          const destData = await destRes.json();
+          if (destData.destinations && destData.destinations.length > 0) {
+            destinationsText = destData.destinations
+              .map((d: any) => d.city ? `${d.city}, ${d.country}` : d.country)
+              .join(' • ');
+          }
+        }
+        
+        setDestinations(destinationsText);
         setStats({ activeTravelers, costSharers, totalCost, baseCurrency });
       } catch (error) {
-        console.error('Error fetching trip stats:', error);
+        console.error('Error fetching trip data:', error);
       }
     };
 
-    if (trip.status_code !== 1) {
-      fetchStats();
-    }
-  }, [trip.trip_id, trip.status_code]);
+    fetchData();
+  }, [trip.trip_id]);
 
   const statusLabel = statuses.find(s => s.status_code === trip.status_code)?.status_name || 'Unknown';
   const statusStyle = statusStyles[trip.status_code] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-  const destination = [trip.destination_city, trip.destination_country]
-    .filter(Boolean)
-    .join(', ');
 
   const isDraft = trip.status_code === 1;
 
@@ -188,8 +210,8 @@ export default function TripCard({
             </span>
           </div>
 
-          {destination && (
-            <p className="text-white/70 text-sm truncate">{destination}</p>
+          {destinations && (
+            <p className="text-white/70 text-sm truncate">{destinations}</p>
           )}
         </div>
 

@@ -69,7 +69,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { delete_planning_data, ...updateData } = body;
+    const { delete_planning_data, destinations, ...updateData } = body;
 
     // If dropping planning with data deletion
     if (delete_planning_data === true) {
@@ -83,6 +83,28 @@ export async function PUT(request: Request, { params }: RouteParams) {
         { error: 'Trip not found' },
         { status: 404 }
       );
+    }
+
+    // Handle destinations update if provided
+    if (destinations !== undefined) {
+      const { query } = await import('@/app/lib/db');
+      
+      // Delete existing destinations
+      await query(
+        `DELETE FROM trip_destinations WHERE trip_id = ?`,
+        [parseInt(tripId)]
+      );
+
+      // Insert new destinations
+      if (destinations.length > 0) {
+        for (let i = 0; i < destinations.length; i++) {
+          const dest = destinations[i];
+          await query(
+            `INSERT INTO trip_destinations (trip_id, country, city, display_order) VALUES (?, ?, ?, ?)`,
+            [parseInt(tripId), dest.country, dest.city || null, i]
+          );
+        }
+      }
     }
 
     return NextResponse.json({ trip });

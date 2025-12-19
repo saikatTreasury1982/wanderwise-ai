@@ -47,6 +47,12 @@ export default function TripHubPage({ params }: PageProps) {
   const [itineraryStats, setItineraryStats] = useState<{ daysPlanned: number; totalDays: number; activitiesCount: number }>({ daysPlanned: 0, totalDays: 0, activitiesCount: 0 });
   const [costForecastStats, setCostForecastStats] = useState<{ totalCost: number; baseCurrency: string; itemsCount: number; lastCollected: string | null }>({ totalCost: 0, baseCurrency: '', itemsCount: 0, lastCollected: null });
 
+  const [destinations, setDestinations] = useState<Array<{
+    destination_id: number;
+    country: string;
+    city: string | null;
+  }>>([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -60,6 +66,7 @@ export default function TripHubPage({ params }: PageProps) {
           prefResponse,
           travelersResponse,
           costForecastResponse,
+          destinationsResponse,
         ] = await Promise.all([
           fetch(`/api/trips/${tripId}`),
           fetch(`/api/trips/${tripId}/flights`),
@@ -69,6 +76,7 @@ export default function TripHubPage({ params }: PageProps) {
           fetch('/api/user/preferences'),
           fetch(`/api/trips/${tripId}/travelers`),
           fetch(`/api/trips/${tripId}/cost-forecast`),
+          fetch(`/api/trips/${tripId}/destinations`),
         ]);
 
         // Handle auth redirects
@@ -91,6 +99,7 @@ export default function TripHubPage({ params }: PageProps) {
           prefData,
           travelersData,
           costData,
+          destinationsData,
         ] = await Promise.all([
           tripResponse.ok ? tripResponse.json() : null,
           flightsResponse.ok ? flightsResponse.json() : null,
@@ -100,6 +109,7 @@ export default function TripHubPage({ params }: PageProps) {
           prefResponse.ok ? prefResponse.json() : null,
           travelersResponse.ok ? travelersResponse.json() : null,
           costForecastResponse.ok ? costForecastResponse.json() : null,
+          destinationsResponse.ok ? destinationsResponse.json() : null,
         ]);
 
         // Set all state
@@ -161,6 +171,10 @@ export default function TripHubPage({ params }: PageProps) {
           });
         }
 
+        if (destinationsData?.destinations) {
+          setDestinations(destinationsData.destinations);
+        }
+
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -185,10 +199,6 @@ export default function TripHubPage({ params }: PageProps) {
   if (!trip) {
     return null;
   }
-
-  const destination = [trip.destination_city, trip.destination_country]
-    .filter(Boolean)
-    .join(', ');
 
   // Traveler stats
   const primaryTraveler = travelers.find(t => t.is_primary === 1);
@@ -335,13 +345,22 @@ export default function TripHubPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold text-white mb-3">{trip.trip_name}</h1>
           
           <div className="flex flex-wrap items-center gap-3">
-            {destination && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
-                <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span className="text-sm text-white/90">{destination}</span>
+            {destinations.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                {destinations.map(dest => (
+                  <div
+                    key={dest.destination_id}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20"
+                  >
+                    <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="text-sm text-white/90">
+                      {dest.city ? `${dest.city}, ${dest.country}` : dest.country}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
             

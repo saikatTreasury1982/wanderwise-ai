@@ -5,6 +5,7 @@ import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import { useRouter } from 'next/navigation';
+import DestinationSelector from '@/app/components/organisms/DestinationSelector';
 
 interface Trip {
   trip_id: number;
@@ -64,6 +65,7 @@ export default function TripForm({
     end_date: '',
   });
 
+  const [destinations, setDestinations] = useState<Array<{ country: string; city: string | null }>>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -71,27 +73,63 @@ export default function TripForm({
 
   // Populate form when editing
   useEffect(() => {
-    if (trip) {
-      setFormData({
-        trip_name: trip.trip_name,
-        trip_description: trip.trip_description || '',
-        destination_country: trip.destination_country || '',
-        destination_city: trip.destination_city || '',
-        start_date: trip.start_date,
-        end_date: trip.end_date,
-      });
-    } else {
-      setFormData({
-        trip_name: '',
-        trip_description: '',
-        destination_country: '',
-        destination_city: '',
-        start_date: '',
-        end_date: '',
-      });
-    }
-    setErrors({});
+    const loadTripData = async () => {
+      if (trip) {
+        setFormData({
+          trip_name: trip.trip_name,
+          trip_description: trip.trip_description || '',
+          destination_country: trip.destination_country || '',
+          destination_city: trip.destination_city || '',
+          start_date: trip.start_date,
+          end_date: trip.end_date,
+        });
+        
+        // Fetch destinations for existing trips
+        if (trip.trip_id) {
+          try {
+            const response = await fetch(`/api/trips/${trip.trip_id}/destinations`);
+            if (response.ok) {
+              const data = await response.json();
+              setDestinations(data.destinations.map((d: any) => ({
+                country: d.country,
+                city: d.city
+              })));
+            }
+          } catch (error) {
+            console.error('Error fetching destinations:', error);
+          }
+        }
+      } else {
+        setFormData({
+          trip_name: '',
+          trip_description: '',
+          destination_country: '',
+          destination_city: '',
+          start_date: '',
+          end_date: '',
+        });
+        setDestinations([]);
+      }
+      setErrors({});
+    };
+
+    loadTripData();
   }, [trip, isOpen]);
+
+  const fetchDestinations = async (tripId: number) => {
+    try {
+      const response = await fetch(`/api/trips/${tripId}/destinations`);
+      if (response.ok) {
+        const data = await response.json();
+        setDestinations(data.destinations.map((d: any) => ({
+          country: d.country,
+          city: d.city
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching destinations:', error);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -137,8 +175,8 @@ export default function TripForm({
       const method = isEditMode ? 'PUT' : 'POST';
 
       const payload = startPlanning
-      ? { ...formData, status_code: 2 }
-      : formData;
+        ? { ...formData, destinations, status_code: 2 }
+        : { ...formData, destinations };
 
       const response = await fetch(url, {
         method,
@@ -269,27 +307,12 @@ export default function TripForm({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            name="destination_country"
-            label="Country"
-            placeholder="e.g., Japan"
-            value={formData.destination_country}
-            onChange={handleChange}
-            variant="glass"
-            disabled={isReadOnly || isLimitedEdit}
-          />
-
-          <Input
-            name="destination_city"
-            label="City"
-            placeholder="e.g., Tokyo"
-            value={formData.destination_city}
-            onChange={handleChange}
-            variant="glass"
-            disabled={isReadOnly}
-          />
-        </div>
+        <DestinationSelector
+          tripId={trip?.trip_id}
+          initialDestinations={destinations}
+          onChange={(dests: Array<{ country: string; city: string | null }>) => setDestinations(dests)}
+          readOnly={isReadOnly || isLimitedEdit}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <Input
