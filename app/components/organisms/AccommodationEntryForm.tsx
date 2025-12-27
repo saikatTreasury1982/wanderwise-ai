@@ -272,7 +272,7 @@ export default function AccommodationEntryForm({
               type="date"
               value={checkInDate}
               onChange={e => setCheckInDate(e.target.value)}
-              className="w-full px-0.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
             />
           </div>
           <div className="min-w-0">
@@ -281,7 +281,7 @@ export default function AccommodationEntryForm({
               type="time"
               value={checkInTime}
               onChange={e => setCheckInTime(e.target.value)}
-              className="w-full px-0.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
             />
           </div>
         </div>
@@ -294,7 +294,7 @@ export default function AccommodationEntryForm({
               type="date"
               value={checkOutDate}
               onChange={e => setCheckOutDate(e.target.value)}
-              className="w-full px-0.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
             />
           </div>
           <div className="min-w-0">
@@ -303,7 +303,7 @@ export default function AccommodationEntryForm({
               type="time"
               value={checkOutTime}
               onChange={e => setCheckOutTime(e.target.value)}
-              className="w-full px-0.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
             />
           </div>
         </div>
