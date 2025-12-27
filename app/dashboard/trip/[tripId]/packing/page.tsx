@@ -56,7 +56,11 @@ export default function PackingChecklistPage({ params }: PageProps) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAlertSettingsOpen, setIsAlertSettingsOpen] = useState(false);
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px of movement before drag starts
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })

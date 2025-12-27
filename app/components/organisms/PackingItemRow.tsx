@@ -209,7 +209,7 @@ export default function PackingItemRow({
       <button
         {...attributes}
         {...listeners}
-        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing"
+        className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing touch-none"
       >
         <GripVertical className="w-4 h-4 text-purple-300" />
       </button>
@@ -262,7 +262,7 @@ export default function PackingItemRow({
 
       {/* Action Buttons */}
       {!isEditing && (
-        <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+        <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 flex items-center gap-1 transition-opacity">
           {/* Priority Button */}
           <button
             ref={priorityButtonRef}
