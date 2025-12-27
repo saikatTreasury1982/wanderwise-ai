@@ -417,7 +417,7 @@ export default function TripHubPage({ params }: PageProps) {
 
           {/* Add Accommodations */}
           <HubTile
-            title="Accommodations"
+            title="Lodging"
             onClick={() => router.push(`/dashboard/trip/${tripId}/accommodations`)}
             count={accommodationStats.total > 0 ? accommodationStats.total : undefined}
             countLabel={accommodationStats.total > 0 ? "Options" : undefined}

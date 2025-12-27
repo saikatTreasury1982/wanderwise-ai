@@ -215,7 +215,7 @@ export default function CostForecastPage({ params }: PageProps) {
       case 'flights':
         return 'Flights';
       case 'accommodations':
-        return 'Accommodations';
+        return 'Lodging';
       case 'itinerary':
         return 'Itinerary';
       default:
