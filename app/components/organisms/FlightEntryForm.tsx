@@ -286,46 +286,46 @@ export default function FlightEntryForm({
 
           {/* Departure date/time - Stack on mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
+            <div className="min-w-0">
               <label className="block text-sm text-white/60 mb-1.5">Departure Date</label>
               <input
                 type="date"
                 value={leg.departure_date}
                 onChange={e => updateLeg(legs, setLegs, index, 'departure_date', e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-3 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
                 required
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="block text-sm text-white/60 mb-1.5">Time</label>
               <input
                 type="time"
                 value={leg.departure_time}
                 onChange={e => updateLeg(legs, setLegs, index, 'departure_time', e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-3 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
               />
             </div>
           </div>
 
           {/* Arrival date/time - Stack on mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
+            <div className="min-w-0">
               <label className="block text-sm text-white/60 mb-1.5">Arrival Date</label>
               <input
                 type="date"
                 value={leg.arrival_date}
                 onChange={e => updateLeg(legs, setLegs, index, 'arrival_date', e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-3 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
                 required
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="block text-sm text-white/60 mb-1.5">Time</label>
               <input
                 type="time"
                 value={leg.arrival_time}
                 onChange={e => updateLeg(legs, setLegs, index, 'arrival_time', e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-3 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
               />
             </div>
           </div>
@@ -526,14 +526,26 @@ export default function FlightEntryForm({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm text-white/60 mb-1.5">Notes</label>
+          <label className="block text-sm text-white/60 mb-1.5">
+            Notes <span className="text-xs text-white/40">(each line becomes a bullet point)</span>
+          </label>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            rows={3}
-            placeholder="Source, layover details, etc."
+            rows={4}
+            placeholder="Flight source&#10;Seat preferences&#10;Baggage details"
             className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400 resize-none"
           />
+          {notes && notes.trim() && (
+            <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
+              <p className="text-xs text-white/50 mb-1.5">Preview:</p>
+              <ul className="list-disc list-inside space-y-1">
+                {notes.split('\n').filter(line => line.trim()).map((line, i) => (
+                  <li key={i} className="text-sm text-white/70">{line.trim()}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Buttons */}
