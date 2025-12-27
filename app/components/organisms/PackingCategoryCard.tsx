@@ -164,34 +164,41 @@ export default function PackingCategoryCard({
       {/* Header */}
       <div
         className={cn(
-          'flex items-center gap-3 px-4 py-3 cursor-pointer',
+          'flex items-center gap-3 px-4 py-3',
           'hover:bg-white/5 transition-colors'
         )}
-        onClick={() => !isEditingName && setIsExpanded(!isExpanded)}
       >
         {/* Drag Handle */}
         <button
           {...attributes}
           {...listeners}
           onClick={(e) => e.stopPropagation()}
-          className="p-1 rounded hover:bg-white/10 transition-colors cursor-grab active:cursor-grabbing"
+          className="p-1 rounded hover:bg-white/10 transition-colors cursor-grab active:cursor-grabbing touch-none"
           title="Drag to reorder"
         >
           <GripVertical className="w-4 h-4 text-purple-300" />
         </button>
 
-        {/* Expand/Collapse Icon */}
-        <svg
-          className={cn(
-            'w-4 h-4 text-white/70 transition-transform',
-            isExpanded && 'rotate-90'
-          )}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+        {/* Expand/Collapse Icon - Always clickable */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className="p-1 -m-1 hover:bg-white/10 rounded transition-colors"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+          <svg
+            className={cn(
+              'w-4 h-4 text-white/70 transition-transform',
+              isExpanded && 'rotate-90'
+            )}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
 
         {/* Category Name */}
         {isEditingName ? (
@@ -209,7 +216,12 @@ export default function PackingCategoryCard({
             className="flex-1 px-2 py-1 bg-white/10 border border-white/20 rounded text-white font-medium focus:outline-none focus:border-purple-400"
           />
         ) : (
-          <span className="flex-1 text-white font-medium">{category.category_name}</span>
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex-1 text-left text-white font-medium hover:text-white/80 transition-colors"
+          >
+            {category.category_name}
+          </button>
         )}
 
         {/* Progress */}
