@@ -223,7 +223,34 @@ async function collectAndSaveFlightCosts(
   const items: CostLineItem[] = [];
 
   for (const f of flights) {
-    const description = f.notes || `Flight (${f.flight_type || 'one_way'})`;
+    // Get first and last leg for route
+    const legs = await queryTx<{ departure_airport: string; arrival_airport: string }>(
+      tx,
+      `SELECT departure_airport, arrival_airport 
+       FROM flight_legs 
+       WHERE flight_option_id = ? 
+       ORDER BY leg_order`,
+      [f.flight_option_id]
+    );
+
+    // Build route description
+    let routeDescription = '';
+    if (legs.length > 0) {
+      const firstDeparture = legs[0].departure_airport;
+      const lastArrival = legs[legs.length - 1].arrival_airport;
+      routeDescription = `${firstDeparture} → ${lastArrival}`;
+    }
+    
+    // Add flight type
+    const flightTypeLabel = 
+      f.flight_type === 'round_trip' ? 'Round Trip' :
+      f.flight_type === 'multi_city' ? 'Multi City' :
+      'One Way';
+    
+    const description = routeDescription 
+      ? `${routeDescription} (${flightTypeLabel})`
+      : f.notes || `Flight (${flightTypeLabel})`;
+
     const travelerCount = f.traveler_count || 1;
     const totalAmount = f.unit_fare * travelerCount;
 
