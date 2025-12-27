@@ -135,3 +135,38 @@ html {
 .animate-scale-in {
   animation: scaleIn 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+/* Custom scrollbar for flight modal */
+.flight-modal-scroll {
+  scrollbar-width: none; /* Firefox - hide on mobile */
+}
+
+.flight-modal-scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari - hide on mobile */
+}
+
+/* Show styled scrollbar on desktop */
+@media (min-width: 640px) {
+  .flight-modal-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  .flight-modal-scroll::-webkit-scrollbar {
+    display: block;
+    width: 8px;
+  }
+
+  .flight-modal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .flight-modal-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+  }
+
+  .flight-modal-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
