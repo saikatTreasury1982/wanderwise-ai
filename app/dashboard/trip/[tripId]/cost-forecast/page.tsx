@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { RefreshCw, Plane, Building2, Calendar, Users, ChevronDown, ChevronRight, Play } from 'lucide-react';
 import PageBackground from '@/app/components/ui/PageBackground';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import type { CostForecastReport, TravelerShare } from '@/app/lib/types/cost-forecast';
 import { formatDateRange } from '@/app/lib/utils';
 
@@ -319,14 +320,15 @@ export default function CostForecastPage({ params }: PageProps) {
             <div className="flex items-center gap-2 flex-shrink-0">
               {/* Collect Costs Button */}
               <div className="relative group">
-                <button
+                <CircleIconButton
                   onClick={handleCollectCosts}
                   disabled={collecting}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-green-500/20 text-green-300 hover:bg-green-500/30 transition-colors disabled:opacity-50"
-                >
-                  <Play className={`w-5 h-5 ${collecting ? 'animate-pulse' : ''}`} />
-                </button>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  isLoading={collecting}
+                  variant="default"
+                  title="Collect Costs"
+                  icon={<Play className="w-5 h-5" />}
+                />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                   Collect Costs
                 </div>
               </div>
@@ -334,14 +336,15 @@ export default function CostForecastPage({ params }: PageProps) {
               {/* Refresh Rates Button */}
               {report && (
                 <div className="relative group">
-                  <button
+                  <CircleIconButton
                     onClick={handleRefreshRates}
                     disabled={refreshing}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition-colors disabled:opacity-50"
-                  >
-                    <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-                  </button>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                    isLoading={refreshing}
+                    variant="default"
+                    title="Refresh Exchange Rates"
+                    icon={<RefreshCw className="w-5 h-5" />}
+                  />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                     Refresh Exchange Rates
                   </div>
                 </div>

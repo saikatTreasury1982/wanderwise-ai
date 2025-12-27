@@ -63,11 +63,15 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   };
 
   const activitySensors = useSensors(
-  useSensor(PointerSensor),
-  useSensor(KeyboardSensor, {
-    coordinateGetter: sortableKeyboardCoordinates,
-  })
-);
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const handleActivityDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -345,7 +349,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
         <button
           {...attributes}
           {...listeners}
-          className="p-1 rounded hover:bg-white/10 transition-colors cursor-grab active:cursor-grabbing"
+          className="p-1 rounded hover:bg-white/10 transition-colors cursor-grab active:cursor-grabbing touch-none"
           title="Drag to reorder"
         >
           <GripVertical className="w-5 h-5 text-purple-300" />
