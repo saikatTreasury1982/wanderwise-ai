@@ -292,7 +292,7 @@ export default function FlightEntryForm({
                 type="date"
                 value={leg.departure_date}
                 onChange={e => updateLeg(legs, setLegs, index, 'departure_date', e.target.value)}
-                className="w-full px-1.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-1 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
                 required
               />
             </div>
@@ -302,7 +302,7 @@ export default function FlightEntryForm({
                 type="time"
                 value={leg.departure_time}
                 onChange={e => updateLeg(legs, setLegs, index, 'departure_time', e.target.value)}
-                className="w-full px-1.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-1 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
               />
             </div>
           </div>
@@ -315,7 +315,7 @@ export default function FlightEntryForm({
                 type="date"
                 value={leg.arrival_date}
                 onChange={e => updateLeg(legs, setLegs, index, 'arrival_date', e.target.value)}
-                className="w-full px-1.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-1 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
                 required
               />
             </div>
@@ -325,7 +325,7 @@ export default function FlightEntryForm({
                 type="time"
                 value={leg.arrival_time}
                 onChange={e => updateLeg(legs, setLegs, index, 'arrival_time', e.target.value)}
-                className="w-full px-1.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-1 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
               />
             </div>
           </div>
