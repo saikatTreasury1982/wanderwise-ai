@@ -231,9 +231,16 @@ export default function AccommodationsPage({ params }: PageProps) {
 
   const renderAccommodationGroup = (title: string, items: AccommodationOption[]) => {
     if (items.length === 0) return null;
+    
+    const colorClass = 
+      title === 'Confirmed' ? 'text-green-400' :
+      title === 'Shortlisted' ? 'text-yellow-400' :
+      title === 'Draft' ? 'text-gray-400' :
+      'text-red-400';
+    
     return (
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-white/50 uppercase tracking-wide mb-3">{title}</h3>
+      <div>
+        <h4 className={`text-sm font-medium ${colorClass} mb-2`}>{title}</h4>
         <div className="space-y-3">
           {items.map(accommodation => (
             <AccommodationOptionCard
@@ -252,7 +259,7 @@ export default function AccommodationsPage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen relative p-6 pb-24">
+    <div className="min-h-screen relative p-4 sm:p-6 pb-24">
       <PageBackground />
       <LoadingOverlay isLoading={isProcessing} />
 
@@ -269,8 +276,8 @@ export default function AccommodationsPage({ params }: PageProps) {
             Back to Trip Hub
           </button>
 
-          <h1 className="text-3xl font-bold text-white mb-3">Accomodation Options</h1>
-          <p className="text-white/70 text-lg mb-3">{trip.trip_name}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Accommodation Options</h1>
+          <p className="text-white/70 text-base sm:text-lg mb-3">{trip.trip_name}</p>
           
           <div className="flex flex-wrap items-center gap-3">
             {destination && (
@@ -305,10 +312,10 @@ export default function AccommodationsPage({ params }: PageProps) {
         </div>
 
         {/* Content */}
-        <div className="flex gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Form Column */}
           {showForm && (
-            <div className="w-full md:w-1/2 lg:w-2/5">
+            <div>
               <AccommodationEntryForm
                 tripId={Number(tripId)}
                 accommodation={editingAccommodation}
@@ -322,32 +329,27 @@ export default function AccommodationsPage({ params }: PageProps) {
           )}
 
           {/* Accommodations List */}
-          <div className={showForm ? 'w-full md:w-1/2 lg:w-3/5' : 'w-full'}>
+          <div className={showForm ? '' : 'lg:col-span-2'}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">
+                Saved Options ({accommodations.length})
+              </h3>
+            </div>
             {accommodations.length === 0 ? (
-              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-12 text-center">
-                <svg
-                  className="w-16 h-16 mx-auto mb-4 text-white/30"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
+              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-8 text-center">
+                <svg className="w-16 h-16 mx-auto mb-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
-                <h3 className="text-xl font-semibold text-white mb-2">No accommodations yet</h3>
-                <p className="text-white/60">Click the + button to add accommodation options</p>
+                <p className="text-white/70 mb-2">No accommodation options yet.</p>
+                <p className="text-white/50 text-sm">Click the + button to add your first accommodation option.</p>
               </div>
             ) : (
-              <>
+              <div className="space-y-6">
                 {renderAccommodationGroup('Confirmed', confirmedAccommodations)}
                 {renderAccommodationGroup('Shortlisted', shortlistedAccommodations)}
                 {renderAccommodationGroup('Draft', draftAccommodations)}
                 {renderAccommodationGroup('Not Selected', notSelectedAccommodations)}
-              </>
+              </div>
             )}
           </div>
         </div>
