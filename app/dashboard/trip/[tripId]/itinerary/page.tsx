@@ -6,11 +6,12 @@ import { Calendar, ChevronDown, Users } from 'lucide-react';
 import ItineraryDayCard from '@/app/components/organisms/ItineraryDayCard';
 import type { ItineraryDay } from '@/app/lib/types/itinerary';
 import PageBackground from '@/app/components/ui/PageBackground';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import { formatDateRange } from '@/app/lib/utils';
 import TripReferencePanel from '@/app/components/organisms/TripReferencePanel';
 import type { FlightOption } from '@/app/lib/types/flight';
 import type { AccommodationOption } from '@/app/lib/types/accommodation';
-import { Pin } from 'lucide-react';
+import { Pin, List } from 'lucide-react';
 
 interface Trip {
   trip_id: number;
@@ -209,7 +210,7 @@ export default function ItineraryPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen relative p-6 pb-24">
+    <div className="min-h-screen relative p-4 sm:p-6 pb-24">
       <PageBackground />
 
       <div className="relative z-10 max-w-4xl mx-auto">
@@ -225,8 +226,8 @@ export default function ItineraryPage({ params }: PageProps) {
             Back to Trip Hub
           </button>
 
-          <h1 className="text-3xl font-bold text-white mb-3">Itinerary</h1>
-          <p className="text-white/70 text-lg mb-3">{trip.trip_name}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Itinerary</h1>
+          <p className="text-white/70 text-base sm:text-lg mb-3">{trip.trip_name}</p>
           
           <div className="flex flex-wrap items-center gap-3">
             {(trip.destination_city || trip.destination_country) && (
@@ -265,44 +266,49 @@ export default function ItineraryPage({ params }: PageProps) {
         </div>
 
         {/* View Mode Toggle & Travelers */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode('day')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                viewMode === 'day'
-                  ? 'bg-purple-500/30 text-white border border-purple-400/50'
-                  : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
-              }`}
-            >
-              <Calendar className="w-4 h-4" />
-              Day View
-            </button>
-            <button
-              onClick={() => setViewMode('full')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                viewMode === 'full'
-                  ? 'bg-purple-500/30 text-white border border-purple-400/50'
-                  : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-              </svg>
-              Full View
-            </button>
+            {/* Day View Button */}
+            <div className="relative group">
+              <CircleIconButton
+                variant={viewMode === 'day' ? 'primary' : 'default'}
+                onClick={() => setViewMode('day')}
+                title="Day View"
+                icon={<Calendar className="w-5 h-5" />}
+              />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                Day View
+              </div>
+            </div>
+
+            {/* Full View Button */}
+            <div className="relative group">
+              <CircleIconButton
+                variant={viewMode === 'full' ? 'primary' : 'default'}
+                onClick={() => setViewMode('full')}
+                title="Full View"
+                icon={<List className="w-5 h-5" />}
+              />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                Full View
+              </div>
+            </div>
+
+            {/* Reference Panel Button */}
+            <div className="relative group">
+              <CircleIconButton
+                variant="default"
+                onClick={() => setIsReferencePanelOpen(true)}
+                title="Trip Reference"
+                icon={<Pin className="w-5 h-5" />}
+              />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                Trip Reference
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Reference Panel Toggle */}
-            <button
-              onClick={() => setIsReferencePanelOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 bg-white/10 text-white/70 border border-white/20 rounded-lg hover:bg-white/20 hover:text-white transition-colors"
-              title="Trip Reference"
-            >
-              <Pin className="w-4 h-4" />
-              <span className="text-sm">Reference</span>
-            </button>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
 
             {/* Travelers */}
             {travelers.length > 0 && (

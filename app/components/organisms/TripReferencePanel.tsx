@@ -210,7 +210,7 @@ export default function TripReferencePanel({
             >
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-purple-300" />
-                <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Accommodations</h3>
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Lodging</h3>
                 <span className="text-xs text-white/50">({relevantAccommodations.length})</span>
               </div>
               {accommodationsCollapsed ? (
@@ -223,7 +223,7 @@ export default function TripReferencePanel({
             {!accommodationsCollapsed && (
               <div className="px-4 pt-4 pb-4">
                 {relevantAccommodations.length === 0 ? (
-                  <p className="text-white/50 text-sm">No confirmed or shortlisted accommodations</p>
+                  <p className="text-white/50 text-sm">No confirmed or shortlisted lodging</p>
                 ) : (
                   <div className="space-y-3">
                 {relevantAccommodations.map(accommodation => {

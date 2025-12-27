@@ -245,7 +245,7 @@ export default function ItineraryActivityRow({
         <button
           {...attributes}
           {...listeners}
-          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing"
+          className="p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing touch-none"
         >
           <GripVertical className="w-4 h-4 text-purple-300" />
         </button>
@@ -300,7 +300,7 @@ export default function ItineraryActivityRow({
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1">
         <button
           onClick={() => setShowLinksModal(true)}
           className="p-1 rounded hover:bg-white/10 text-purple-300 hover:text-white relative"
