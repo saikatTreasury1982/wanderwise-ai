@@ -209,7 +209,7 @@ export default function PackingItemRow({
       <button
         {...attributes}
         {...listeners}
-        className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing touch-none"
+        className="p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing touch-none"
       >
         <GripVertical className="w-4 h-4 text-purple-300" />
       </button>
@@ -243,51 +243,44 @@ export default function PackingItemRow({
           className="flex-1 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm focus:outline-none focus:border-purple-400"
         />
       ) : (
-        <div className="flex-1 flex items-center gap-2">
-          <span
-            className={cn(
-              'text-sm transition-colors',
-              item.is_packed ? 'text-white/50' : 'text-white/90'
-            )}
-          >
-            {item.item_name}
-          </span>
-          {item.priority && item.priority !== 'normal' && currentAlertType && (
-            <span className="text-xs" title={currentAlertType.alert_description}>
-              {currentIcon.icon}
-            </span>
+        <span
+          className={cn(
+            'flex-1 text-sm transition-colors',
+            item.is_packed ? 'text-white/50' : 'text-white/90'
           )}
-        </div>
+        >
+          {item.item_name}
+        </span>
       )}
 
       {/* Action Buttons */}
       {!isEditing && (
-        <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+        <div className="flex items-center gap-2">
           {/* Priority Button */}
           <button
             ref={priorityButtonRef}
             onClick={handlePriorityClick}
-            className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+            className="p-1 text-white/70 hover:text-white transition-colors"
             title="Set priority"
           >
-            <span className="text-xs">{currentIcon.icon}</span>
+            <span className="text-sm">{currentIcon.icon}</span>
           </button>
           
           <button
             onClick={handleEdit}
-            className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+            className="p-1 text-white/70 hover:text-white transition-colors"
             title="Edit"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </button>
           <button
             onClick={handleDelete}
-            className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-red-400 hover:bg-red-500/10 hover:border-red-400/30 transition-colors"
+            className="p-1 text-white/70 hover:text-red-400 transition-colors"
             title="Delete"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </button>
