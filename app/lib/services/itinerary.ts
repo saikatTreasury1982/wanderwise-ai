@@ -14,16 +14,142 @@ import type {
 // ==================== DAYS ====================
 
 export async function getItineraryDaysByTrip(tripId: number): Promise<ItineraryDay[]> {
-  const days = await query<ItineraryDay>(
-    `SELECT * FROM itinerary_days WHERE trip_id = ? ORDER BY day_number`,
+  // Single query to get everything: days + categories + activities
+  const rows = await query<{
+    day_id: number;
+    trip_id: number;
+    day_number: number;
+    day_date: string;
+    description: string | null;
+    day_created_at: string;
+    day_updated_at: string;
+    category_id: number | null;
+    category_name: string | null;
+    category_cost: number | null;
+    currency_code: string | null;
+    cost_type: string | null;
+    headcount: number | null;
+    is_expanded: number | null;
+    is_active: number | null;
+    category_display_order: number | null;
+    category_created_at: string | null;
+    activity_id: number | null;
+    activity_name: string | null;
+    start_time: string | null;
+    end_time: string | null;
+    duration_minutes: number | null;
+    activity_cost: number | null;
+    activity_currency_code: string | null;
+    activity_cost_type: string | null;
+    activity_headcount: number | null;
+    notes: string | null;
+    is_completed: number | null;
+    activity_display_order: number | null;
+    activity_created_at: string | null;
+  }>(
+    `SELECT 
+      d.day_id,
+      d.trip_id,
+      d.day_number,
+      d.day_date,
+      d.description,
+      d.created_at as day_created_at,
+      d.updated_at as day_updated_at,
+      c.category_id,
+      c.category_name,
+      c.category_cost,
+      c.currency_code,
+      c.cost_type,
+      c.headcount,
+      c.is_expanded,
+      c.is_active,
+      c.display_order as category_display_order,
+      c.created_at as category_created_at,
+      a.activity_id,
+      a.activity_name,
+      a.start_time,
+      a.end_time,
+      a.duration_minutes,
+      a.activity_cost,
+      a.currency_code as activity_currency_code,
+      a.cost_type as activity_cost_type,
+      a.headcount as activity_headcount,
+      a.notes,
+      a.is_completed,
+      a.display_order as activity_display_order,
+      a.created_at as activity_created_at
+     FROM itinerary_days d
+     LEFT JOIN itinerary_day_categories c ON d.day_id = c.day_id
+     LEFT JOIN itinerary_activities a ON c.category_id = a.category_id
+     WHERE d.trip_id = ?
+     ORDER BY d.day_number, c.display_order, c.category_id, a.display_order, a.start_time, a.activity_id`,
     [tripId]
   );
 
-  for (const day of days) {
-    day.categories = await getItineraryCategoriesByDay(day.day_id);
+  // Group results into nested structure
+  const daysMap = new Map<number, ItineraryDay>();
+  const categoriesMap = new Map<number, ItineraryDayCategory>();
+
+  for (const row of rows) {
+    // Create day if not exists
+    if (!daysMap.has(row.day_id)) {
+      daysMap.set(row.day_id, {
+        day_id: row.day_id,
+        trip_id: row.trip_id,
+        day_number: row.day_number,
+        day_date: row.day_date,
+        description: row.description,
+        created_at: row.day_created_at,
+        updated_at: row.day_updated_at,
+        categories: [],
+      });
+    }
+
+    const day = daysMap.get(row.day_id)!;
+
+    // Create category if not exists and not null
+    if (row.category_id && !categoriesMap.has(row.category_id)) {
+      const category: ItineraryDayCategory = {
+        category_id: row.category_id,
+        day_id: row.day_id,
+        category_name: row.category_name!,
+        category_cost: row.category_cost,
+        currency_code: row.currency_code,
+        cost_type: (row.cost_type as 'total' | 'per_head') || 'total',
+        headcount: row.headcount,
+        is_expanded: row.is_expanded!,
+        is_active: row.is_active!,
+        display_order: row.category_display_order!,
+        created_at: row.category_created_at!,
+        activities: [],
+      };
+      categoriesMap.set(row.category_id, category);
+      day.categories!.push(category);
+    }
+
+    // Add activity if exists
+    if (row.activity_id && row.category_id) {
+      const category = categoriesMap.get(row.category_id)!;
+      category.activities!.push({
+        activity_id: row.activity_id,
+        category_id: row.category_id,
+        activity_name: row.activity_name!,
+        start_time: row.start_time,
+        end_time: row.end_time,
+        duration_minutes: row.duration_minutes,
+        activity_cost: row.activity_cost,
+        currency_code: row.activity_currency_code,
+        cost_type: (row.cost_type as 'total' | 'per_head') || 'total',
+        headcount: row.activity_headcount,
+        notes: row.notes,
+        is_completed: row.is_completed!,
+        display_order: row.activity_display_order!,
+        created_at: row.activity_created_at!,
+      });
+    }
   }
 
-  return days;
+  return Array.from(daysMap.values());
 }
 
 export async function getItineraryDayById(dayId: number): Promise<ItineraryDay | null> {
@@ -98,16 +224,96 @@ export async function deleteItineraryDay(dayId: number): Promise<boolean> {
 // ==================== CATEGORIES ====================
 
 export async function getItineraryCategoriesByDay(dayId: number): Promise<ItineraryDayCategory[]> {
-  const categories = await query<ItineraryDayCategory>(
-    `SELECT * FROM itinerary_day_categories WHERE day_id = ? ORDER BY display_order, category_id`,
+  // Single query with LEFT JOIN for activities
+  const rows = await query<{
+    category_id: number;
+    day_id: number;
+    category_name: string;
+    category_cost: number | null;
+    currency_code: string | null;
+    cost_type: string | null;
+    headcount: number | null;
+    is_expanded: number;
+    is_active: number;
+    display_order: number;
+    created_at: string;
+    activity_id: number | null;
+    activity_name: string | null;
+    start_time: string | null;
+    end_time: string | null;
+    duration_minutes: number | null;
+    activity_cost: number | null;
+    activity_currency_code: string | null;
+    activity_cost_type: string | null;
+    activity_headcount: number | null;
+    notes: string | null;
+    is_completed: number | null;
+    activity_display_order: number | null;
+    activity_created_at: string | null;
+  }>(
+    `SELECT 
+      c.*,
+      a.activity_id,
+      a.activity_name,
+      a.start_time,
+      a.end_time,
+      a.duration_minutes,
+      a.activity_cost,
+      a.currency_code as activity_currency_code,
+      a.cost_type as activity_cost_type,
+      a.headcount as activity_headcount,
+      a.notes,
+      a.is_completed,
+      a.display_order as activity_display_order,
+      a.created_at as activity_created_at
+     FROM itinerary_day_categories c
+     LEFT JOIN itinerary_activities a ON c.category_id = a.category_id
+     WHERE c.day_id = ?
+     ORDER BY c.display_order, c.category_id, a.display_order, a.start_time, a.activity_id`,
     [dayId]
   );
 
-  for (const category of categories) {
-    category.activities = await getItineraryActivitiesByCategory(category.category_id);
+  const categoriesMap = new Map<number, ItineraryDayCategory>();
+
+  for (const row of rows) {
+    if (!categoriesMap.has(row.category_id)) {
+      categoriesMap.set(row.category_id, {
+        category_id: row.category_id,
+        day_id: row.day_id,
+        category_name: row.category_name,
+        category_cost: row.category_cost,
+        currency_code: row.currency_code,
+        cost_type: (row.cost_type as 'total' | 'per_head') || 'total',
+        headcount: row.headcount,
+        is_expanded: row.is_expanded,
+        is_active: row.is_active,
+        display_order: row.display_order,
+        created_at: row.created_at,
+        activities: [],
+      });
+    }
+
+    if (row.activity_id) {
+      categoriesMap.get(row.category_id)!.activities!.push({
+        activity_id: row.activity_id,
+        category_id: row.category_id,
+        activity_name: row.activity_name!,
+        start_time: row.start_time,
+        end_time: row.end_time,
+        duration_minutes: row.duration_minutes,
+        activity_cost: row.activity_cost,
+        currency_code: row.activity_currency_code,
+        cost_type: (row.cost_type as 'total' | 'per_head') || 'total',
+        headcount: row.activity_headcount,
+        notes: row.notes,
+        is_completed: row.is_completed!,
+        display_order: row.activity_display_order!,
+        created_at: row.activity_created_at!,
+      });
+    }
   }
 
-  return categories;
+  return Array.from(categoriesMap.values());
 }
 
 export async function getItineraryCategoryById(categoryId: number): Promise<ItineraryDayCategory | null> {
@@ -167,8 +373,8 @@ export async function updateItineraryCategory(categoryId: number, input: UpdateI
     args.push(input.is_expanded);
   }
   if (input.cost_type !== undefined) {
-  updates.push('cost_type = ?');
-  args.push(input.cost_type);
+    updates.push('cost_type = ?');
+    args.push(input.cost_type);
   }
   if (input.headcount !== undefined) {
     updates.push('headcount = ?');
@@ -302,8 +508,8 @@ export async function updateItineraryActivity(activityId: number, input: UpdateI
     args.push(input.is_completed);
   }
   if (input.cost_type !== undefined) {
-  updates.push('cost_type = ?');
-  args.push(input.cost_type);
+    updates.push('cost_type = ?');
+    args.push(input.cost_type);
   }
   if (input.headcount !== undefined) {
     updates.push('headcount = ?');

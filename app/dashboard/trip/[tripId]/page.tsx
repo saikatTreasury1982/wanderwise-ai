@@ -47,13 +47,39 @@ export default function TripHubPage({ params }: PageProps) {
   const [itineraryStats, setItineraryStats] = useState<{ daysPlanned: number; totalDays: number; activitiesCount: number }>({ daysPlanned: 0, totalDays: 0, activitiesCount: 0 });
   const [costForecastStats, setCostForecastStats] = useState<{ totalCost: number; baseCurrency: string; itemsCount: number; lastCollected: string | null }>({ totalCost: 0, baseCurrency: '', itemsCount: 0, lastCollected: null });
 
+  const [destinations, setDestinations] = useState<Array<{
+    destination_id: number;
+    country: string;
+    city: string | null;
+  }>>([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        let tripData: any = null;
-        
-        // Fetch trip
-        const tripResponse = await fetch(`/api/trips/${tripId}`);
+        // Fire ALL requests in parallel
+        const [
+          tripResponse,
+          flightsResponse,
+          accommodationsResponse,
+          itineraryResponse,
+          packingResponse,
+          prefResponse,
+          travelersResponse,
+          costForecastResponse,
+          destinationsResponse,
+        ] = await Promise.all([
+          fetch(`/api/trips/${tripId}`),
+          fetch(`/api/trips/${tripId}/flights`),
+          fetch(`/api/trips/${tripId}/accommodations`),
+          fetch(`/api/trips/${tripId}/itinerary`),
+          fetch(`/api/trips/${tripId}/packing`),
+          fetch('/api/user/preferences'),
+          fetch(`/api/trips/${tripId}/travelers`),
+          fetch(`/api/trips/${tripId}/cost-forecast`),
+          fetch(`/api/trips/${tripId}/destinations`),
+        ]);
+
+        // Handle auth redirects
         if (tripResponse.status === 401) {
           router.push('/login');
           return;
@@ -62,16 +88,50 @@ export default function TripHubPage({ params }: PageProps) {
           router.push('/dashboard');
           return;
         }
-  
-        if (tripResponse.ok) {
-          tripData = await tripResponse.json();
-          setTrip(tripData.trip);
-        } 
 
-        // Fetch flights
-        const flightsResponse = await fetch(`/api/trips/${tripId}/flights`);
-        if (flightsResponse.ok) {
-          const flightsData = await flightsResponse.json();
+        // Parse all responses in parallel
+        const [
+          tripData,
+          flightsData,
+          accommodationsData,
+          itineraryData,
+          packingData,
+          prefData,
+          travelersData,
+          costData,
+          destinationsData,
+        ] = await Promise.all([
+          tripResponse.ok ? tripResponse.json() : null,
+          flightsResponse.ok ? flightsResponse.json() : null,
+          accommodationsResponse.ok ? accommodationsResponse.json() : null,
+          itineraryResponse.ok ? itineraryResponse.json() : null,
+          packingResponse.ok ? packingResponse.json() : null,
+          prefResponse.ok ? prefResponse.json() : null,
+          travelersResponse.ok ? travelersResponse.json() : null,
+          costForecastResponse.ok ? costForecastResponse.json() : null,
+          destinationsResponse.ok ? destinationsResponse.json() : null,
+        ]);
+
+        // Set all state
+        if (tripData?.trip) {
+          setTrip(tripData.trip);
+          
+          // Calculate total days
+          const start = new Date(tripData.trip.start_date);
+          const end = new Date(tripData.trip.end_date);
+          const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+          
+          // Set itinerary stats with calculated days
+          if (itineraryData) {
+            const daysPlanned = itineraryData.length;
+            const activitiesCount = itineraryData.reduce((sum: number, day: any) => {
+              return sum + (day.categories?.reduce((catSum: number, cat: any) => catSum + (cat.activities?.length || 0), 0) || 0);
+            }, 0);
+            setItineraryStats({ daysPlanned, totalDays, activitiesCount });
+          }
+        }
+
+        if (flightsData) {
           const flights = flightsData || [];
           setFlightStats({
             total: flights.length,
@@ -80,10 +140,7 @@ export default function TripHubPage({ params }: PageProps) {
           });
         }
 
-        // Fetch accommodations
-        const accommodationsResponse = await fetch(`/api/trips/${tripId}/accommodations`);
-        if (accommodationsResponse.ok) {
-          const accommodationsData = await accommodationsResponse.json();
+        if (accommodationsData) {
           const accommodations = accommodationsData || [];
           setAccommodationStats({
             total: accommodations.length,
@@ -92,51 +149,19 @@ export default function TripHubPage({ params }: PageProps) {
           });
         }
 
-        // Fetch itinerary stats
-        const itineraryResponse = await fetch(`/api/trips/${tripId}/itinerary`);
-        if (itineraryResponse.ok) {
-          const itineraryData = await itineraryResponse.json();
-          const daysPlanned = itineraryData.length;
-          const activitiesCount = itineraryData.reduce((sum: number, day: any) => {
-            return sum + (day.categories?.reduce((catSum: number, cat: any) => catSum + (cat.activities?.length || 0), 0) || 0);
-          }, 0);
-          
-          // Calculate total days from trip dates (use tripData which we already fetched)
-          let totalDays = 0;
-          if (tripData?.trip) {
-            const start = new Date(tripData.trip.start_date);
-            const end = new Date(tripData.trip.end_date);
-            totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-          }
-          
-          setItineraryStats({ daysPlanned, totalDays, activitiesCount });
-        }
-
-        // Fetch packing stats
-        const packingResponse = await fetch(`/api/trips/${tripId}/packing`);
-        if (packingResponse.ok) {
-          const packingData = await packingResponse.json();
+        if (packingData?.stats) {
           setPackingStats(packingData.stats);
         }
 
-        // Fetch preferences
-        const prefResponse = await fetch('/api/user/preferences');
-        if (prefResponse.ok) {
-          const prefData = await prefResponse.json();
+        if (prefData?.preferences) {
           setPreferences(prefData.preferences);
         }
 
-        // Fetch travelers
-        const travelersResponse = await fetch(`/api/trips/${tripId}/travelers`);
-        if (travelersResponse.ok) {
-          const travelersData = await travelersResponse.json();
+        if (travelersData?.travelers) {
           setTravelers(travelersData.travelers);
         }
 
-        // Fetch cost forecast stats
-        const costForecastResponse = await fetch(`/api/trips/${tripId}/cost-forecast`);
-        if (costForecastResponse.ok) {
-          const costData = await costForecastResponse.json();
+        if (costData) {
           const itemsCount = costData.module_breakdown?.reduce((sum: number, m: any) => sum + m.items_count, 0) || 0;
           setCostForecastStats({
             totalCost: costData.total_cost || 0,
@@ -144,6 +169,10 @@ export default function TripHubPage({ params }: PageProps) {
             itemsCount,
             lastCollected: costData.generated_at || null,
           });
+        }
+
+        if (destinationsData?.destinations) {
+          setDestinations(destinationsData.destinations);
         }
 
       } catch (error) {
@@ -170,10 +199,6 @@ export default function TripHubPage({ params }: PageProps) {
   if (!trip) {
     return null;
   }
-
-  const destination = [trip.destination_city, trip.destination_country]
-    .filter(Boolean)
-    .join(', ');
 
   // Traveler stats
   const primaryTraveler = travelers.find(t => t.is_primary === 1);
@@ -320,13 +345,22 @@ export default function TripHubPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold text-white mb-3">{trip.trip_name}</h1>
           
           <div className="flex flex-wrap items-center gap-3">
-            {destination && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
-                <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span className="text-sm text-white/90">{destination}</span>
+            {destinations.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                {destinations.map(dest => (
+                  <div
+                    key={dest.destination_id}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20"
+                  >
+                    <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="text-sm text-white/90">
+                      {dest.city ? `${dest.city}, ${dest.country}` : dest.country}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
             

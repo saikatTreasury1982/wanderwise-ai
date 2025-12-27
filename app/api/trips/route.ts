@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { trip_name, trip_description, destination_country, destination_city, start_date, end_date, status_code } = body;
+    const { trip_name, trip_description, start_date, end_date, status_code, destinations } = body;
 
     if (!trip_name || !start_date || !end_date) {
       return NextResponse.json(
@@ -69,11 +69,10 @@ export async function POST(request: Request) {
       user_id: session.user_id,
       trip_name,
       trip_description,
-      destination_country,
-      destination_city,
       start_date,
       end_date,
-      status_code: status_code || 1, // Default to 1 (Draft) if not provided
+      status_code: status_code || 1,
+      destinations: destinations || [], // Pass destinations array
     });
 
     return NextResponse.json({ trip }, { status: 201 });

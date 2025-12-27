@@ -12,8 +12,8 @@ interface WeatherData {
   description: string;
 }
 
-async function fetchWithRetry(url: string, retries = 2): Promise<Response | null> {
-  for (let i = 0; i <= retries; i++) {
+async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
+  for (let i = 0; i < retries; i++) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -22,14 +22,18 @@ async function fetchWithRetry(url: string, retries = 2): Promise<Response | null
       clearTimeout(timeoutId);
       
       if (response.ok) return response;
-    } catch (error) {
-      console.error(`Fetch attempt ${i + 1} failed:`, error);
-      if (i === retries) return null;
-      // Wait before retry
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (response.status === 404 || response.status === 400) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
     }
   }
-  return null;
+  throw new Error('All retries failed');
 }
 
 export async function geocodeCity(cityName: string): Promise<GeocodingResult | null> {

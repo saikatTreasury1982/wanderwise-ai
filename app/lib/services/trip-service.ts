@@ -23,13 +23,12 @@ interface CreateTripInput {
   start_date: string;
   end_date: string;
   status_code?: number;
+  destinations?: Array<{ country: string; city?: string | null }>;
 }
 
 interface UpdateTripInput {
   trip_name?: string;
   trip_description?: string | null;
-  destination_country?: string | null;
-  destination_city?: string | null;
   start_date?: string;
   end_date?: string;
   status_code?: number;
@@ -39,22 +38,18 @@ export async function createTrip(input: CreateTripInput): Promise<Trip> {
   try {
     await query(
       `INSERT INTO trips (
-        user_id, trip_name, trip_description, destination_country, 
-        destination_city, start_date, end_date, status_code
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        user_id, trip_name, trip_description, start_date, end_date, status_code
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
       [
         input.user_id,
         input.trip_name,
         input.trip_description || null,
-        input.destination_country || null,
-        input.destination_city || null,
         input.start_date,
         input.end_date,
-        input.status_code || 1, // ADD THIS LINE - default to 1 if not provided
+        input.status_code || 1,
       ]
     );
 
-    // Fetch the created trip
     const trips = await query<Trip>(
       'SELECT * FROM trips WHERE user_id = ? ORDER BY trip_id DESC LIMIT 1',
       [input.user_id]
@@ -64,7 +59,20 @@ export async function createTrip(input: CreateTripInput): Promise<Trip> {
       throw new Error('Trip creation failed');
     }
 
-    return trips[0];
+    const trip = trips[0];
+
+    // Save destinations to trip_destinations table
+    if (input.destinations && input.destinations.length > 0) {
+      for (let i = 0; i < input.destinations.length; i++) {
+        const dest = input.destinations[i];
+        await query(
+          `INSERT INTO trip_destinations (trip_id, country, city, display_order) VALUES (?, ?, ?, ?)`,
+          [trip.trip_id, dest.country, dest.city || null, i]
+        );
+      }
+    }
+
+    return trip;
   } catch (error) {
     console.error('Error creating trip:', error);
     throw error;
@@ -115,14 +123,6 @@ export async function updateTrip(
     if (input.trip_description !== undefined) {
       updates.push('trip_description = ?');
       values.push(input.trip_description);
-    }
-    if (input.destination_country !== undefined) {
-      updates.push('destination_country = ?');
-      values.push(input.destination_country);
-    }
-    if (input.destination_city !== undefined) {
-      updates.push('destination_city = ?');
-      values.push(input.destination_city);
     }
     if (input.start_date !== undefined) {
       updates.push('start_date = ?');
