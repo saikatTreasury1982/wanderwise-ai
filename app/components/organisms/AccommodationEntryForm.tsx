@@ -200,8 +200,8 @@ export default function AccommodationEntryForm({
   const sortedTravelers = [...travelers].sort((a, b) => b.is_active - a.is_active);
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">
+    <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-4 sm:p-6">
+      <h3 className="text-xl font-semibold text-white mb-4">
         {isEditing ? 'Edit Accommodation' : 'Add Accommodation'}
       </h3>
 
@@ -211,15 +211,15 @@ export default function AccommodationEntryForm({
         </div>
       )}
 
-      <div className="space-y-4">
-        {/* Type & Name */}
-        <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-5">
+        {/* Type & Name - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-white/60 mb-1">Type</label>
+            <label className="block text-sm text-white/60 mb-1.5">Type</label>
             <select
               value={typeName}
               onChange={e => setTypeName(e.target.value)}
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
             >
               <option value="" className="bg-gray-800">Select</option>
               {accommodationTypes.map(t => (
@@ -230,133 +230,133 @@ export default function AccommodationEntryForm({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-white/60 mb-1">Name</label>
+            <label className="block text-sm text-white/60 mb-1.5">Name</label>
             <input
               type="text"
               value={accommodationName}
               onChange={e => setAccommodationName(e.target.value)}
               placeholder="Hilton Seoul"
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
             />
           </div>
         </div>
 
         {/* Location & Address */}
         <div>
-          <label className="block text-xs text-white/60 mb-1">Location</label>
+          <label className="block text-sm text-white/60 mb-1.5">Location</label>
           <input
             type="text"
             value={location}
             onChange={e => setLocation(e.target.value)}
             placeholder="Seoul, South Korea"
-            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
           />
         </div>
 
         <div>
-          <label className="block text-xs text-white/60 mb-1">Address</label>
+          <label className="block text-sm text-white/60 mb-1.5">Address</label>
           <input
             type="text"
             value={address}
             onChange={e => setAddress(e.target.value)}
             placeholder="123 Main Street, Gangnam-gu"
-            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
           />
         </div>
 
-        {/* Check-in Date & Time */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-white/60 mb-1">Check-in Date</label>
+        {/* Check-in Date & Time - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="min-w-0">
+            <label className="block text-sm text-white/60 mb-1.5">Check-in Date</label>
             <input
               type="date"
               value={checkInDate}
               onChange={e => setCheckInDate(e.target.value)}
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-0.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
             />
           </div>
-          <div>
-            <label className="block text-xs text-white/60 mb-1">Check-in Time</label>
+          <div className="min-w-0">
+            <label className="block text-sm text-white/60 mb-1.5">Check-in Time</label>
             <input
               type="time"
               value={checkInTime}
               onChange={e => setCheckInTime(e.target.value)}
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-0.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
             />
           </div>
         </div>
 
-        {/* Check-out Date & Time */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-white/60 mb-1">Check-out Date</label>
+        {/* Check-out Date & Time - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="min-w-0">
+            <label className="block text-sm text-white/60 mb-1.5">Check-out Date</label>
             <input
               type="date"
               value={checkOutDate}
               onChange={e => setCheckOutDate(e.target.value)}
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-0.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
             />
           </div>
-          <div>
-            <label className="block text-xs text-white/60 mb-1">Check-out Time</label>
+          <div className="min-w-0">
+            <label className="block text-sm text-white/60 mb-1.5">Check-out Time</label>
             <input
               type="time"
               value={checkOutTime}
               onChange={e => setCheckOutTime(e.target.value)}
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-0.5 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
             />
           </div>
         </div>
 
         {/* Nights Display */}
         {nights && (
-          <div className="text-sm text-purple-300 font-medium">
+          <div className="text-sm sm:text-base text-purple-300 font-medium">
             {nights} night{nights > 1 ? 's' : ''}
           </div>
         )}
 
         {/* Rooms */}
         <div>
-          <label className="block text-xs text-white/60 mb-1">Number of Rooms</label>
+          <label className="block text-sm text-white/60 mb-1.5">Number of Rooms</label>
           <input
             type="number"
             value={numRooms}
             onChange={e => setNumRooms(parseInt(e.target.value) || 1)}
             min="1"
-            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
           />
         </div>
 
-        {/* Price */}
-        <div className="grid grid-cols-3 gap-3">
+        {/* Price - Stack on mobile */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs text-white/60 mb-1">Price/Night</label>
+            <label className="block text-sm text-white/60 mb-1.5">Price/Night</label>
             <input
               type="number"
               value={pricePerNight}
               onChange={e => setPricePerNight(e.target.value)}
               placeholder="0.00"
               step="0.01"
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-3 py-3 sm:px-4 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
             />
           </div>
           <div>
-            <label className="block text-xs text-white/60 mb-1">Total Price</label>
+            <label className="block text-sm text-white/60 mb-1.5">Total Price</label>
             <input
               type="number"
               value={totalPrice}
               onChange={e => setTotalPrice(e.target.value)}
               placeholder="0.00"
               step="0.01"
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-3 py-3 sm:px-4 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
             />
           </div>
-          <div>
-            <label className="block text-xs text-white/60 mb-1">Currency</label>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm text-white/60 mb-1.5">Currency</label>
             <select
               value={currencyCode}
               onChange={e => setCurrencyCode(e.target.value)}
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
             >
               <option value="" className="bg-gray-800">Select</option>
               {currencies.map(c => (
@@ -368,40 +368,40 @@ export default function AccommodationEntryForm({
           </div>
         </div>
 
-        {/* Booking Info */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Booking Info - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-white/60 mb-1">Booking Reference</label>
+            <label className="block text-sm text-white/60 mb-1.5">Booking Reference</label>
             <input
               type="text"
               value={bookingReference}
               onChange={e => setBookingReference(e.target.value)}
               placeholder="CONF123456"
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
             />
           </div>
           <div>
-            <label className="block text-xs text-white/60 mb-1">Booking Source</label>
+            <label className="block text-sm text-white/60 mb-1.5">Booking Source</label>
             <input
               type="text"
               value={bookingSource}
               onChange={e => setBookingSource(e.target.value)}
               placeholder="Booking.com"
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
             />
           </div>
         </div>
 
-        {/* Travelers */}
+        {/* Travelers - Bigger touch targets */}
         {sortedTravelers.length > 0 && (
           <div>
-            <label className="block text-sm text-white/70 mb-2">Travelers</label>
+            <label className="block text-sm text-white/70 mb-3">Travelers</label>
             <div className="space-y-2">
               {sortedTravelers.map(t => (
                 <label
                   key={t.traveler_id}
                   className={cn(
-                    "flex items-center gap-2 cursor-pointer",
+                    "flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-white/5 transition-colors",
                     t.is_active === 0 && "opacity-60"
                   )}
                 >
@@ -409,11 +409,11 @@ export default function AccommodationEntryForm({
                     type="checkbox"
                     checked={selectedTravelers.includes(t.traveler_id)}
                     onChange={() => toggleTraveler(t.traveler_id)}
-                    className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-400"
+                    className="w-5 h-5 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-400 cursor-pointer"
                   />
-                  <span className="text-sm text-white/80">{t.traveler_name}</span>
+                  <span className="text-base text-white/80">{t.traveler_name}</span>
                   {t.is_active === 0 && (
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-400/30">
+                    <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-400/30">
                       inactive
                     </span>
                   )}
@@ -423,16 +423,28 @@ export default function AccommodationEntryForm({
           </div>
         )}
 
-        {/* Notes */}
+        {/* Notes with bullet preview */}
         <div>
-          <label className="block text-xs text-white/60 mb-1">Notes</label>
+          <label className="block text-sm text-white/60 mb-1.5">
+            Notes <span className="text-xs text-white/40">(each line becomes a bullet point)</span>
+          </label>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            rows={2}
-            placeholder="Additional details..."
-            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400 resize-none"
+            rows={4}
+            placeholder="Parking details&#10;WiFi password&#10;Check-in instructions"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400 resize-none"
           />
+          {notes && notes.trim() && (
+            <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
+              <p className="text-xs text-white/50 mb-1.5">Preview:</p>
+              <ul className="list-disc list-inside space-y-1">
+                {notes.split('\n').filter(line => line.trim()).map((line, i) => (
+                  <li key={i} className="text-sm text-white/70">{line.trim()}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Buttons */}
