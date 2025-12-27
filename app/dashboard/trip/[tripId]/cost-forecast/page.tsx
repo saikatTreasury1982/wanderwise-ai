@@ -235,7 +235,7 @@ export default function CostForecastPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen relative p-6 pb-24">
+    <div className="min-h-screen relative p-4 sm:p-6 pb-24">
       <PageBackground />
 
       <div className="relative z-10 max-w-4xl mx-auto">
@@ -251,8 +251,8 @@ export default function CostForecastPage({ params }: PageProps) {
             Back to Trip Hub
           </button>
 
-          <h1 className="text-3xl font-bold text-white mb-3">Cost Forecast</h1>
-          <p className="text-white/70 text-lg mb-3">{trip?.trip_name}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Cost Forecast</h1>
+          <p className="text-white/70 text-base sm:text-lg mb-3">{trip?.trip_name}</p>
           
           <div className="flex flex-wrap items-center gap-3">
             {(trip?.destination_city || trip?.destination_country) && (
@@ -292,15 +292,15 @@ export default function CostForecastPage({ params }: PageProps) {
 
         {/* Status Filter & Actions */}
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="text-white font-medium">Include:</span>
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-white font-medium text-sm sm:text-base">Include:</span>
+              <div className="flex flex-wrap items-center gap-2">
                 {STATUS_OPTIONS.map(status => (
                   <button
                     key={status.value}
                     onClick={() => handleStatusToggle(status.value)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                       selectedStatuses.includes(status.value)
                         ? 'bg-purple-500/30 border border-purple-400/50'
                         : 'bg-white/5 border border-white/10 hover:bg-white/10'
@@ -316,7 +316,7 @@ export default function CostForecastPage({ params }: PageProps) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {/* Collect Costs Button */}
               <div className="relative group">
                 <button
@@ -374,9 +374,9 @@ export default function CostForecastPage({ params }: PageProps) {
         {report && !collecting && (
           <>
             {/* Total Cost Card */}
-            <div className="bg-gradient-to-r from-purple-500/30 to-blue-500/30 backdrop-blur-md border border-white/20 rounded-xl p-6 mb-6">
-              <div className="text-purple-200 text-sm mb-1">Total Estimated Cost</div>
-              <div className="text-4xl font-bold text-white">
+            <div className="bg-gradient-to-r from-purple-500/30 to-blue-500/30 backdrop-blur-md border border-white/20 rounded-xl p-4 sm:p-6 mb-6">
+              <div className="text-purple-200 text-xs sm:text-sm mb-1">Total Estimated Cost</div>
+              <div className="text-2xl sm:text-4xl font-bold text-white">
                 {formatCurrency(report.total_cost, report.base_currency)}
               </div>
               <div className="text-white/50 text-sm mt-2">
@@ -412,11 +412,11 @@ export default function CostForecastPage({ params }: PageProps) {
                     </button>
                     
                     {expandedModules[module.module] && module.items.length > 0 && (
-                      <div className="bg-white/5 px-6 py-2">
+                      <div className="bg-white/5 px-4 sm:px-6 py-2">
                         {module.items.map(item => (
-                          <div key={`${item.module}-${item.id}`} className="flex items-center justify-between py-2 text-sm">
+                          <div key={`${item.module}-${item.id}`} className="flex flex-col sm:flex-row sm:items-center justify-between py-2 gap-1 sm:gap-0 text-sm">
                             <span className="text-white/70">{item.description}</span>
-                            <span className="text-white/90">
+                            <span className="text-white/90 text-left sm:text-right">
                               {item.currency_code !== report.base_currency ? (
                                 <span className="text-purple-300">
                                   {formatCurrency(item.amount, item.currency_code)} → {formatCurrency(item.converted_amount || item.amount, report.base_currency)}
@@ -447,7 +447,7 @@ export default function CostForecastPage({ params }: PageProps) {
               </div>
               <div className="divide-y divide-white/10">
                 {report.traveler_shares.map(traveler => (
-                  <div key={traveler.traveler_id} className="px-6 py-4 flex items-center justify-between">
+                  <div key={traveler.traveler_id} className="px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-purple-500/30 flex items-center justify-center text-white font-medium">
                         {traveler.traveler_name.charAt(0).toUpperCase()}
@@ -466,8 +466,8 @@ export default function CostForecastPage({ params }: PageProps) {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                        <div className="text-left sm:text-right">
                         <div className="text-white font-semibold">
                           {formatCurrency(traveler.share_amount, report.base_currency)}
                         </div>
@@ -508,8 +508,8 @@ export default function CostForecastPage({ params }: PageProps) {
                   <h3 className="text-lg font-semibold text-white">Foreign Currency Items</h3>
                   <p className="text-white/50 text-sm">Items converted to {report.base_currency}</p>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+                <div className="overflow-x-auto -mx-6 sm:mx-0">
+                  <table className="w-full min-w-[600px]">
                     <thead>
                       <tr className="text-left text-white/50 text-sm border-b border-white/10">
                         <th className="px-6 py-3 font-medium">Item</th>
