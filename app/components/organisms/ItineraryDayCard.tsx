@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { cn, formatDate, formatDateRange } from '@/app/lib/utils';
 import { Plus, Edit2, Check, X, ChevronDown, ChevronRight } from 'lucide-react';
 import type { ItineraryDay, ItineraryDayCategory, CostSummary } from '@/app/lib/types/itinerary';
 import ItineraryCategoryCard from './ItineraryCategoryCard';
@@ -131,38 +132,6 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
   };
 
   const dayTotals = getDayTotals();
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    const dayOfWeek = dayNames[date.getDay()];
-    const dayNum = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const monthName = monthNames[date.getMonth()];
-
-    let formattedDate: string;
-    switch (dateFormat) {
-      case 'YYYY-MM-DD':
-        formattedDate = `${year}-${month}-${dayNum}`;
-        break;
-      case 'DD-MM-YYYY':
-        formattedDate = `${dayNum}-${month}-${year}`;
-        break;
-      case 'MM-DD-YYYY':
-        formattedDate = `${month}-${dayNum}-${year}`;
-        break;
-      case 'DD Mmm YYYY':
-      default:
-        formattedDate = `${dayNum} ${monthName} ${year}`;
-        break;
-    }
-
-    return `${dayOfWeek}, ${formattedDate}`;
-  };
 
   const handleSaveDescription = async () => {
     try {

@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/app/lib/utils';
+import { cn, formatDate, formatDateRange } from '@/app/lib/utils';
 import type { FlightOption } from '@/app/lib/types/flight';
 
 interface FlightOptionCardProps {
@@ -30,29 +30,6 @@ export default function FlightOptionCard({
     shortlisted: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
     confirmed: 'bg-green-500/20 text-green-300 border-green-400/30',
     not_selected: 'bg-red-500/20 text-red-300 border-red-400/30',
-  };
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthName = monthNames[date.getMonth()];
-
-    switch (dateFormat) {
-      case 'YYYY-MM-DD':
-        return `${year}-${month}-${day}`;
-      case 'DD-MM-YYYY':
-        return `${day}-${month}-${year}`;
-      case 'MM-DD-YYYY':
-        return `${month}-${day}-${year}`;
-      case 'DD Mmm YYYY':
-      default:
-        return `${day} ${monthName} ${year}`;
-    }
   };
 
   const formatDuration = (minutes: number | null) => {
