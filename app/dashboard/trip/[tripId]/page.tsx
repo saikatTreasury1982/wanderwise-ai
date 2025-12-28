@@ -46,6 +46,7 @@ export default function TripHubPage({ params }: PageProps) {
   const [packingStats, setPackingStats] = useState<{ totalItems: number; packedItems: number; percentage: number }>({ totalItems: 0, packedItems: 0, percentage: 0 });
   const [itineraryStats, setItineraryStats] = useState<{ daysPlanned: number; totalDays: number; activitiesCount: number }>({ daysPlanned: 0, totalDays: 0, activitiesCount: 0 });
   const [costForecastStats, setCostForecastStats] = useState<{ totalCost: number; baseCurrency: string; itemsCount: number; lastCollected: string | null }>({ totalCost: 0, baseCurrency: '', itemsCount: 0, lastCollected: null });
+  const [adhocExpensesStats, setAdhocExpensesStats] = useState<{ total: number; active: number; totalAmount: number; currency: string }>({ total: 0, active: 0, totalAmount: 0, currency: '' });
 
   const [destinations, setDestinations] = useState<Array<{
     destination_id: number;
@@ -67,6 +68,7 @@ export default function TripHubPage({ params }: PageProps) {
           travelersResponse,
           costForecastResponse,
           destinationsResponse,
+          adhocExpensesResponse,
         ] = await Promise.all([
           fetch(`/api/trips/${tripId}`),
           fetch(`/api/trips/${tripId}/flights`),
@@ -77,6 +79,7 @@ export default function TripHubPage({ params }: PageProps) {
           fetch(`/api/trips/${tripId}/travelers`),
           fetch(`/api/trips/${tripId}/cost-forecast`),
           fetch(`/api/trips/${tripId}/destinations`),
+          fetch(`/api/trips/${tripId}/adhoc-expenses`),
         ]);
 
         // Handle auth redirects
@@ -100,6 +103,7 @@ export default function TripHubPage({ params }: PageProps) {
           travelersData,
           costData,
           destinationsData,
+          adhocExpensesData,
         ] = await Promise.all([
           tripResponse.ok ? tripResponse.json() : null,
           flightsResponse.ok ? flightsResponse.json() : null,
@@ -110,6 +114,7 @@ export default function TripHubPage({ params }: PageProps) {
           travelersResponse.ok ? travelersResponse.json() : null,
           costForecastResponse.ok ? costForecastResponse.json() : null,
           destinationsResponse.ok ? destinationsResponse.json() : null,
+          adhocExpensesResponse.ok ? adhocExpensesResponse.json() : null,
         ]);
 
         // Set all state
@@ -173,6 +178,27 @@ export default function TripHubPage({ params }: PageProps) {
 
         if (destinationsData?.destinations) {
           setDestinations(destinationsData.destinations);
+        }
+
+        if (adhocExpensesData) {
+          const expenses = adhocExpensesData || [];
+          const activeExpenses = expenses.filter((e: any) => e.is_active === 1);
+          
+          // Calculate total by currency (use first currency found)
+          const totals: Record<string, number> = {};
+          activeExpenses.forEach((e: any) => {
+            totals[e.currency_code] = (totals[e.currency_code] || 0) + e.amount;
+          });
+          
+          const firstCurrency = Object.keys(totals)[0] || '';
+          const totalAmount = totals[firstCurrency] || 0;
+          
+          setAdhocExpensesStats({
+            total: expenses.length,
+            active: activeExpenses.length,
+            totalAmount,
+            currency: firstCurrency,
+          });
         }
 
       } catch (error) {
@@ -325,6 +351,20 @@ export default function TripHubPage({ params }: PageProps) {
       </div>
     ) : undefined;
 
+    const adhocExpensesSubtitle = adhocExpensesStats.active > 0 ? (
+      <div className="space-y-1">
+        <div>
+          <span className="text-green-400 text-sm font-bold">
+            {adhocExpensesStats.currency} {adhocExpensesStats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        </div>
+        <div className="text-xs">
+          <span className="text-purple-400">{adhocExpensesStats.active}</span>
+          <span className="text-white/50"> active</span>
+        </div>
+      </div>
+    ) : undefined;
+
   return (
     <div className="min-h-screen relative p-6">
       <PageBackground />
@@ -467,6 +507,20 @@ export default function TripHubPage({ params }: PageProps) {
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            }
+          />
+
+          {/* Ad-hoc Expenses */}
+          <HubTile
+            title="Extra Costs"
+            onClick={() => router.push(`/dashboard/trip/${tripId}/adhoc-expenses`)}
+            count={adhocExpensesStats.total > 0 ? adhocExpensesStats.total : undefined}
+            countLabel={adhocExpensesStats.total > 0 ? "Items" : undefined}
+            subtitle={adhocExpensesSubtitle}
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             }
           />

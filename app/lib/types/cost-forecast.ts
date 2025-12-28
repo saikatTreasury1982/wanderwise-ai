@@ -1,6 +1,6 @@
 export interface CostLineItem {
   id: number;
-  module: 'flights' | 'accommodations' | 'itinerary';
+  module: 'flights' | 'accommodations' | 'itinerary' | 'adhoc_expenses';
   description: string;
   amount: number;
   currency_code: string;
@@ -12,7 +12,7 @@ export interface CostLineItem {
 }
 
 export interface ModuleBreakdown {
-  module: 'flights' | 'accommodations' | 'itinerary';
+  module: 'flights' | 'accommodations' | 'itinerary' | 'adhoc_expenses';
   total: number;
   currency_code: string;
   items_count: number;
