@@ -229,7 +229,7 @@ export default function AdhocExpenseEntryForm({
 
           {/* Category */}
           <div>
-            <label className="block text-sm text-white/60 mb-1.5">Category (optional)</label>
+            <label className="block text-sm text-white/60 mb-1.5">Category</label>
             <input
               type="text"
               value={category}
@@ -241,12 +241,13 @@ export default function AdhocExpenseEntryForm({
 
           {/* Date */}
           <div>
-            <label className="block text-sm text-white/60 mb-1.5">Date (optional)</label>
+            <label className="block text-sm text-white/60 mb-1.5">Date</label>
             <input
               type="date"
               value={expenseDate}
               onChange={(e) => setExpenseDate(e.target.value)}
-              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              //className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
             />
           </div>
 
