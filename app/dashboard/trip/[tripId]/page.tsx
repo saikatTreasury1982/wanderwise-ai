@@ -47,6 +47,7 @@ export default function TripHubPage({ params }: PageProps) {
   const [itineraryStats, setItineraryStats] = useState<{ daysPlanned: number; totalDays: number; activitiesCount: number }>({ daysPlanned: 0, totalDays: 0, activitiesCount: 0 });
   const [costForecastStats, setCostForecastStats] = useState<{ totalCost: number; baseCurrency: string; itemsCount: number; lastCollected: string | null }>({ totalCost: 0, baseCurrency: '', itemsCount: 0, lastCollected: null });
   const [adhocExpensesStats, setAdhocExpensesStats] = useState<{ total: number; active: number; totalAmount: number; currency: string }>({ total: 0, active: 0, totalAmount: 0, currency: '' });
+  const [actualsStats, setActualsStats] = useState<{ hasActuals: boolean; totalActual: number; totalEstimated: number; variance: number; currency: string; settlementsCount: number }>({ hasActuals: false, totalActual: 0, totalEstimated: 0, variance: 0, currency: '', settlementsCount: 0 });
 
   const [destinations, setDestinations] = useState<Array<{
     destination_id: number;
@@ -69,6 +70,7 @@ export default function TripHubPage({ params }: PageProps) {
           costForecastResponse,
           destinationsResponse,
           adhocExpensesResponse,
+          actualsResponse,
         ] = await Promise.all([
           fetch(`/api/trips/${tripId}`),
           fetch(`/api/trips/${tripId}/flights`),
@@ -80,6 +82,7 @@ export default function TripHubPage({ params }: PageProps) {
           fetch(`/api/trips/${tripId}/cost-forecast`),
           fetch(`/api/trips/${tripId}/destinations`),
           fetch(`/api/trips/${tripId}/adhoc-expenses`),
+          fetch(`/api/trips/${tripId}/expense-actuals`),
         ]);
 
         // Handle auth redirects
@@ -104,6 +107,7 @@ export default function TripHubPage({ params }: PageProps) {
           costData,
           destinationsData,
           adhocExpensesData,
+          actualsData,
         ] = await Promise.all([
           tripResponse.ok ? tripResponse.json() : null,
           flightsResponse.ok ? flightsResponse.json() : null,
@@ -115,6 +119,7 @@ export default function TripHubPage({ params }: PageProps) {
           costForecastResponse.ok ? costForecastResponse.json() : null,
           destinationsResponse.ok ? destinationsResponse.json() : null,
           adhocExpensesResponse.ok ? adhocExpensesResponse.json() : null,
+          actualsResponse.ok ? actualsResponse.json() : null,
         ]);
 
         // Set all state
@@ -199,6 +204,22 @@ export default function TripHubPage({ params }: PageProps) {
             totalAmount,
             currency: firstCurrency,
           });
+        }
+
+        if (actualsData?.actuals && actualsData.actuals.length > 0) {
+          // Fetch settlement summary for complete stats
+          const settlementResponse = await fetch(`/api/trips/${tripId}/expense-actuals/settlement`);
+          if (settlementResponse.ok) {
+            const settlementData = await settlementResponse.json();
+            setActualsStats({
+              hasActuals: true,
+              totalActual: settlementData.total_actual || 0,
+              totalEstimated: settlementData.total_estimated || 0,
+              variance: settlementData.variance || 0,
+              currency: costData?.base_currency || '',
+              settlementsCount: settlementData.settlements?.length || 0,
+            });
+          }
         }
 
       } catch (error) {
@@ -365,6 +386,28 @@ export default function TripHubPage({ params }: PageProps) {
       </div>
     ) : undefined;
 
+    const actualsSubtitle = actualsStats.hasActuals ? (
+      <div className="space-y-1">
+        <div>
+          <span className="text-green-400 text-sm font-bold">
+            {actualsStats.currency} {actualsStats.totalActual.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        </div>
+        <div className="text-xs">
+          <span className={actualsStats.variance >= 0 ? 'text-red-400' : 'text-green-400'}>
+            {actualsStats.variance >= 0 ? '+' : ''}{actualsStats.variance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+          <span className="text-white/50"> variance</span>
+        </div>
+        {actualsStats.settlementsCount > 0 && (
+          <div className="text-xs">
+            <span className="text-yellow-400">{actualsStats.settlementsCount}</span>
+            <span className="text-white/50"> settlement{actualsStats.settlementsCount > 1 ? 's' : ''}</span>
+          </div>
+        )}
+      </div>
+    ) : undefined;
+
   return (
     <div className="min-h-screen relative p-6">
       <PageBackground />
@@ -521,6 +564,20 @@ export default function TripHubPage({ params }: PageProps) {
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            }
+          />
+
+          {/* Expense Actuals */}
+          <HubTile
+            title="Actuals"
+            onClick={() => router.push(`/dashboard/trip/${tripId}/expense-actuals`)}
+            count={actualsStats.hasActuals ? undefined : undefined}
+            countLabel={actualsStats.hasActuals ? undefined : undefined}
+            subtitle={actualsSubtitle}
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
             }
           />

@@ -37,12 +37,14 @@ export async function getAccommodationOptionsByTrip(tripId: number): Promise<Acc
     traveler_link_id: number | null;
     traveler_id: number | null;
     traveler_name: string | null;
+    is_cost_sharer: number | null;
   }>(
     `SELECT 
       ao.*,
       aot.id as traveler_link_id,
       aot.traveler_id,
-      tt.traveler_name
+      tt.traveler_name,
+      tt.is_cost_sharer
      FROM accommodation_options ao
      LEFT JOIN accommodation_option_travelers aot ON ao.accommodation_option_id = aot.accommodation_option_id
      LEFT JOIN trip_travelers tt ON aot.traveler_id = tt.traveler_id
@@ -86,6 +88,7 @@ export async function getAccommodationOptionsByTrip(tripId: number): Promise<Acc
         accommodation_option_id: row.accommodation_option_id,
         traveler_id: row.traveler_id,
         traveler_name: row.traveler_name!,
+        is_cost_sharer: row.is_cost_sharer ?? 1,
       });
     }
   }
@@ -102,7 +105,7 @@ export async function getAccommodationOptionById(accommodationOptionId: number):
   if (rows.length === 0) return null;
 
   const travelers = await query<AccommodationOptionTraveler>(
-    `SELECT aot.id, aot.accommodation_option_id, aot.traveler_id, tt.traveler_name 
+    `SELECT aot.id, aot.accommodation_option_id, aot.traveler_id, tt.traveler_name, tt.is_cost_sharer 
     FROM accommodation_option_travelers aot
     JOIN trip_travelers tt ON aot.traveler_id = tt.traveler_id
     WHERE aot.accommodation_option_id = ?`,

@@ -37,6 +37,7 @@ export interface FlightOptionTraveler {
   flight_option_id: number;
   traveler_id: number;
   traveler_name: string;
+  is_cost_sharer: number;
 }
 
 export interface CreateFlightOptionInput {

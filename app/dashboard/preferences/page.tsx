@@ -213,7 +213,7 @@ export default function PreferencesPage() {
   };
 
   const handleAddPayment = async () => {
-    if (!paymentFormData.issuer.trim() || !paymentFormData.payment_method_key.trim()) return;
+    if (!paymentFormData.payment_method_key.trim()) return;
 
     setIsSavingPayment(true);
     try {
@@ -642,7 +642,7 @@ export default function PreferencesPage() {
                     variant="primary"
                     onClick={editingPaymentId ? handleUpdatePayment : handleAddPayment}
                     isLoading={isSavingPayment}
-                    disabled={!paymentFormData.issuer.trim() || !paymentFormData.payment_method_key.trim()}
+                    disabled={!paymentFormData.payment_method_key.trim()}
                     title={editingPaymentId ? 'Save changes' : 'Add payment method'}
                     className="w-9 h-9 sm:w-10 sm:h-10"
                     icon={
@@ -657,42 +657,48 @@ export default function PreferencesPage() {
 
             {/* Payment Methods List */}
             {paymentMethods.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {paymentMethods.map(method => (
                   <div
                     key={method.payment_method_id}
-                    className={`flex items-start gap-3 p-3 bg-white/5 rounded-lg border transition-colors ${
+                    className={`flex flex-col gap-2 p-3 bg-white/5 rounded-lg border transition-colors ${
                       method.is_active ? 'border-white/10 hover:bg-white/10' : 'border-red-400/30 bg-red-500/5 opacity-60'
                     }`}
                   >
-                    <span className="text-2xl">{getChannelIcon(method.payment_channel)}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-medium text-sm sm:text-base truncate">
-                        {method.issuer}
-                        {!method.is_active && <span className="ml-2 text-xs text-red-400">(Inactive)</span>}
-                      </p>
-                      <p className="text-white/60 text-xs truncate">{method.payment_type}</p>
-                      <p className="text-white/50 text-xs truncate">{method.payment_network}</p>
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xl flex-shrink-0">{getChannelIcon(method.payment_channel)}</span>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => startEditingPayment(method)}
+                          className="p-1 text-white/60 hover:text-white hover:bg-white/10 rounded transition-colors"
+                          title="Edit"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeletePayment(method.payment_method_id)}
+                          className="p-1 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                          title="Delete"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => startEditingPayment(method)}
-                        className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded transition-colors"
-                        title="Edit"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDeletePayment(method.payment_method_id)}
-                        className="p-1.5 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                        title="Delete"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                    <div className="min-w-0">
+                      <p className="text-white font-medium text-sm truncate">
+                        {method.payment_method_key}
+                        {!method.is_active && <span className="ml-1 text-xs text-red-400">(Inactive)</span>}
+                      </p>
+                      <p className="text-white/60 text-xs truncate">
+                        {method.issuer ? `${method.issuer} • ${method.payment_type}` : method.payment_type}
+                      </p>
+                      {method.payment_network && (
+                        <p className="text-white/50 text-xs truncate">{method.payment_network}</p>
+                      )}
                     </div>
                   </div>
                 ))}

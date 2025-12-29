@@ -183,22 +183,33 @@ export default function FlightViewModal({
             )}
 
             {/* Price */}
-            {flight.unit_fare && (
-              <div className="bg-white/5 rounded-lg border border-white/10 p-3 sm:p-4">
-                <p className="text-white/50 text-xs sm:text-sm mb-1.5">Fare</p>
-                <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
-                  <p className="text-xl sm:text-2xl font-bold text-green-400">
-                    {flight.currency_code} {(flight.unit_fare * (flight.travelers?.length || 1)).toLocaleString()}
-                  </p>
-                  <span className="text-sm text-white/50">total</span>
+            {flight.unit_fare && (() => {
+              const costSharers = flight.travelers?.filter(t => t.is_cost_sharer === 1) || [];
+              const costSharerCount = costSharers.length;
+              const totalCost = flight.unit_fare * costSharerCount;
+              
+              return (
+                <div className="bg-white/5 rounded-lg border border-white/10 p-3 sm:p-4">
+                  <p className="text-white/50 text-xs sm:text-sm mb-1.5">Fare</p>
+                  <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                    <p className="text-xl sm:text-2xl font-bold text-green-400">
+                      {flight.currency_code} {totalCost.toLocaleString()}
+                    </p>
+                    <span className="text-sm text-white/50">total</span>
+                  </div>
+                  {costSharerCount > 0 && (
+                    <p className="text-sm text-white/50 mt-1.5">
+                      {flight.currency_code} {flight.unit_fare.toLocaleString()} × {costSharerCount} cost sharer{costSharerCount > 1 ? 's' : ''}
+                    </p>
+                  )}
+                  {flight.travelers && flight.travelers.length > costSharerCount && (
+                    <p className="text-xs text-white/40 mt-1">
+                      ({flight.travelers.length - costSharerCount} non-cost sharer{flight.travelers.length - costSharerCount > 1 ? 's' : ''} not included)
+                    </p>
+                  )}
                 </div>
-                {flight.travelers && flight.travelers.length > 0 && (
-                  <p className="text-sm text-white/50 mt-1.5">
-                    {flight.currency_code} {flight.unit_fare.toLocaleString()} × {flight.travelers.length} traveler{flight.travelers.length > 1 ? 's' : ''}
-                  </p>
-                )}
-              </div>
-            )}
+              );
+            })()}
 
             {/* Travelers */}
             {flight.travelers && flight.travelers.length > 0 && (
@@ -208,9 +219,15 @@ export default function FlightViewModal({
                   {flight.travelers.map(t => (
                     <span
                       key={t.traveler_id}
-                      className="px-2.5 py-1.5 text-sm bg-purple-500/20 text-purple-300 border border-purple-400/30 rounded-lg"
+                      className={cn(
+                        "px-2.5 py-1.5 text-sm rounded-lg",
+                        t.is_cost_sharer === 1
+                          ? "bg-purple-500/20 text-purple-300 border border-purple-400/30"
+                          : "bg-gray-500/20 text-gray-400 border border-gray-400/30"
+                      )}
                     >
                       {t.traveler_name}
+                      {t.is_cost_sharer === 0 && <span className="ml-1 text-xs">(non-cost)</span>}
                     </span>
                   ))}
                 </div>

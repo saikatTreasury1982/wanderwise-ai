@@ -183,21 +183,27 @@ export default function FlightOptionCard({
           )}
 
           {/* Price */}
-          {flight.unit_fare && (
-            <div className="mt-2">
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold text-purple-300">
-                  {flight.currency_code} {(flight.unit_fare * (flight.travelers?.length || 1)).toLocaleString()}
-                </span>
-                <span className="text-xs text-white/50">total</span>
+          {flight.unit_fare && (() => {
+            const costSharers = flight.travelers?.filter(t => t.is_cost_sharer === 1) || [];
+            const costSharerCount = costSharers.length;
+            const totalCost = flight.unit_fare * costSharerCount;
+            
+            return (
+              <div className="mt-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg font-bold text-purple-300">
+                    {flight.currency_code} {totalCost.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-white/50">total</span>
+                </div>
+                {costSharerCount > 0 && (
+                  <p className="text-xs text-white/50 mt-0.5">
+                    {flight.currency_code} {flight.unit_fare.toLocaleString()} × {costSharerCount} cost sharer{costSharerCount > 1 ? 's' : ''}
+                  </p>
+                )}
               </div>
-              {flight.travelers && flight.travelers.length > 0 && (
-                <p className="text-xs text-white/50 mt-0.5">
-                  {flight.currency_code} {flight.unit_fare.toLocaleString()} × {flight.travelers.length} traveler{flight.travelers.length > 1 ? 's' : ''}
-                </p>
-              )}
-            </div>
-          )}
+            );
+          })()}
 
           {/* Travelers count (only show if no price) */}
           {!flight.unit_fare && flight.travelers && flight.travelers.length > 0 && (

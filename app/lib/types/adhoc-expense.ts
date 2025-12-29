@@ -20,6 +20,7 @@ export interface AdhocExpenseTraveler {
   adhoc_expense_id: number;
   traveler_id: number;
   traveler_name: string;
+  is_cost_sharer: number;
 }
 
 export interface CreateAdhocExpenseInput {

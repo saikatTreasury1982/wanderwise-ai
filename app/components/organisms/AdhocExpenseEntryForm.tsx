@@ -9,6 +9,7 @@ interface Traveler {
   traveler_id: number;
   traveler_name: string;
   is_active: number;
+  is_cost_sharer: number;
 }
 
 interface Currency {
@@ -327,19 +328,31 @@ export default function AdhocExpenseEntryForm({
           </div>
 
           {/* Total Projected */}
-          {amount && selectedTravelers.length > 0 && (
-            <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-white/70">Split Among Travelers</span>
-                <span className="text-lg font-bold text-purple-300">
-                  {currency} {(parseFloat(amount) / selectedTravelers.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+          {amount && selectedTravelers.length > 0 && (() => {
+            const costSharers = travelers.filter(t => 
+              selectedTravelers.includes(t.traveler_id) && t.is_cost_sharer === 1
+            );
+            const costSharerCount = costSharers.length;
+            
+            return costSharerCount > 0 && (
+              <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-white/70">Split Among Cost Sharers</span>
+                  <span className="text-lg font-bold text-purple-300">
+                    {currency} {(parseFloat(amount) / costSharerCount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <p className="text-xs text-white/50 mt-1">
+                  {currency} {parseFloat(amount).toLocaleString()} ÷ {costSharerCount} cost sharer{costSharerCount > 1 ? 's' : ''}
+                </p>
+                {selectedTravelers.length > costSharerCount && (
+                  <p className="text-xs text-white/40 mt-1">
+                    ({selectedTravelers.length - costSharerCount} non-cost sharer{selectedTravelers.length - costSharerCount > 1 ? 's' : ''} not included)
+                  </p>
+                )}
               </div>
-              <p className="text-xs text-white/50 mt-1">
-                {currency} {parseFloat(amount).toLocaleString()} ÷ {selectedTravelers.length} traveler{selectedTravelers.length > 1 ? 's' : ''}
-              </p>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Footer */}

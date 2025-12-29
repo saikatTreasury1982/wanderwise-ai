@@ -27,38 +27,39 @@ export default function AccommodationViewModal({
 
   const nights = calculateNights();
 
-  const statusColors = {
-    draft: 'bg-gray-500/20 text-gray-300 border-gray-400/30',
-    shortlisted: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
-    confirmed: 'bg-green-500/20 text-green-300 border-green-400/30',
-    not_selected: 'bg-red-500/20 text-red-300 border-red-400/30',
-  };
-
   return (
     <>
-      <style jsx>{`
+      <style jsx global>{`
         .modal-scroll::-webkit-scrollbar {
-          width: 6px;
+          width: 6px !important;
         }
         .modal-scroll::-webkit-scrollbar-track {
-          background: transparent;
-          margin: 12px 0;
+          background: transparent !important;
+          margin: 12px 0 !important;
         }
         .modal-scroll::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.2) !important;
+          border-radius: 10px !important;
         }
         .modal-scroll::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.3) !important;
         }
         .modal-scroll::-webkit-scrollbar-button {
           display: none !important;
           height: 0 !important;
           width: 0 !important;
         }
+        .modal-scroll::-webkit-scrollbar-button:single-button {
+          display: none !important;
+        }
+        .modal-scroll::-webkit-scrollbar-button:vertical:start:decrement,
+        .modal-scroll::-webkit-scrollbar-button:vertical:end:increment {
+          display: none !important;
+          height: 0 !important;
+        }
         @media (max-width: 640px) {
           .modal-scroll::-webkit-scrollbar {
-            display: none;
+            display: none !important;
           }
         }
       `}</style>
@@ -73,13 +74,16 @@ export default function AccommodationViewModal({
         {/* Modal */}
         <div
           className={cn(
-            'modal-scroll',
             'relative z-10 w-full max-w-lg md:max-w-2xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto',
             'bg-gray-900/95 backdrop-blur-xl',
             'border border-white/20 rounded-lg',
             'shadow-2xl'
           )}
           onClick={e => e.stopPropagation()}
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
+          }}
         >
           {/* Header */}
           <div className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-xl border-b border-white/10 p-4 sm:p-5 flex items-center justify-between">
@@ -97,15 +101,18 @@ export default function AccommodationViewModal({
           {/* Content */}
           <div className="p-4 sm:p-5 space-y-4 sm:space-y-5">
             {/* Status & Type */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
               <span className={cn(
                 'px-2.5 py-1 text-xs sm:text-sm font-medium rounded-full border',
-                statusColors[accommodation.status]
+                accommodation.status === 'shortlisted' && 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+                accommodation.status === 'confirmed' && 'bg-green-500/20 text-green-300 border-green-500/30',
+                accommodation.status === 'not_selected' && 'bg-red-500/20 text-red-300 border-red-500/30',
+                accommodation.status === 'draft' && 'bg-white/10 text-white/70 border-white/20'
               )}>
-                {accommodation.status.replace('_', ' ')}
+                {accommodation.status || 'draft'}
               </span>
               {accommodation.type_name && (
-                <span className="px-2.5 py-1 text-xs sm:text-sm font-medium rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                <span className="px-2.5 py-1 text-xs sm:text-sm font-medium rounded-full bg-white/10 text-white/70 border border-white/20">
                   {accommodation.type_name}
                 </span>
               )}
@@ -212,9 +219,15 @@ export default function AccommodationViewModal({
                   {accommodation.travelers.map(t => (
                     <span
                       key={t.traveler_id}
-                      className="px-2.5 py-1.5 text-sm bg-purple-500/20 text-purple-300 border border-purple-400/30 rounded-lg"
+                      className={cn(
+                        "px-2.5 py-1.5 text-sm rounded-lg",
+                        t.is_cost_sharer === 1
+                          ? "bg-purple-500/20 text-purple-300 border border-purple-400/30"
+                          : "bg-gray-500/20 text-gray-400 border border-gray-400/30"
+                      )}
                     >
                       {t.traveler_name}
+                      {t.is_cost_sharer === 0 && <span className="ml-1 text-xs">(non-cost)</span>}
                     </span>
                   ))}
                 </div>

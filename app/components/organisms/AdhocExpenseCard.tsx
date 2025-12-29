@@ -95,7 +95,7 @@ export default function AdhocExpenseCard({
             </div>
           )}
 
-          {/* Price */}
+         {/* Price */}
           <div className="mt-2">
             <div className="flex items-baseline gap-2">
               <span className="text-lg font-bold text-purple-300">
@@ -103,11 +103,15 @@ export default function AdhocExpenseCard({
               </span>
               <span className="text-xs text-white/50">total</span>
             </div>
-            {expense.travelers && expense.travelers.length > 0 && (
-              <p className="text-xs text-white/50 mt-0.5">
-                {expense.currency_code} {(expense.amount / expense.travelers.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {expense.travelers.length} traveler{expense.travelers.length > 1 ? 's' : ''}
-              </p>
-            )}
+            {expense.travelers && expense.travelers.length > 0 && (() => {
+              const costSharers = expense.travelers.filter(t => t.is_cost_sharer === 1);
+              const costSharerCount = costSharers.length;
+              return costSharerCount > 0 && (
+                <p className="text-xs text-white/50 mt-0.5">
+                  {expense.currency_code} {(expense.amount / costSharerCount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {costSharerCount} cost sharer{costSharerCount > 1 ? 's' : ''}
+                </p>
+              );
+            })()}
           </div>
         </div>
 
