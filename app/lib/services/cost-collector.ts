@@ -204,7 +204,7 @@ async function collectAndSaveFlightCosts(
     currency_code: string;
     status: string;
     notes: string | null;
-    traveler_count: number;
+    cost_sharer_count: number;
   }>(
     tx,
     `SELECT 
@@ -214,7 +214,11 @@ async function collectAndSaveFlightCosts(
       fo.currency_code,
       fo.status,
       fo.notes,
-      (SELECT COUNT(*) FROM flight_option_travelers WHERE flight_option_id = fo.flight_option_id) as traveler_count
+      (SELECT COUNT(*) 
+       FROM flight_option_travelers fot
+       JOIN trip_travelers tt ON fot.traveler_id = tt.traveler_id
+       WHERE fot.flight_option_id = fo.flight_option_id 
+       AND tt.is_cost_sharer = 1) as cost_sharer_count
      FROM flight_options fo
      WHERE fo.trip_id = ? AND fo.status IN (${placeholders}) AND fo.unit_fare IS NOT NULL`,
     [tripId, ...statuses]
@@ -251,8 +255,8 @@ async function collectAndSaveFlightCosts(
       ? `${routeDescription} (${flightTypeLabel})`
       : f.notes || `Flight (${flightTypeLabel})`;
 
-    const travelerCount = f.traveler_count || 1;
-    const totalAmount = f.unit_fare * travelerCount;
+    const costSharerCount = f.cost_sharer_count || 1;
+    const totalAmount = f.unit_fare * costSharerCount;
 
     await createExpenseWithSplits(
       tx,
@@ -273,7 +277,7 @@ async function collectAndSaveFlightCosts(
       amount: totalAmount,
       currency_code: f.currency_code || 'USD',
       cost_type: 'per_head',
-      headcount: travelerCount,
+      headcount: costSharerCount,
       status: f.status,
     });
   }
