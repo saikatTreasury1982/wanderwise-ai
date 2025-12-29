@@ -124,12 +124,18 @@ export default function AccommodationOptionCard({
             )}
           </div>
 
-          {/* Travelers count */}
-          {accommodation.travelers && accommodation.travelers.length > 0 && (
-            <div className="mt-1 text-xs text-white/50">
-              {accommodation.travelers.length} traveler{accommodation.travelers.length > 1 ? 's' : ''}
-            </div>
-          )}
+          {/* Cost sharers count */}
+          {accommodation.travelers && accommodation.travelers.length > 0 && (() => {
+            const costSharers = accommodation.travelers.filter(t => t.is_cost_sharer === 1);
+            return (
+              <div className="mt-1 text-xs text-white/50">
+                {costSharers.length} cost sharer{costSharers.length > 1 ? 's' : ''}
+                {accommodation.travelers.length > costSharers.length && (
+                  <span className="text-white/40"> ({accommodation.travelers.length - costSharers.length} non-cost)</span>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Action buttons */}

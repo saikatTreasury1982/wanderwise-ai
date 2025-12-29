@@ -19,12 +19,14 @@ export async function getAdhocExpensesByTrip(tripId: number): Promise<AdhocExpen
     traveler_link_id: number | null;
     traveler_id: number | null;
     traveler_name: string | null;
+    is_cost_sharer: number | null;
   }>(
     `SELECT 
       ae.*,
       aet.adhoc_expense_traveler_id as traveler_link_id,
       aet.traveler_id,
-      tt.traveler_name
+      tt.traveler_name,
+      tt.is_cost_sharer
      FROM adhoc_expenses ae
      LEFT JOIN adhoc_expense_travelers aet ON ae.adhoc_expense_id = aet.adhoc_expense_id
      LEFT JOIN trip_travelers tt ON aet.traveler_id = tt.traveler_id
@@ -66,6 +68,7 @@ export async function getAdhocExpensesByTrip(tripId: number): Promise<AdhocExpen
         adhoc_expense_id: row.adhoc_expense_id,
         traveler_id: row.traveler_id,
         traveler_name: row.traveler_name!,
+        is_cost_sharer: row.is_cost_sharer ?? 1,
       });
       travelersMap.get(row.adhoc_expense_id)!.add(row.traveler_id);
     }
@@ -86,9 +89,10 @@ export async function getAdhocExpenseById(expenseId: number): Promise<AdhocExpen
     adhoc_expense_traveler_id: number; 
     adhoc_expense_id: number; 
     traveler_id: number; 
-    traveler_name: string 
+    traveler_name: string;
+    is_cost_sharer: number;
   }>(
-    `SELECT aet.adhoc_expense_traveler_id, aet.adhoc_expense_id, aet.traveler_id, tt.traveler_name 
+    `SELECT aet.adhoc_expense_traveler_id, aet.adhoc_expense_id, aet.traveler_id, tt.traveler_name, tt.is_cost_sharer 
     FROM adhoc_expense_travelers aet
     JOIN trip_travelers tt ON aet.traveler_id = tt.traveler_id
     WHERE aet.adhoc_expense_id = ?`,

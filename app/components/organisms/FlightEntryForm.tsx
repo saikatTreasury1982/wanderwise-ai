@@ -9,6 +9,7 @@ interface Traveler {
   traveler_id: number;
   traveler_name: string;
   is_active: number;
+  is_cost_sharer: number;
 }
 
 interface Currency {
@@ -479,19 +480,31 @@ export default function FlightEntryForm({
         </div>
 
         {/* Total Projected Amount */}
-        {unitFare && selectedTravelers.length > 0 && (
-          <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm sm:text-base text-white/70">Total Projected</span>
-              <span className="text-xl font-bold text-purple-300">
-                {currencyCode || ''} {(parseFloat(unitFare) * selectedTravelers.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
+        {unitFare && selectedTravelers.length > 0 && (() => {
+          const costSharers = travelers.filter(t => 
+            selectedTravelers.includes(t.traveler_id) && t.is_cost_sharer === 1
+          );
+          const costSharerCount = costSharers.length;
+          
+          return costSharerCount > 0 && (
+            <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm sm:text-base text-white/70">Total Projected</span>
+                <span className="text-xl font-bold text-purple-300">
+                  {currencyCode || ''} {(parseFloat(unitFare) * costSharerCount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-white/50 mt-1">
+                {currencyCode || ''} {parseFloat(unitFare).toLocaleString()} × {costSharerCount} cost sharer{costSharerCount > 1 ? 's' : ''}
+              </p>
+              {selectedTravelers.length > costSharerCount && (
+                <p className="text-xs text-white/40 mt-1">
+                  ({selectedTravelers.length - costSharerCount} non-cost sharer{selectedTravelers.length - costSharerCount > 1 ? 's' : ''} not included in total)
+                </p>
+              )}
             </div>
-            <p className="text-xs sm:text-sm text-white/50 mt-1">
-              {currencyCode || ''} {parseFloat(unitFare).toLocaleString()} × {selectedTravelers.length} traveler{selectedTravelers.length > 1 ? 's' : ''}
-            </p>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Travelers - Bigger touch targets */}
         {sortedTravelers.length > 0 && (

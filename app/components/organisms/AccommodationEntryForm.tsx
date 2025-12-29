@@ -9,6 +9,7 @@ interface Traveler {
   traveler_id: number;
   traveler_name: string;
   is_active: number;
+  is_cost_sharer: number;
 }
 
 interface Currency {

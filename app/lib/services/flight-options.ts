@@ -29,6 +29,7 @@ export async function getFlightOptionsByTrip(tripId: number): Promise<FlightOpti
     traveler_link_id: number | null;
     traveler_id: number | null;
     traveler_name: string | null;
+    is_cost_sharer: number | null;
   }>(
     `SELECT 
       fo.*,
@@ -46,7 +47,8 @@ export async function getFlightOptionsByTrip(tripId: number): Promise<FlightOpti
       fl.duration_minutes,
       fot.id as traveler_link_id,
       fot.traveler_id,
-      tt.traveler_name
+      tt.traveler_name,
+      tt.is_cost_sharer
      FROM flight_options fo
      LEFT JOIN flight_legs fl ON fo.flight_option_id = fl.flight_option_id
      LEFT JOIN flight_option_travelers fot ON fo.flight_option_id = fot.flight_option_id
@@ -110,6 +112,7 @@ export async function getFlightOptionsByTrip(tripId: number): Promise<FlightOpti
         flight_option_id: row.flight_option_id,
         traveler_id: row.traveler_id,
         traveler_name: row.traveler_name!,
+        is_cost_sharer: row.is_cost_sharer ?? 1,
       });
       travelersMap.get(row.flight_option_id)!.add(row.traveler_id);
     }
@@ -131,8 +134,8 @@ export async function getFlightOptionById(flightOptionId: number): Promise<Fligh
     [flightOptionId]
   );
 
-  const travelers = await query<{ id: number; flight_option_id: number; traveler_id: number; traveler_name: string }>(
-    `SELECT fot.id, fot.flight_option_id, fot.traveler_id, tt.traveler_name 
+  const travelers = await query<{ id: number; flight_option_id: number; traveler_id: number; traveler_name: string; is_cost_sharer: number }>(
+    `SELECT fot.id, fot.flight_option_id, fot.traveler_id, tt.traveler_name, tt.is_cost_sharer 
     FROM flight_option_travelers fot
     JOIN trip_travelers tt ON fot.traveler_id = tt.traveler_id
     WHERE fot.flight_option_id = ?`,
