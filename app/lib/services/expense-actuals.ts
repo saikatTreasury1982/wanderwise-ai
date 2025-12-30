@@ -281,12 +281,12 @@ export async function getSettlementSummary(tripId: number): Promise<{
     [tripId]
   );
 
-  // Get total actual
+  // Get total actual (only count items that have been paid)
   const [{ total_actual }] = await query<{ total_actual: number }>(
     `SELECT COALESCE(SUM(ea.actual_amount), 0) as total_actual
      FROM expense_actuals ea
      JOIN expenses e ON ea.expense_id = e.expense_id
-     WHERE e.trip_id = ?`,
+     WHERE e.trip_id = ? AND ea.paid_by_traveler_id IS NOT NULL`,
     [tripId]
   );
 
@@ -300,7 +300,7 @@ export async function getSettlementSummary(tripId: number): Promise<{
     `SELECT 
       tt.traveler_id,
       tt.traveler_name,
-      COALESCE(SUM(ea.actual_amount), 0) as should_pay,
+      COALESCE(SUM(CASE WHEN ea.paid_by_traveler_id IS NOT NULL THEN ea.actual_amount ELSE 0 END), 0) as should_pay,
       COALESCE((
         SELECT SUM(ea2.actual_amount)
         FROM expense_actuals ea2
