@@ -481,6 +481,11 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                               {actual.actual_date && <span>Date: {formatDate(actual.actual_date, dateFormat)}</span>}
                               {actual.payment_method_key && <span>Method: {actual.payment_method_key}</span>}
                             </div>
+                            {actual.actual_notes && (
+                              <div className="text-xs text-white/50 mt-2 italic">
+                                {actual.actual_notes}
+                              </div>
+                            )}
                           </div>
                           <button
                             onClick={() => openEditModal(actual)}
@@ -627,7 +632,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                     type="date"
                     value={editForm.actual_date}
                     onChange={e => setEditForm({ ...editForm, actual_date: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+                    className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
                   />
                 </div>
 
