@@ -158,17 +158,19 @@ export async function updateTrip(
 
 export async function deleteTrip(tripId: number, userId: string): Promise<boolean> {
   try {
-    // Only allow deletion of draft trips
+    // Verify trip exists and user owns it
     const trip = await getTripById(tripId, userId);
     
     if (!trip) {
       throw new Error('Trip not found');
     }
     
-    if (trip.status_code !== 1) {
-      throw new Error('Only draft trips can be deleted');
+    // Only allow deletion of draft (1) or suspended (4) trips
+    if (trip.status_code !== 1 && trip.status_code !== 4) {
+      throw new Error('Only draft or suspended trips can be deleted');
     }
 
+    // Delete trip - CASCADE DELETE handles all related data automatically
     await query(
       'DELETE FROM trips WHERE trip_id = ? AND user_id = ?',
       [tripId, userId]
@@ -177,31 +179,6 @@ export async function deleteTrip(tripId: number, userId: string): Promise<boolea
     return true;
   } catch (error) {
     console.error('Error deleting trip:', error);
-    throw error;
-  }
-}
-
-export async function deleteTripPlanningData(tripId: number): Promise<void> {
-  try {
-    // Get all tables that need data deletion from trip_functions
-    const tables = await query<{ table_name: string; delete_on_drop: number }>(
-      'SELECT table_name, delete_on_drop FROM trip_functions WHERE delete_on_drop = 1'
-    );
-
-    // Delete data from each table
-    for (const table of tables) {
-      try {
-        await query(
-          `DELETE FROM ${table.table_name} WHERE trip_id = ?`,
-          [tripId]
-        );
-      } catch (err) {
-        // Table might not exist yet, continue with others
-        console.warn(`Could not delete from ${table.table_name}:`, err);
-      }
-    }
-  } catch (error) {
-    console.error('Error deleting trip planning data:', error);
     throw error;
   }
 }
