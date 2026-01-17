@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSession } from '@/app/lib/services/session-service';
-import { getTripById, updateTrip, deleteTrip, deleteTripPlanningData  } from '@/app/lib/services/trip-service';
+import { getTripById, updateTrip, deleteTrip } from '@/app/lib/services/trip-service';
 
 interface RouteParams {
   params: Promise<{ tripId: string }>;
@@ -71,9 +71,10 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const body = await request.json();
     const { delete_planning_data, destinations, ...updateData } = body;
 
-    // If dropping planning with data deletion
+    // If dropping planning with data deletion, use hard delete
     if (delete_planning_data === true) {
-      await deleteTripPlanningData(parseInt(tripId));
+      await deleteTrip(parseInt(tripId), session.user_id);
+      return NextResponse.json({ success: true, deleted: true });
     }
 
     const trip = await updateTrip(parseInt(tripId), session.user_id, updateData);
