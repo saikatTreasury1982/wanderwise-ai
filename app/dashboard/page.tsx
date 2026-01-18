@@ -59,19 +59,19 @@ export default function DashboardPage() {
       if (response.ok) {
         const data = await response.json();
         setTrips(data.trips);
-        
+
         // Fetch destinations for each trip
         const destMap = new Map<number, string[]>();
-        
+
         for (const trip of data.trips) {
           try {
             const destResponse = await fetch(`/api/trips/${trip.trip_id}/destinations`);
-            
+
             if (destResponse.ok) {
               const destData = await destResponse.json();
-              
+
               if (destData.destinations && destData.destinations.length > 0) {
-                const destinations = destData.destinations.map((d: any) => 
+                const destinations = destData.destinations.map((d: any) =>
                   d.city ? `${d.city}, ${d.country}` : d.country
                 );
                 destMap.set(trip.trip_id, destinations);
@@ -81,7 +81,7 @@ export default function DashboardPage() {
             console.error(`Error fetching destinations for trip ${trip.trip_id}:`, err);
           }
         }
-        
+
         setDestinationsMap(destMap);
       }
     } catch (error) {
@@ -137,7 +137,13 @@ export default function DashboardPage() {
   };
 
   const handleDeleteTrip = async (tripId: number) => {
-    if (!confirm('Are you sure you want to delete this trip?')) return;
+    const confirmed = confirm(
+      'Are you sure you want to permanently delete this trip?\n\n' +
+      'All trip data including itinerary, expenses, travelers, and packing lists will be permanently removed.\n\n' +
+      'This action cannot be undone.'
+    );
+
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/trips/${tripId}`, {

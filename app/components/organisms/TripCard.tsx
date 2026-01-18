@@ -110,7 +110,7 @@ export default function TripCard({
         const travelersRes = await fetch(`/api/trips/${trip.trip_id}/travelers`);
         let activeTravelers = 0;
         let costSharers = 0;
-        
+
         if (travelersRes.ok) {
           const travelersData = await travelersRes.json();
           const travelers = travelersData.travelers || [];
@@ -121,7 +121,7 @@ export default function TripCard({
         // Fetch cost forecast
         let totalCost: number | null = null;
         let baseCurrency: string | null = null;
-        
+
         const costRes = await fetch(`/api/trips/${trip.trip_id}/cost-forecast`);
         if (costRes.ok) {
           const costData = await costRes.json();
@@ -142,7 +142,7 @@ export default function TripCard({
               .join(' • ');
           }
         }
-        
+
         setDestinations(destinationsText);
         setStats({ activeTravelers, costSharers, totalCost, baseCurrency });
       } catch (error) {
@@ -266,56 +266,58 @@ export default function TripCard({
             </svg>
           </button>
 
+          {/* Start Planning - only for draft trips */}
           {trip.status_code === 1 && (
-            <>
-              <button
-                onClick={(e) => { e.stopPropagation(); onStartPlanning(trip.trip_id); }}
-                className="p-2 rounded-lg text-white/70 hover:text-green-400 hover:bg-green-500/10 transition-colors"
-                aria-label="Start planning"
-                title="Start planning"
+            <button
+              onClick={(e) => { e.stopPropagation(); onStartPlanning(trip.trip_id); }}
+              className="p-2 rounded-lg text-white/70 hover:text-green-400 hover:bg-green-500/10 transition-colors"
+              aria-label="Start planning"
+              title="Start planning"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </button>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </button>
+          )}
 
-              <button
-                onClick={(e) => { e.stopPropagation(); onDelete(trip.trip_id); }}
-                className="p-2 rounded-lg text-white/70 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                aria-label="Delete trip"
-                title="Delete trip"
+          {/* Delete - for draft (1) or suspended (4) trips */}
+          {(trip.status_code === 1 || trip.status_code === 4) && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(trip.trip_id); }}
+              className="p-2 rounded-lg text-white/70 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              aria-label="Delete trip"
+              title="Delete trip"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </button>
           )}
         </div>
       </div>

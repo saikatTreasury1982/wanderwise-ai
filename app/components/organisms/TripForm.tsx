@@ -85,7 +85,7 @@ export default function TripForm({
           start_date: trip.start_date,
           end_date: trip.end_date,
         });
-        
+
         // Fetch destinations for existing trips
         if (trip.trip_id) {
           try {
@@ -212,25 +212,22 @@ export default function TripForm({
     await handleSave(false);
   };
 
-  const handleDropPlanning = async (deleteData: boolean) => {
+  const handleDropPlanning = async () => {
     setIsLoading(true);
     setErrors({});
 
     try {
-      const newStatusCode = deleteData ? 1 : 4; // 1 = Draft, 4 = Suspended
-      
       const response = await fetch(`/api/trips/${trip!.trip_id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          status_code: newStatusCode,
-          delete_planning_data: deleteData 
+          status_code: 4 // Suspend trip
         }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to update trip');
+        throw new Error(data.error || 'Failed to suspend trip');
       }
 
       setShowDropWarning(false);
@@ -483,7 +480,7 @@ export default function TripForm({
           )}
         </div>
       </form>
-      
+
       {/* Resume Planning Confirmation Modal */}
       {showResumeConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -495,23 +492,23 @@ export default function TripForm({
             </p>
             <div className="bg-white/10 border border-white/20 rounded-lg p-3 mb-4">
               <p className="text-white font-medium">
-                {new Date(formData.start_date).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
+                {new Date(formData.start_date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
                 })}
                 {' → '}
-                {new Date(formData.end_date).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
+                {new Date(formData.end_date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
                 })}
               </p>
             </div>
             <p className="text-white/90 mb-6">
               Would you like to keep these dates or update them?
             </p>
-            
+
             <div className="flex justify-center gap-4">
               {/* Keep Dates & Resume */}
               <div className="flex flex-col items-center">
@@ -576,70 +573,57 @@ export default function TripForm({
           </div>
         </div>
       )}
-      
-      {/* Drop Planning Warning Modal */}
+
+      {/* Drop Planning Confirmation Modal */}
       {showDropWarning && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowDropWarning(false)} />
           <div className="relative z-10 w-full max-w-md bg-black/20 backdrop-blur-xl border border-white/30 rounded-2xl p-6 shadow-2xl">
-            <h3 className="text-xl font-semibold text-white mb-3">Drop Planning?</h3>
-            <p className="text-white/90 mb-6">
-              Do you want to suspend the trip or cancel?
+            <h3 className="text-xl font-semibold text-white mb-3">Suspend Trip?</h3>
+            <p className="text-white/90 mb-4">
+              This trip will be suspended and all planning data will be retained.
             </p>
-            
-            <div className="flex justify-center gap-4 mb-4">
-              {/* Drop & Delete All Data */}
-              <div className="flex flex-col items-center">
-                <button
-                  onClick={() => handleDropPlanning(true)}
-                  disabled={isLoading}
-                  className="group w-12 h-12 rounded-full bg-red-500/20 backdrop-blur-sm border border-red-400/30 flex items-center justify-center text-red-300 hover:bg-red-500/30 hover:border-red-400/50 hover:text-red-200 transition-all disabled:opacity-50 relative"
-                  title="Drop & Delete All Data"
-                >
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  {/* Tooltip */}
-                  <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-48 px-3 py-2 bg-gray-900/95 backdrop-blur-sm border border-white/20 rounded-lg text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
-                    <div className="font-medium mb-1">Drop & Delete All Data</div>
-                    <div className="text-white/70">Remove all itinerary, expenses, and other planning data</div>
-                  </div>
-                </button>
-              </div>
+            <p className="text-white/70 text-sm mb-6">
+              You can resume planning or permanently delete this trip later from the dashboard.
+            </p>
 
-              {/* Suspend Instead */}
+            <div className="flex justify-center gap-4">
+              {/* Yes - Suspend */}
               <div className="flex flex-col items-center">
                 <button
-                  onClick={() => handleDropPlanning(false)}
+                  onClick={handleDropPlanning}
                   disabled={isLoading}
                   className="group w-12 h-12 rounded-full bg-yellow-500/20 backdrop-blur-sm border border-yellow-400/30 flex items-center justify-center text-yellow-300 hover:bg-yellow-500/30 hover:border-yellow-400/50 hover:text-yellow-200 transition-all disabled:opacity-50 relative"
-                  title="Suspend Instead"
+                  title="Yes, Suspend"
                 >
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  {isLoading ? (
+                    <div className="w-7 h-7 border-2 border-yellow-300 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
                   {/* Tooltip */}
-                  <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-48 px-3 py-2 bg-gray-900/95 backdrop-blur-sm border border-white/20 rounded-lg text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
-                    <div className="font-medium mb-1">Suspend Instead</div>
-                    <div className="text-white/70">Keep all data but pause planning activities</div>
+                  <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-40 px-3 py-2 bg-gray-900/95 backdrop-blur-sm border border-white/20 rounded-lg text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
+                    <div className="font-medium">Yes, Suspend Trip</div>
                   </div>
                 </button>
               </div>
 
-              {/* Cancel */}
+              {/* No - Cancel */}
               <div className="flex flex-col items-center">
                 <button
                   onClick={() => setShowDropWarning(false)}
                   disabled={isLoading}
                   className="group w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:bg-white/20 hover:text-white hover:border-white/30 transition-all disabled:opacity-50 relative"
-                  title="Cancel"
+                  title="No, Cancel"
                 >
                   <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                   {/* Tooltip */}
-                  <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 w-32 px-3 py-2 bg-gray-900/95 backdrop-blur-sm border border-white/20 rounded-lg text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
-                    <div className="font-medium">Cancel</div>
+                  <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-32 px-3 py-2 bg-gray-900/95 backdrop-blur-sm border border-white/20 rounded-lg text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
+                    <div className="font-medium">No, Cancel</div>
                   </div>
                 </button>
               </div>
