@@ -17,7 +17,7 @@ interface CreateTravelerInput {
   trip_id: number;
   traveler_name: string;
   traveler_email?: string | null;
-  relationship?: string | null;
+  relationship?: number | null;
   is_primary?: boolean;
   is_cost_sharer?: boolean;
   traveler_currency?: string | null;

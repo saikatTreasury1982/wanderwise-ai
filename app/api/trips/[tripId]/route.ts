@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSession } from '@/app/lib/services/session-service';
 import { getTripById, updateTrip, deleteTrip } from '@/app/lib/services/trip-service';
+import { getUserById } from '@/app/lib/services/user-service';
+import { getTravelersByTripId, createTraveler } from '@/app/lib/services/traveler-service';
 
 interface RouteParams {
   params: Promise<{ tripId: string }>;
@@ -69,12 +71,15 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { delete_planning_data, destinations, ...updateData } = body;
+    const { destinations, ...updateData } = body;
 
-    // If dropping planning with data deletion, use hard delete
-    if (delete_planning_data === true) {
-      await deleteTrip(parseInt(tripId), session.user_id);
-      return NextResponse.json({ success: true, deleted: true });
+    // Get the current trip state before update
+    const currentTrip = await getTripById(parseInt(tripId), session.user_id);
+    if (!currentTrip) {
+      return NextResponse.json(
+        { error: 'Trip not found' },
+        { status: 404 }
+      );
     }
 
     const trip = await updateTrip(parseInt(tripId), session.user_id, updateData);
@@ -86,10 +91,60 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
+    // Auto-create primary traveler when transitioning to Active status
+    console.log('Current trip status:', currentTrip.status_code);
+    console.log('Update data status:', updateData.status_code);
+    
+    const isTransitioningToActive = 
+      updateData.status_code === 2 && 
+      currentTrip.status_code !== 2;
+    
+    console.log('Is transitioning to active?', isTransitioningToActive);
+
+    if (isTransitioningToActive) {
+      console.log('Checking for primary traveler...');
+      
+      // Check if primary traveler already exists
+      const travelers = await getTravelersByTripId(parseInt(tripId));
+      console.log('Existing travelers:', travelers);
+      
+      const hasPrimaryTraveler = travelers.some(t => t.is_primary === 1);
+      console.log('Has primary traveler?', hasPrimaryTraveler);
+
+      if (!hasPrimaryTraveler) {
+        console.log('Fetching user details for:', session.user_id);
+        
+        // Fetch user details
+        const user = await getUserById(session.user_id);
+        
+        if (user) {
+          // Create primary traveler record for the logged-in user
+          const travelerName = [user.first_name, user.middle_name, user.last_name]
+            .filter(Boolean)
+            .join(' ');
+
+          await createTraveler({
+            trip_id: parseInt(tripId),
+            traveler_name: travelerName,
+            traveler_email: user.email,
+            relationship: 1, // 1 = Self
+            is_primary: true,
+            is_cost_sharer: true,
+            traveler_currency: user.home_currency,
+            is_active: true,
+          });
+          
+          console.log('Primary traveler created successfully');
+        } else {
+          console.error('User not found!');
+        }
+      }
+    }
+
     // Handle destinations update if provided
     if (destinations !== undefined) {
       const { query } = await import('@/app/lib/db');
-      
+
       // Delete existing destinations
       await query(
         `DELETE FROM trip_destinations WHERE trip_id = ?`,
