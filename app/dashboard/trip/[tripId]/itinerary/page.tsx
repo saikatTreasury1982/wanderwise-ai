@@ -9,6 +9,7 @@ import PageBackground from '@/app/components/ui/PageBackground';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import { formatDateRange } from '@/app/lib/utils';
 import TripReferencePanel from '@/app/components/organisms/TripReferencePanel';
+import RecommendationSlider from '@/app/components/organisms/RecommendationSlider';
 import type { FlightOption } from '@/app/lib/types/flight';
 import type { AccommodationOption } from '@/app/lib/types/accommodation';
 import { Pin, List } from 'lucide-react';
@@ -47,6 +48,7 @@ export default function ItineraryPage({ params }: PageProps) {
   const [flights, setFlights] = useState<FlightOption[]>([]);
   const [accommodations, setAccommodations] = useState<AccommodationOption[]>([]);
   const [isReferencePanelOpen, setIsReferencePanelOpen] = useState(false);
+  const [showRecommendationSlider, setShowRecommendationSlider] = useState(false);
 
   // Calculate total days from trip duration
   const getTripDays = (): { dayNumber: number; date: string }[] => {
@@ -306,6 +308,21 @@ export default function ItineraryPage({ params }: PageProps) {
                 Trip Reference
               </div>
             </div>
+
+            {/* Smart Suggestions Button */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-purple-500/40 rounded-full blur-md animate-pulse" />
+              <CircleIconButton
+                variant="default"
+                onClick={() => setShowRecommendationSlider(true)}
+                title="Smart Suggestions"
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                }
+              />
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
@@ -460,6 +477,20 @@ export default function ItineraryPage({ params }: PageProps) {
         flights={flights}
         accommodations={accommodations}
         dateFormat={dateFormat}
+      />
+
+      {/* Recommendation Slider */}
+      <RecommendationSlider
+        isOpen={showRecommendationSlider}
+        onClose={() => setShowRecommendationSlider(false)}
+        type="itinerary"
+        tripId={parseInt(tripId)}
+        onAddRecommendation={(rec) => {
+          console.log('Add itinerary recommendation:', rec);
+          // TODO: Implement logic to create day with categories and activities
+          alert('Add itinerary recommendation - implement logic to create day structure');
+          setShowRecommendationSlider(false);
+        }}
       />
     </div>
   );

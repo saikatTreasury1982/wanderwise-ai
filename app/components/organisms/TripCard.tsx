@@ -34,6 +34,7 @@ interface TripCardProps {
   onEdit: (trip: Trip) => void;
   onDelete: (tripId: number) => void;
   onStartPlanning: (tripId: number) => void;
+  onStatusChange: (tripId: number, newStatus: number) => void;
   onCardClick: (tripId: number) => void;
   onView: (trip: Trip) => void;
 }
@@ -52,6 +53,7 @@ export default function TripCard({
   onEdit,
   onDelete,
   onStartPlanning,
+  onStatusChange,
   onCardClick,
   onView,
 }: TripCardProps) {
@@ -291,6 +293,64 @@ export default function TripCard({
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </button>
+          )}
+
+          {/* Complete Trip - only for active trips */}
+          {trip.status_code === 2 && (
+            <button
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                if (confirm('Mark this trip as completed?')) {
+                  onStatusChange(trip.trip_id, 3);
+                }
+              }}
+              className="p-2 rounded-lg text-white/70 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+              aria-label="Complete trip"
+              title="Mark as completed"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </button>
+          )}
+
+          {/* Reactivate Trip - only for completed trips */}
+          {trip.status_code === 3 && (
+            <button
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                if (confirm('Reactivate this trip?')) {
+                  onStatusChange(trip.trip_id, 2);
+                }
+              }}
+              className="p-2 rounded-lg text-white/70 hover:text-green-400 hover:bg-green-500/10 transition-colors"
+              aria-label="Reactivate trip"
+              title="Mark as active"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
             </button>

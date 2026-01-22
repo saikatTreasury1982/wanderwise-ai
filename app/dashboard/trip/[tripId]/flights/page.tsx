@@ -4,9 +4,11 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import PageBackground from '@/app/components/ui/PageBackground';
 import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import FlightEntryForm from '@/app/components/organisms/FlightEntryForm';
 import FlightOptionCard from '@/app/components/organisms/FlightOptionCard';
 import FlightViewModal from '@/app/components/organisms/FlightViewModal';
+import RecommendationSlider from '@/app/components/organisms/RecommendationSlider';
 import type { FlightOption } from '@/app/lib/types/flight';
 import { formatDateRange } from '@/app/lib/utils';
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
@@ -24,7 +26,7 @@ interface Traveler {
   traveler_id: number;
   traveler_name: string;
   is_active: number;
-  is_cost_sharer: number;  
+  is_cost_sharer: number;
 }
 
 interface Currency {
@@ -51,6 +53,7 @@ export default function FlightsPage({ params }: PageProps) {
   const [preferences, setPreferences] = useState<{ date_format: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY' }>({
     date_format: 'YYYY-MM-DD',
   });
+  const [showRecommendationSlider, setShowRecommendationSlider] = useState(false);
 
   const fetchTrip = async () => {
     try {
@@ -238,10 +241,10 @@ export default function FlightsPage({ params }: PageProps) {
   if (!trip) {
     return null;
   }
-  
+
   const destination = [trip.destination_city, trip.destination_country]
-  .filter(Boolean)
-  .join(', ');
+    .filter(Boolean)
+    .join(', ');
 
   return (
     <div className="min-h-screen relative p-6 pb-24">
@@ -263,7 +266,7 @@ export default function FlightsPage({ params }: PageProps) {
 
           <h1 className="text-3xl font-bold text-white mb-3">Flight Options</h1>
           <p className="text-white/70 text-lg mb-3">{trip.trip_name}</p>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             {destination && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
@@ -274,14 +277,14 @@ export default function FlightsPage({ params }: PageProps) {
                 <span className="text-sm text-white/90">{destination}</span>
               </div>
             )}
-            
+
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
               <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-sm text-white/90">{formatDateRange(trip.start_date, trip.end_date, preferences.date_format)}</span>
             </div>
-            
+
             {(() => {
               const start = new Date(trip.start_date);
               const end = new Date(trip.end_date);
@@ -318,6 +321,21 @@ export default function FlightsPage({ params }: PageProps) {
               <h3 className="text-lg font-semibold text-white">
                 Saved Options ({flights.length})
               </h3>
+
+              {/* Smart Suggestions Button */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-purple-500/40 rounded-full blur-md animate-pulse" />
+                <CircleIconButton
+                  variant="default"
+                  onClick={() => setShowRecommendationSlider(true)}
+                  title="Smart Suggestions"
+                  icon={
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  }
+                />
+              </div>
             </div>
 
             {flights.length === 0 ? (
@@ -385,7 +403,7 @@ export default function FlightsPage({ params }: PageProps) {
                           onDelete={handleDelete}
                           onStatusChange={handleStatusChange}
                         />
-                      ))} 
+                      ))}
                     </div>
                   </div>
                 )}
@@ -429,6 +447,51 @@ export default function FlightsPage({ params }: PageProps) {
         onClose={() => setViewingFlight(null)}
         flight={viewingFlight}
         dateFormat={preferences.date_format}
+      />
+
+      {/* Recommendation Slider */}
+      <RecommendationSlider
+        isOpen={showRecommendationSlider}
+        onClose={() => setShowRecommendationSlider(false)}
+        type="flights"
+        tripId={parseInt(tripId)}
+        onAddRecommendation={(rec: any) => {
+          // Convert recommendation to FlightOption format for pre-filling
+          const prefilledFlight: FlightOption = {
+            flight_option_id: 0, // New flight, so ID is 0
+            trip_id: parseInt(tripId),
+            flight_type: rec.flight_type,
+            linked_flight_id: null,
+            unit_fare: rec.total_price,
+            currency_code: rec.currency_code,
+            status: 'draft',
+            notes: `Recommended from: ${rec.source.trip_name}`,
+            legs: rec.legs.map((leg: any, index: number) => ({
+              leg_id: 0,
+              flight_option_id: 0,
+              leg_order: index + 1,
+              departure_airport: leg.departure_airport,
+              arrival_airport: leg.arrival_airport,
+              departure_date: leg.departure_datetime.split('T')[0],
+              departure_time: leg.departure_datetime.split('T')[1]?.substring(0, 5) || null,
+              arrival_date: leg.arrival_datetime.split('T')[0],
+              arrival_time: leg.arrival_datetime.split('T')[1]?.substring(0, 5) || null,
+              airline: leg.airline_code,
+              flight_number: leg.flight_number,
+              stops_count: leg.stops_count,
+              duration_minutes: leg.duration_minutes,
+            })),
+            return_legs: [],
+            travelers: [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
+          // Set the pre-filled flight and show the form
+          setSelectedFlight(prefilledFlight);
+          setShowForm(true);
+          setShowRecommendationSlider(false);
+        }}
       />
     </div>
   );
