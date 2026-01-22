@@ -182,6 +182,26 @@ export default function DashboardPage() {
     }
   };
 
+  const handleStatusChange = async (tripId: number, newStatus: number) => {
+    try {
+      const response = await fetch(`/api/trips/${tripId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status_code: newStatus }),
+      });
+
+      if (response.ok) {
+        await fetchTrips();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to update trip status');
+      }
+    } catch (error) {
+      console.error('Error updating trip status:', error);
+      alert('Failed to update trip status');
+    }
+  };
+
   const handleCardClick = (tripId: number) => {
     router.push(`/dashboard/trip/${tripId}`);
   };
@@ -350,6 +370,7 @@ export default function DashboardPage() {
                     onEdit={handleEditTrip}
                     onDelete={handleDeleteTrip}
                     onStartPlanning={handleStartPlanning}
+                    onStatusChange={handleStatusChange}
                     onCardClick={handleCardClick}
                     onView={handleViewTrip}
                   />

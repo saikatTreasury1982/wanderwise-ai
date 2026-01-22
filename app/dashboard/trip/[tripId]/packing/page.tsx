@@ -4,9 +4,11 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import PageBackground from '@/app/components/ui/PageBackground';
 import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import PackingCategoryCard from '@/app/components/organisms/PackingCategoryCard';
 import TripAlertSettingsModal from '@/app/components/organisms/TripAlertSettingsModal';
+import RecommendationSlider from '@/app/components/organisms/RecommendationSlider';
 import { formatDateRange } from '@/app/lib/utils';
 import type { PackingCategory, PackingStats, PackingItem } from '@/app/lib/types/packing';
 import {
@@ -55,6 +57,7 @@ export default function PackingChecklistPage({ params }: PageProps) {
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAlertSettingsOpen, setIsAlertSettingsOpen] = useState(false);
+  const [showRecommendationSlider, setShowRecommendationSlider] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -92,7 +95,7 @@ export default function PackingChecklistPage({ params }: PageProps) {
     if (oldIndex === -1 || newIndex === -1) return;
 
     const reorderedCategories = arrayMove(categories, oldIndex, newIndex);
-    
+
     // Update local state immediately
     setCategories(reorderedCategories);
 
@@ -209,12 +212,12 @@ export default function PackingChecklistPage({ params }: PageProps) {
       setIsProcessing(false);
     }
   };
-  
+
   const handleReorderItems = async (categoryId: number, reorderedItems: PackingItem[]) => {
     // Optimistically update local state
-    setCategories(prev => 
-      prev.map(cat => 
-        cat.category_id === categoryId 
+    setCategories(prev =>
+      prev.map(cat =>
+        cat.category_id === categoryId
           ? { ...cat, items: reorderedItems }
           : cat
       )
@@ -336,19 +339,38 @@ export default function PackingChecklistPage({ params }: PageProps) {
 
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-3xl font-bold text-white">Checklist</h1>
-            <button
-              onClick={() => setIsAlertSettingsOpen(true)}
-              className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
-              title="Alert Settings"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Smart Suggestions Button */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-purple-500/40 rounded-full blur-md animate-pulse" />
+                <CircleIconButton
+                  variant="default"
+                  onClick={() => setShowRecommendationSlider(true)}
+                  title="Smart Suggestions"
+                  icon={
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  }
+                />
+              </div>
+
+              {/* Alert Settings Button */}
+              <CircleIconButton
+                variant="default"
+                onClick={() => setIsAlertSettingsOpen(true)}
+                title="Alert Settings"
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                }
+              />
+            </div>
           </div>
-          
+
           <p className="text-white/70 text-lg mb-3">{trip.trip_name}</p>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             {destination && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
@@ -359,14 +381,14 @@ export default function PackingChecklistPage({ params }: PageProps) {
                 <span className="text-sm text-white/90">{destination}</span>
               </div>
             )}
-            
+
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
               <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-sm text-white/90">{formatDateRange(trip.start_date, trip.end_date, preferences.date_format)}</span>
             </div>
-            
+
             {(() => {
               const start = new Date(trip.start_date);
               const end = new Date(trip.end_date);
@@ -510,6 +532,54 @@ export default function PackingChecklistPage({ params }: PageProps) {
           ariaLabel="Add category"
         />
       )}
+
+      {/* Recommendation Slider */}
+      <RecommendationSlider
+        isOpen={showRecommendationSlider}
+        onClose={() => setShowRecommendationSlider(false)}
+        type="packing"
+        tripId={parseInt(tripId)}
+        onAddRecommendation={async (rec: any) => {
+          setIsProcessing(true);
+          try {
+            // First, create the category
+            const categoryResponse = await fetch(`/api/trips/${tripId}/packing`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                category_name: `${rec.category_name} (from ${rec.source.trip_name})` 
+              }),
+            });
+
+            if (!categoryResponse.ok) {
+              throw new Error('Failed to create category');
+            }
+
+            const categoryData = await categoryResponse.json();
+            const newCategoryId = categoryData.category_id;
+
+            // Then, add all items to the new category
+            if (rec.items && rec.items.length > 0) {
+              for (const item of rec.items) {
+                await fetch(`/api/trips/${tripId}/packing/categories/${newCategoryId}/items`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ item_name: item.item_name }),
+                });
+              }
+            }
+
+            // Refresh the packing list to show the new category and items
+            await fetchPackingList();
+            setShowRecommendationSlider(false);
+          } catch (error) {
+            console.error('Error adding packing recommendation:', error);
+            alert('Failed to add packing recommendation');
+          } finally {
+            setIsProcessing(false);
+          }
+        }}
+      />
     </div>
   );
 }

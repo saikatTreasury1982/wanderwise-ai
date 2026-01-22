@@ -4,10 +4,12 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import PageBackground from '@/app/components/ui/PageBackground';
 import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import AccommodationEntryForm from '@/app/components/organisms/AccommodationEntryForm';
 import AccommodationOptionCard from '@/app/components/organisms/AccommodationOptionCard';
 import AccommodationViewModal from '@/app/components/organisms/AccommodationViewModal';
+import RecommendationSlider from '@/app/components/organisms/RecommendationSlider';
 import { formatDateRange } from '@/app/lib/utils';
 import type { AccommodationOption, AccommodationType } from '@/app/lib/types/accommodation';
 
@@ -24,7 +26,7 @@ interface Traveler {
   traveler_id: number;
   traveler_name: string;
   is_active: number;
-  is_cost_sharer: number;  
+  is_cost_sharer: number;
 }
 
 interface Currency {
@@ -54,6 +56,7 @@ export default function AccommodationsPage({ params }: PageProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingAccommodation, setEditingAccommodation] = useState<AccommodationOption | null>(null);
   const [viewingAccommodation, setViewingAccommodation] = useState<AccommodationOption | null>(null);
+  const [showRecommendationSlider, setShowRecommendationSlider] = useState(false);
 
   const fetchAccommodations = async () => {
     try {
@@ -232,13 +235,13 @@ export default function AccommodationsPage({ params }: PageProps) {
 
   const renderAccommodationGroup = (title: string, items: AccommodationOption[]) => {
     if (items.length === 0) return null;
-    
-    const colorClass = 
+
+    const colorClass =
       title === 'Confirmed' ? 'text-green-400' :
-      title === 'Shortlisted' ? 'text-yellow-400' :
-      title === 'Draft' ? 'text-gray-400' :
-      'text-red-400';
-    
+        title === 'Shortlisted' ? 'text-yellow-400' :
+          title === 'Draft' ? 'text-gray-400' :
+            'text-red-400';
+
     return (
       <div>
         <h4 className={`text-sm font-medium ${colorClass} mb-2`}>{title}</h4>
@@ -279,7 +282,7 @@ export default function AccommodationsPage({ params }: PageProps) {
 
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Lodging Options</h1>
           <p className="text-white/70 text-base sm:text-lg mb-3">{trip.trip_name}</p>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             {destination && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
@@ -290,14 +293,14 @@ export default function AccommodationsPage({ params }: PageProps) {
                 <span className="text-sm text-white/90">{destination}</span>
               </div>
             )}
-            
+
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
               <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-sm text-white/90">{formatDateRange(trip.start_date, trip.end_date, preferences.date_format)}</span>
             </div>
-            
+
             {(() => {
               const start = new Date(trip.start_date);
               const end = new Date(trip.end_date);
@@ -335,6 +338,21 @@ export default function AccommodationsPage({ params }: PageProps) {
               <h3 className="text-lg font-semibold text-white">
                 Saved Options ({accommodations.length})
               </h3>
+
+              {/* Smart Suggestions Button */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-purple-500/40 rounded-full blur-md animate-pulse" />
+                <CircleIconButton
+                  variant="default"
+                  onClick={() => setShowRecommendationSlider(true)}
+                  title="Smart Suggestions"
+                  icon={
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  }
+                />
+              </div>
             </div>
             {accommodations.length === 0 ? (
               <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-8 text-center">
@@ -372,6 +390,45 @@ export default function AccommodationsPage({ params }: PageProps) {
         isOpen={viewingAccommodation !== null}
         onClose={() => setViewingAccommodation(null)}
         accommodation={viewingAccommodation}
+      />
+
+      {/* Recommendation Slider */}
+      <RecommendationSlider
+        isOpen={showRecommendationSlider}
+        onClose={() => setShowRecommendationSlider(false)}
+        type="accommodations"
+        tripId={parseInt(tripId)}
+        onAddRecommendation={(rec: any) => {
+          // Convert recommendation to AccommodationOption format for pre-filling
+          const prefilledAccommodation: AccommodationOption = {
+            accommodation_option_id: 0, // New accommodation, so ID is 0
+            trip_id: parseInt(tripId),
+            type_name: rec.accommodation_type,
+            accommodation_name: rec.property_name,
+            address: null,
+            location: null,
+            check_in_date: rec.check_in_date,
+            check_in_time: null,
+            check_out_date: rec.check_out_date,
+            check_out_time: null,
+            num_rooms: 1,
+            price_per_night: rec.nights > 0 ? rec.total_price / rec.nights : null,
+            total_price: rec.total_price,
+            currency_code: rec.currency_code,
+            status: 'draft',
+            booking_reference: null,
+            booking_source: null,
+            notes: `Recommended from: ${rec.source.trip_name}`,
+            travelers: [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
+          // Set the pre-filled accommodation and show the form
+          setEditingAccommodation(prefilledAccommodation);
+          setShowForm(true);
+          setShowRecommendationSlider(false);
+        }}
       />
     </div>
   );

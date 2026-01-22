@@ -6,6 +6,8 @@ import PageBackground from '@/app/components/ui/PageBackground';
 import HubTile from '@/app/components/ui/HubTile';
 import { formatDateRange } from '@/app/lib/utils';
 import TripNotesSection from '@/app/components/organisms/TripNotesSection';
+import RecommendationNotification from '@/app/components/organisms/RecommendationNotification';
+import RecommendationSlider from '@/app/components/organisms/RecommendationSlider';
 
 interface Traveler {
   traveler_id: number;
@@ -54,6 +56,13 @@ export default function TripHubPage({ params }: PageProps) {
     country: string;
     city: string | null;
   }>>([]);
+
+  // Recommendation states
+  const [showRecommendationNotification, setShowRecommendationNotification] = useState(true);
+  const [recommendationSlider, setRecommendationSlider] = useState<{
+    isOpen: boolean;
+    type: 'flights' | 'accommodations' | 'packing' | 'itinerary' | null;
+  }>({ isOpen: false, type: null });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -411,6 +420,32 @@ export default function TripHubPage({ params }: PageProps) {
   return (
     <div className="min-h-screen relative p-6">
       <PageBackground />
+
+      {/* Recommendation Notification */}
+      {showRecommendationNotification && (
+        <RecommendationNotification
+          tripId={Number(tripId)}
+          onDismiss={() => setShowRecommendationNotification(false)}
+          onExplore={() => {
+            setShowRecommendationNotification(false);
+            // You can show a modal with all recommendations or scroll to tiles
+            alert('Explore feature - you can customize this to show recommendations');
+          }}
+        />
+      )}
+
+      {/* Recommendation Slider */}
+      <RecommendationSlider
+        isOpen={recommendationSlider.isOpen}
+        onClose={() => setRecommendationSlider({ isOpen: false, type: null })}
+        type={recommendationSlider.type || 'flights'}
+        tripId={Number(tripId)}
+        onAddRecommendation={(rec) => {
+          console.log('Add recommendation:', rec);
+          // TODO: Implement add logic for each type
+          alert('Add recommendation - implement specific logic for each type');
+        }}
+      />
 
       <div className="relative z-10 max-w-5xl mx-auto">
         {/* Header */}
