@@ -10,6 +10,7 @@ import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import { formatDateRange } from '@/app/lib/utils';
 import TripReferencePanel from '@/app/components/organisms/TripReferencePanel';
 import RecommendationSlider from '@/app/components/organisms/RecommendationSlider';
+import ItineraryAddModal from '@/app/components/organisms/Itineraryaddmodal';
 import type { FlightOption } from '@/app/lib/types/flight';
 import type { AccommodationOption } from '@/app/lib/types/accommodation';
 import { Pin, List } from 'lucide-react';
@@ -49,18 +50,21 @@ export default function ItineraryPage({ params }: PageProps) {
   const [accommodations, setAccommodations] = useState<AccommodationOption[]>([]);
   const [isReferencePanelOpen, setIsReferencePanelOpen] = useState(false);
   const [showRecommendationSlider, setShowRecommendationSlider] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [pendingRecommendation, setPendingRecommendation] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Calculate total days from trip duration
   const getTripDays = (): { dayNumber: number; date: string }[] => {
     if (!trip?.start_date || !trip?.end_date) return [];
-    
+
     const start = new Date(trip.start_date);
     const end = new Date(trip.end_date);
     const daysList: { dayNumber: number; date: string }[] = [];
-    
+
     let current = new Date(start);
     let dayNum = 1;
-    
+
     while (current <= end) {
       daysList.push({
         dayNumber: dayNum,
@@ -69,7 +73,7 @@ export default function ItineraryPage({ params }: PageProps) {
       current.setDate(current.getDate() + 1);
       dayNum++;
     }
-    
+
     return daysList;
   };
 
@@ -86,7 +90,7 @@ export default function ItineraryPage({ params }: PageProps) {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch trip details
       const tripRes = await fetch(`/api/trips/${tripId}`);
       if (!tripRes.ok) throw new Error('Failed to fetch trip');
@@ -156,7 +160,7 @@ export default function ItineraryPage({ params }: PageProps) {
               day_date: dayInfo.date,
             }),
           });
-          
+
           if (res.ok) {
             const newDay = await res.json();
             setDays(prev => [...prev, newDay].sort((a, b) => a.day_number - b.day_number));
@@ -174,20 +178,20 @@ export default function ItineraryPage({ params }: PageProps) {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('en-US', {
       weekday: 'short',
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric' 
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
     });
   };
 
   const formatHeaderDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
     });
   };
 
@@ -230,7 +234,7 @@ export default function ItineraryPage({ params }: PageProps) {
 
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Itinerary</h1>
           <p className="text-white/70 text-base sm:text-lg mb-3">{trip.trip_name}</p>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             {(trip.destination_city || trip.destination_country) && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
@@ -241,7 +245,7 @@ export default function ItineraryPage({ params }: PageProps) {
                 <span className="text-sm text-white/90">{[trip.destination_city, trip.destination_country].filter(Boolean).join(', ')}</span>
               </div>
             )}
-            
+
             {trip.start_date && trip.end_date && (
               <>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
@@ -250,7 +254,7 @@ export default function ItineraryPage({ params }: PageProps) {
                   </svg>
                   <span className="text-sm text-white/90">{formatDateRange(trip.start_date, trip.end_date, dateFormat)}</span>
                 </div>
-                
+
                 {(() => {
                   const start = new Date(trip.start_date);
                   const end = new Date(trip.end_date);
@@ -382,19 +386,17 @@ export default function ItineraryPage({ params }: PageProps) {
                   {tripDays.map((day) => {
                     const existingDay = days.find(d => d.day_number === day.dayNumber);
                     const hasContent = existingDay && existingDay.categories && existingDay.categories.length > 0;
-                    
+
                     return (
                       <button
                         key={day.dayNumber}
                         onClick={() => handleSelectDay(day.dayNumber)}
-                        className={`w-full flex items-center justify-between px-4 py-3 hover:bg-white/10 transition-colors ${
-                          selectedDayNumber === day.dayNumber ? 'bg-purple-500/20' : ''
-                        }`}
+                        className={`w-full flex items-center justify-between px-4 py-3 hover:bg-white/10 transition-colors ${selectedDayNumber === day.dayNumber ? 'bg-purple-500/20' : ''
+                          }`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                            hasContent ? 'bg-green-500/30 text-green-300' : 'bg-white/10 text-white'
-                          }`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${hasContent ? 'bg-green-500/30 text-green-300' : 'bg-white/10 text-white'
+                            }`}>
                             {day.dayNumber}
                           </div>
                           <div className="text-left">
@@ -469,7 +471,7 @@ export default function ItineraryPage({ params }: PageProps) {
           )}
         </div>
       </div>
-      
+
       {/* Trip Reference Panel */}
       <TripReferencePanel
         isOpen={isReferencePanelOpen}
@@ -485,12 +487,153 @@ export default function ItineraryPage({ params }: PageProps) {
         onClose={() => setShowRecommendationSlider(false)}
         type="itinerary"
         tripId={parseInt(tripId)}
-        onAddRecommendation={(rec) => {
-          console.log('Add itinerary recommendation:', rec);
-          // TODO: Implement logic to create day with categories and activities
-          alert('Add itinerary recommendation - implement logic to create day structure');
+        onAddRecommendation={(rec: any, selections?: { categoryIndex: number; activityIndex: number }[]) => {
+          // Check if selections exist and have items
+          if (!selections || selections.length === 0) {
+            alert('Please select items in Preview before adding');
+            return;
+          }
+          // Store the recommendation with selections and open add modal
+          setPendingRecommendation({ ...rec, selections });
           setShowRecommendationSlider(false);
+          setIsAddModalOpen(true);
         }}
+      />
+
+      {/* Itinerary Add Modal */}
+      <ItineraryAddModal
+        isOpen={isAddModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setPendingRecommendation(null);
+        }}
+        dayData={pendingRecommendation}
+        initialSelections={pendingRecommendation?.selections || []}
+        onConfirm={async (target: 'new' | number, finalSelections: { categoryIndex: number; activityIndex: number }[]) => {
+          if (!pendingRecommendation) return;
+
+          setIsProcessing(true);
+          try {
+            if (target === 'new') {
+              // Create new day with all categories and activities
+              const nextDayNumber = days.length > 0 ? Math.max(...days.map(d => d.day_number)) + 1 : 1;
+              const dayInfo = tripDays.find(d => d.dayNumber === nextDayNumber);
+
+              // First create the day
+              const dayRes = await fetch(`/api/trips/${tripId}/itinerary`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  day_number: nextDayNumber,
+                  day_date: dayInfo?.date || new Date().toISOString().split('T')[0],
+                  day_description: pendingRecommendation.day_description || `From ${pendingRecommendation.source.trip_name}`,
+                }),
+              });
+
+              if (!dayRes.ok) throw new Error('Failed to create day');
+              const newDay = await dayRes.json();
+              const newDayId = newDay.day_id;
+
+              // Group selections by category
+              const categoriesWithSelections = new Map<number, number[]>();
+              finalSelections.forEach(sel => {
+                if (!categoriesWithSelections.has(sel.categoryIndex)) {
+                  categoriesWithSelections.set(sel.categoryIndex, []);
+                }
+                categoriesWithSelections.get(sel.categoryIndex)!.push(sel.activityIndex);
+              });
+
+              // Then add only selected categories with their selected activities
+              for (const [categoryIndex, activityIndices] of categoriesWithSelections) {
+                const category = pendingRecommendation.categories[categoryIndex];
+                const catRes = await fetch(`/api/trips/${tripId}/itinerary/${newDayId}/categories`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    category_name: category.category_name,
+                    category_cost: category.category_cost,
+                    currency_code: category.currency_code,
+                  }),
+                });
+
+                if (catRes.ok) {
+                  const newCategory = await catRes.json();
+
+                  // Add only selected activities to the category
+                  for (const activityIndex of activityIndices) {
+                    const activity = category.activities[activityIndex];
+                    await fetch(`/api/trips/${tripId}/itinerary/${newDayId}/categories/${newCategory.category_id}/activities`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        activity_name: activity.activity_name,
+                        start_time: activity.start_time,
+                        end_time: activity.end_time,
+                        activity_cost: activity.activity_cost,
+                        currency_code: activity.currency_code,
+                      }),
+                    });
+                  }
+                }
+              }
+
+              // Refresh the itinerary
+              await fetchData();
+              setSelectedDayNumber(nextDayNumber);
+
+            } else {
+              // Append to existing day
+              const existingDay = days.find(d => d.day_id === target);
+              if (!existingDay) throw new Error('Day not found');
+
+              // Add all categories with their activities to the existing day
+              for (const category of pendingRecommendation.categories || []) {
+                const catRes = await fetch(`/api/trips/${tripId}/itinerary/${target}/categories`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    category_name: `${category.category_name} (from ${pendingRecommendation.source.trip_name})`,
+                    category_cost: category.category_cost,
+                    currency_code: category.currency_code,
+                  }),
+                });
+
+                if (catRes.ok) {
+                  const newCategory = await catRes.json();
+
+                  // Add activities to the category
+                  for (const activity of category.activities || []) {
+                    await fetch(`/api/trips/${tripId}/itinerary/${target}/categories/${newCategory.category_id}/activities`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        activity_name: activity.activity_name,
+                        start_time: activity.start_time,
+                        end_time: activity.end_time,
+                        activity_cost: activity.activity_cost,
+                        currency_code: activity.currency_code,
+                      }),
+                    });
+                  }
+                }
+              }
+
+              // Refresh the itinerary
+              await fetchData();
+              setSelectedDayNumber(existingDay.day_number);
+            }
+
+            setIsAddModalOpen(false);
+            setPendingRecommendation(null);
+          } catch (error) {
+            console.error('Error adding itinerary recommendation:', error);
+            alert('Failed to add itinerary recommendation');
+          } finally {
+            setIsProcessing(false);
+          }
+        }}
+        existingDays={days.map(d => ({ day_id: d.day_id, day_code: `Day ${d.day_number}` }))}
+        recommendedDayCode={pendingRecommendation?.day_code || ''}
       />
     </div>
   );
