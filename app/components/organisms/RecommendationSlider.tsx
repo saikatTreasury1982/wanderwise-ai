@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import RecommendationCard from './RecommendationCard';
+import ItineraryPreviewModal from './Itinerarypreviewmodal';
 import { formatDate } from '@/app/lib/utils';
 
 interface RecommendationSliderProps {
@@ -9,7 +10,7 @@ interface RecommendationSliderProps {
   onClose: () => void;
   type: 'flights' | 'accommodations' | 'packing' | 'itinerary';
   tripId: number;
-  onAddRecommendation?: (recommendation: any) => void;
+  onAddRecommendation?: (recommendation: any, selections?: { categoryIndex: number; activityIndex: number }[]) => void;
 }
 
 export default function RecommendationSlider({
@@ -22,6 +23,9 @@ export default function RecommendationSlider({
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sourceTripName, setSourceTripName] = useState<string>('');
+  const [previewDay, setPreviewDay] = useState<{ data: any; index: number } | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [itinerarySelections, setItinerarySelections] = useState<Map<number, { categoryIndex: number; activityIndex: number }[]>>(new Map());
 
   useEffect(() => {
     if (isOpen) {
@@ -56,14 +60,14 @@ export default function RecommendationSlider({
     switch (type) {
       case 'flights':
         // Build full route string with all legs
-        const fullRoute = rec.legs?.map((leg: any) => leg.departure_airport).join(' → ') + 
-                         (rec.legs?.length > 0 ? ` → ${rec.legs[rec.legs.length - 1].arrival_airport}` : '');
-        
+        const fullRoute = rec.legs?.map((leg: any) => leg.departure_airport).join(' → ') +
+          (rec.legs?.length > 0 ? ` → ${rec.legs[rec.legs.length - 1].arrival_airport}` : '');
+
         // Format creation date using util function
-        const creationDate = rec.created_at 
+        const creationDate = rec.created_at
           ? formatDate(rec.created_at, 'DD Mmm YYYY')
           : 'N/A';
-        
+
         return (
           <RecommendationCard
             key={index}
@@ -76,7 +80,10 @@ export default function RecommendationSlider({
             ]}
             status={rec.status}
             sourceTripName={sourceTripName}
-            onAdd={() => onAddRecommendation?.(rec)}
+            onAdd={() => {
+              const selections = itinerarySelections.get(index) || [];
+              onAddRecommendation?.(rec, selections);
+            }}
           />
         );
 
@@ -95,7 +102,10 @@ export default function RecommendationSlider({
             ]}
             status={rec.status}
             sourceTripName={sourceTripName}
-            onAdd={() => onAddRecommendation?.(rec)}
+            onAdd={() => {
+              const selections = itinerarySelections.get(index) || [];
+              onAddRecommendation?.(rec, selections);
+            }}
           />
         );
 
@@ -116,26 +126,25 @@ export default function RecommendationSlider({
         );
 
       case 'itinerary':
-        // Build details showing categories and their activities
-        const itineraryDetails: { label: string; value: string }[] = [];
-        
-        rec.categories?.forEach((cat: any) => {
-          // Add category name as label
-          itineraryDetails.push({
-            label: cat.category_name,
-            value: `${cat.activities?.length || 0} activities`,
-          });
-        });
-        
+        // Calculate summary stats
+        const totalCategories = rec.categories?.length || 0;
+        const totalActivities = rec.categories?.reduce((sum: number, cat: any) =>
+          sum + (cat.activities?.length || 0), 0) || 0;
+
         return (
           <RecommendationCard
             key={index}
             type="itinerary"
             title={rec.day_code}
             subtitle={rec.day_description || 'No description'}
-            details={itineraryDetails}
+            details={[
+              { label: `${totalCategories} categories`, value: `${totalActivities} activities` }
+            ]}
             sourceTripName={sourceTripName}
-            onAdd={() => onAddRecommendation?.(rec)}
+            onPreview={() => {
+              setPreviewDay({ data: rec, index });
+              setIsPreviewModalOpen(true);
+            }}
           />
         );
 
@@ -208,6 +217,33 @@ export default function RecommendationSlider({
           )}
         </div>
       </div>
+
+      {/* Itinerary Preview Modal */}
+      {type === 'itinerary' && (
+        <ItineraryPreviewModal
+          isOpen={isPreviewModalOpen}
+          onClose={(selections) => {
+            if (selections && previewDay) {
+              setItinerarySelections(prev => {
+                const newMap = new Map(prev);
+                newMap.set(previewDay.index, selections);
+                return newMap;
+              });
+            }
+            setIsPreviewModalOpen(false);
+            setPreviewDay(null);
+          }}
+          onAdd={(selections) => {
+            if (previewDay) {
+              onAddRecommendation?.(previewDay.data, selections);
+            }
+            setIsPreviewModalOpen(false);
+            setPreviewDay(null);
+          }}
+          day={previewDay?.data}
+          initialSelections={previewDay ? itinerarySelections.get(previewDay.index) || [] : []}
+        />
+      )}
     </>
   );
 }

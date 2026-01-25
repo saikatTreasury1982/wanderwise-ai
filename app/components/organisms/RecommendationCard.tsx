@@ -8,6 +8,7 @@ interface RecommendationCardProps {
   details: { label: string; value: string }[];
   status?: 'draft' | 'shortlisted' | 'confirmed' | 'not_selected';
   onAdd?: () => void;
+  onPreview?: () => void;
   sourceTripName?: string;
 }
 
@@ -18,6 +19,7 @@ export default function RecommendationCard({
   details,
   status,
   onAdd,
+  onPreview,
   sourceTripName,
 }: RecommendationCardProps) {
   const typeIcons = {
@@ -44,7 +46,7 @@ export default function RecommendationCard({
   };
 
   return (
-    <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-4 hover:bg-white/15 transition-all">
+    <div className="relative bg-gradient-to-br from-Black-900/40 via-indigo-900/30 to-black-900/40 backdrop-blur-xl border border-white/20 rounded-xl p-4 hover:bg-white/3 transition-all">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -87,8 +89,21 @@ export default function RecommendationCard({
             <span className="text-xs text-purple-300 truncate">From: {sourceTripName}</span>
           </div>
         )}
-        {onAdd && (
-          <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          {onPreview && (
+            <CircleIconButton
+              variant="default"
+              onClick={onPreview}
+              title="Preview details"
+              icon={
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              }
+            />
+          )}
+          {onAdd && (
             <CircleIconButton
               variant="primary"
               onClick={onAdd}
@@ -99,8 +114,8 @@ export default function RecommendationCard({
                 </svg>
               }
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
