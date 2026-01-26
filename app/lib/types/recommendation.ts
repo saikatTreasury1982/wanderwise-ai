@@ -56,7 +56,7 @@ export interface PackingItemRecommendation {
 }
 
 export interface ItineraryRecommendation {
-  day_code: string;
+  day_number: number;
   day_description: string | null;
   categories: ItineraryCategoryRecommendation[];
   source: RecommendationSource;

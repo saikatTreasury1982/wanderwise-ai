@@ -53,6 +53,7 @@ export default function ItineraryPage({ params }: PageProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [pendingRecommendation, setPendingRecommendation] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCreatingDay, setIsCreatingDay] = useState(false);
 
   // Calculate total days from trip duration
   const getTripDays = (): { dayNumber: number; date: string }[] => {
@@ -143,12 +144,12 @@ export default function ItineraryPage({ params }: PageProps) {
   };
 
   const handleSelectDay = async (dayNumber: number) => {
-    setSelectedDayNumber(dayNumber);
     setIsDropdownOpen(false);
 
     // Check if day exists, if not create it
     const existingDay = days.find(d => d.day_number === dayNumber);
     if (!existingDay) {
+      setIsCreatingDay(true);
       const dayInfo = tripDays.find(d => d.dayNumber === dayNumber);
       if (dayInfo) {
         try {
@@ -167,8 +168,12 @@ export default function ItineraryPage({ params }: PageProps) {
           }
         } catch (err) {
           console.error('Error creating day:', err);
+        } finally {
+          setIsCreatingDay(false);
         }
       }
+    } else {
+      setSelectedDayNumber(dayNumber);
     }
   };
 
@@ -382,7 +387,7 @@ export default function ItineraryPage({ params }: PageProps) {
 
               {/* Dropdown */}
               {isDropdownOpen && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-gray-900/95 backdrop-blur-md border border-white/20 rounded-xl shadow-xl max-h-64 overflow-y-auto">
+                <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-gray-900/95 backdrop-blur-md border border-white/20 shadow-xl max-h-64 overflow-y-auto custom-scrollbar">
                   {tripDays.map((day) => {
                     const existingDay = days.find(d => d.day_number === day.dayNumber);
                     const hasContent = existingDay && existingDay.categories && existingDay.categories.length > 0;
@@ -432,7 +437,14 @@ export default function ItineraryPage({ params }: PageProps) {
                 />
               ) : selectedDayNumber ? (
                 <div className="text-center py-12">
-                  <div className="text-purple-200 mb-4">Loading day...</div>
+                  {isCreatingDay ? (
+                    <>
+                      <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                      <div className="text-purple-200">Creating day...</div>
+                    </>
+                  ) : (
+                    <div className="text-purple-200 mb-4">Loading day...</div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-12">
@@ -514,17 +526,19 @@ export default function ItineraryPage({ params }: PageProps) {
 
           setIsProcessing(true);
           try {
-            if (target === 'new') {
-              // Create new day with all categories and activities
-              const nextDayNumber = days.length > 0 ? Math.max(...days.map(d => d.day_number)) + 1 : 1;
-              const dayInfo = tripDays.find(d => d.dayNumber === nextDayNumber);
+            // Check if day exists or needs to be created
+            let targetDayId = target;
+            let targetDayNumber: number = typeof target === 'number' ? target : 1;
+            const existingDay = days.find(d => d.day_id === target);
 
-              // First create the day
+            if (!existingDay) {
+              // Day doesn't exist yet, create it first
+              const dayInfo = tripDays.find(d => d.dayNumber === target);
               const dayRes = await fetch(`/api/trips/${tripId}/itinerary`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  day_number: nextDayNumber,
+                  day_number: target,
                   day_date: dayInfo?.date || new Date().toISOString().split('T')[0],
                   day_description: pendingRecommendation.day_description || `From ${pendingRecommendation.source.trip_name}`,
                 }),
@@ -532,99 +546,62 @@ export default function ItineraryPage({ params }: PageProps) {
 
               if (!dayRes.ok) throw new Error('Failed to create day');
               const newDay = await dayRes.json();
-              const newDayId = newDay.day_id;
+              targetDayId = newDay.day_id;
+              targetDayNumber = newDay.day_number;
+            } else {
+              targetDayNumber = existingDay.day_number;
+            }
 
-              // Group selections by category
-              const categoriesWithSelections = new Map<number, number[]>();
-              finalSelections.forEach(sel => {
-                if (!categoriesWithSelections.has(sel.categoryIndex)) {
-                  categoriesWithSelections.set(sel.categoryIndex, []);
-                }
-                categoriesWithSelections.get(sel.categoryIndex)!.push(sel.activityIndex);
+            // Group selections by category
+            const categoriesWithSelections = new Map<number, number[]>();
+            finalSelections.forEach(sel => {
+              if (!categoriesWithSelections.has(sel.categoryIndex)) {
+                categoriesWithSelections.set(sel.categoryIndex, []);
+              }
+              categoriesWithSelections.get(sel.categoryIndex)!.push(sel.activityIndex);
+            });
+
+            // Add only selected categories with their selected activities
+            for (const [categoryIndex, activityIndices] of categoriesWithSelections) {
+              const category = pendingRecommendation.categories[categoryIndex];
+              const catRes = await fetch(`/api/trips/${tripId}/itinerary/${targetDayId}/categories`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  category_name: category.category_name,
+                  category_cost: category.category_cost,
+                  currency_code: category.currency_code,
+                }),
               });
 
-              // Then add only selected categories with their selected activities
-              for (const [categoryIndex, activityIndices] of categoriesWithSelections) {
-                const category = pendingRecommendation.categories[categoryIndex];
-                const catRes = await fetch(`/api/trips/${tripId}/itinerary/${newDayId}/categories`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    category_name: category.category_name,
-                    category_cost: category.category_cost,
-                    currency_code: category.currency_code,
-                  }),
-                });
+              if (catRes.ok) {
+                const newCategory = await catRes.json();
 
-                if (catRes.ok) {
-                  const newCategory = await catRes.json();
-
-                  // Add only selected activities to the category
-                  for (const activityIndex of activityIndices) {
-                    const activity = category.activities[activityIndex];
-                    await fetch(`/api/trips/${tripId}/itinerary/${newDayId}/categories/${newCategory.category_id}/activities`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        activity_name: activity.activity_name,
-                        start_time: activity.start_time,
-                        end_time: activity.end_time,
-                        activity_cost: activity.activity_cost,
-                        currency_code: activity.currency_code,
-                      }),
-                    });
-                  }
+                // Add only selected activities to the category
+                for (const activityIndex of activityIndices) {
+                  const activity = category.activities[activityIndex];
+                  await fetch(`/api/trips/${tripId}/itinerary/${targetDayId}/categories/${newCategory.category_id}/activities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      activity_name: activity.activity_name,
+                      start_time: activity.start_time,
+                      end_time: activity.end_time,
+                      activity_cost: activity.activity_cost,
+                      currency_code: activity.currency_code,
+                    }),
+                  });
                 }
               }
-
-              // Refresh the itinerary
-              await fetchData();
-              setSelectedDayNumber(nextDayNumber);
-
-            } else {
-              // Append to existing day
-              const existingDay = days.find(d => d.day_id === target);
-              if (!existingDay) throw new Error('Day not found');
-
-              // Add all categories with their activities to the existing day
-              for (const category of pendingRecommendation.categories || []) {
-                const catRes = await fetch(`/api/trips/${tripId}/itinerary/${target}/categories`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    category_name: `${category.category_name} (from ${pendingRecommendation.source.trip_name})`,
-                    category_cost: category.category_cost,
-                    currency_code: category.currency_code,
-                  }),
-                });
-
-                if (catRes.ok) {
-                  const newCategory = await catRes.json();
-
-                  // Add activities to the category
-                  for (const activity of category.activities || []) {
-                    await fetch(`/api/trips/${tripId}/itinerary/${target}/categories/${newCategory.category_id}/activities`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        activity_name: activity.activity_name,
-                        start_time: activity.start_time,
-                        end_time: activity.end_time,
-                        activity_cost: activity.activity_cost,
-                        currency_code: activity.currency_code,
-                      }),
-                    });
-                  }
-                }
-              }
-
-              // Refresh the itinerary
-              await fetchData();
-              setSelectedDayNumber(existingDay.day_number);
             }
+
+            // Refresh the itinerary
+            await fetchData();
+            setSelectedDayNumber(targetDayNumber);
 
             setIsAddModalOpen(false);
             setPendingRecommendation(null);
+
           } catch (error) {
             console.error('Error adding itinerary recommendation:', error);
             alert('Failed to add itinerary recommendation');
@@ -632,8 +609,15 @@ export default function ItineraryPage({ params }: PageProps) {
             setIsProcessing(false);
           }
         }}
-        existingDays={days.map(d => ({ day_id: d.day_id, day_code: `Day ${d.day_number}` }))}
-        recommendedDayCode={pendingRecommendation?.day_code || ''}
+        existingDays={tripDays.map(td => {
+          const existingDay = days.find(d => d.day_number === td.dayNumber);
+          return {
+            day_id: existingDay?.day_id || td.dayNumber,
+            day_code: `Day ${td.dayNumber}`,
+            day_date: td.date,
+            exists: !!existingDay
+          };
+        })}
       />
     </div>
   );

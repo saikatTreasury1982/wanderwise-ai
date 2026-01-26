@@ -6,6 +6,8 @@ import CircleIconButton from '@/app/components/ui/CircleIconButton';
 interface ExistingDay {
     day_id: number;
     day_code: string;
+    day_date: string;
+    exists: boolean;
 }
 
 interface CategoryWithActivities {
@@ -19,7 +21,6 @@ interface ItineraryAddModalProps {
     onClose: () => void;
     onConfirm: (target: 'new' | number, finalSelections: { categoryIndex: number; activityIndex: number }[]) => void;
     existingDays: ExistingDay[];
-    recommendedDayCode: string;
     dayData: any; // Full day data with categories and activities
     initialSelections: { categoryIndex: number; activityIndex: number }[];
 }
@@ -29,12 +30,12 @@ export default function ItineraryAddModal({
     onClose,
     onConfirm,
     existingDays,
-    recommendedDayCode,
     dayData,
     initialSelections,
 }: ItineraryAddModalProps) {
     const [selectedTarget, setSelectedTarget] = useState<'new' | number>('new');
     const [selections, setSelections] = useState<{ categoryIndex: number; activityIndex: number }[]>(initialSelections);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -83,8 +84,13 @@ export default function ItineraryAddModal({
     const finalCategoriesCount = selectedCategoryIndices.size;
     const finalActivitiesCount = selections.length;
 
-    const handleConfirm = () => {
-        onConfirm(selectedTarget, selections);
+    const handleConfirm = async () => {
+        setIsProcessing(true);
+        try {
+            await onConfirm(selectedTarget, selections);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     // Calculate next day number for new day
@@ -108,7 +114,7 @@ export default function ItineraryAddModal({
                     <div className="p-6 border-b border-white/10">
                         <h3 className="text-xl font-bold text-white mb-2">Add Itinerary Day</h3>
                         <p className="text-white/60 text-sm">
-                            Review and finalize selections for "{recommendedDayCode}"
+                            Review and finalize selections for "Day {dayData?.day_number}"
                         </p>
                     </div>
 
@@ -127,8 +133,8 @@ export default function ItineraryAddModal({
                                         New Day {nextDayNumber}
                                     </option>
                                     {existingDays.map((day) => (
-                                        <option key={day.day_id} value={day.day_id} className="bg-gray-800">
-                                            Append to {day.day_code} (existing)
+                                        <option key={day.day_id} value={day.exists ? day.day_id : day.day_id} className="bg-gray-800">
+                                            {day.exists ? `Append to ${day.day_code}` : `New ${day.day_code}`}
                                         </option>
                                     ))}
                                 </select>
@@ -232,11 +238,15 @@ export default function ItineraryAddModal({
                             variant="primary"
                             onClick={handleConfirm}
                             title="Confirm Add"
-                            disabled={finalActivitiesCount === 0}
+                            disabled={finalActivitiesCount === 0 || isProcessing}
                             icon={
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
+                                isProcessing ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                )
                             }
                         />
                     </div>

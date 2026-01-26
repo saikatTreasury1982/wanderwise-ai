@@ -143,7 +143,7 @@ export default function ItineraryPreviewModal({
                     {/* Header */}
                     <div className="flex items-center justify-between p-6 border-b border-white/10">
                         <div>
-                            <h3 className="text-2xl font-bold text-white mb-1">{day.day_code}</h3>
+                            <h3 className="text-2xl font-bold text-white mb-1">Day {day.day_number}</h3>
                             {day.day_description && (
                                 <p className="text-white/60 text-sm">{day.day_description}</p>
                             )}
@@ -182,7 +182,7 @@ export default function ItineraryPreviewModal({
                     </div>
 
                     {/* Content - Scrollable */}
-                    <div className="p-6 overflow-y-auto max-h-[calc(80vh-220px)] hide-scrollbar">
+                    <div className="p-6 overflow-y-auto max-h-[calc(80vh-220px)] custom-scrollbar">
                         <div className="space-y-4">
                             {day.categories.map((category: any, catIndex: number) => (
                                 <div

@@ -66,8 +66,10 @@ export class RuleBasedRecommender implements IRecommendationService {
         city: row.city as string | null,
       }));
 
-      // Find historical trips with matching destinations
+      // Find historical trips with matching destinations (country only)
       // Only include completed (3) or suspended (4) trips
+      const countries = [...new Set(destinations.map(d => d.country))]; // Get unique countries
+      
       const matchingTripsResult = await this.db.execute({
         sql: `
           SELECT DISTINCT 
@@ -81,13 +83,13 @@ export class RuleBasedRecommender implements IRecommendationService {
           WHERE t.user_id = ?
             AND t.trip_id != ?
             AND t.status_code IN (3, 4)
-            AND (${destinations.map((_, i) => `(td.country = ? ${destinations[i].city ? 'AND td.city = ?' : ''})`).join(' OR ')})
+            AND td.country IN (${countries.map(() => '?').join(',')})
           ORDER BY t.end_date DESC
         `,
         args: [
           userId,
           tripId,
-          ...destinations.flatMap(d => d.city ? [d.country, d.city] : [d.country]),
+          ...countries,
         ],
       });
 
@@ -448,7 +450,8 @@ export class RuleBasedRecommender implements IRecommendationService {
         sql: `
           SELECT 
             id.day_id,
-            id.description,
+            id.day_number,
+            id.description as day_description ,
             idc.category_name,
             idc.category_cost,
             idc.currency_code as category_currency,
@@ -467,21 +470,21 @@ export class RuleBasedRecommender implements IRecommendationService {
       });
 
       // Group by day -> category -> activities
-      const dayMap = new Map<string, ItineraryRecommendation>();
+      const dayMap = new Map<number, ItineraryRecommendation>();
 
       for (const row of itineraryResult.rows) {
-        const dayCode = row.day_code as string;
+        const dayNumber = row.day_number as number;
 
-        if (!dayMap.has(dayCode)) {
-          dayMap.set(dayCode, {
-            day_code: dayCode,
+        if (!dayMap.has(dayNumber)) {
+          dayMap.set(dayNumber, {
+            day_number: dayNumber,
             day_description: row.day_description as string | null,
             categories: [],
             source,
           });
         }
 
-        const day = dayMap.get(dayCode)!;
+        const day = dayMap.get(dayNumber)!;
 
         if (row.category_name) {
           const categoryName = row.category_name as string;

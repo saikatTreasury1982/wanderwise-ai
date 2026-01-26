@@ -258,36 +258,60 @@ export default function TravelerForm({
 
         {/* Checkboxes */}
         <div className="space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              name="is_primary"
-              checked={formData.is_primary}
-              onChange={handleChange}
-              className="w-5 h-5 rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-400 focus:ring-offset-0"
-            />
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, is_primary: !prev.is_primary }))}
+              className="flex-shrink-0"
+            >
+              {formData.is_primary ? (
+                <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                </svg>
+              )}
+            </button>
             <span className="text-white/90">Primary Traveler</span>
           </label>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              name="is_cost_sharer"
-              checked={formData.is_cost_sharer}
-              onChange={handleChange}
-              className="w-5 h-5 rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-400 focus:ring-offset-0"
-            />
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, is_cost_sharer: !prev.is_cost_sharer }))}
+              className="flex-shrink-0"
+            >
+              {formData.is_cost_sharer ? (
+                <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                </svg>
+              )}
+            </button>
             <span className="text-white/90">Cost Sharer</span>
           </label>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              name="is_active"
-              checked={formData.is_active}
-              onChange={handleChange}
-              className="w-5 h-5 rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-400 focus:ring-offset-0"
-            />
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
+              className="flex-shrink-0"
+            >
+              {formData.is_active ? (
+                <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                </svg>
+              )}
+            </button>
             <span className="text-white/90">Active</span>
           </label>
         </div>
