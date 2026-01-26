@@ -81,7 +81,7 @@ export default function TripReferencePanel({
       
       {/* Panel */}
       <div 
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-gray-900/95 backdrop-blur-xl border-l border-white/20 z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-full max-w-md bg-black/30 backdrop-blur-xl border-l border-white/20 z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

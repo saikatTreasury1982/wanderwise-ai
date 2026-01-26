@@ -57,7 +57,7 @@ export default function Modal({
         ref={modalRef}
         className={cn(
           'relative z-10 w-full max-w-lg',
-          'bg-white/10 backdrop-blur-xl',
+          'bg-gradient-to-br from-Black-900/40 via-indigo-900/30 to-black-900/40 backdrop-blur-xl',
           'border border-white/20',
           'rounded-2xl shadow-2xl',
           'overflow-hidden',

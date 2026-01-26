@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
-import Button from '@/app/components/ui/Button';
 import { useRouter } from 'next/navigation';
 import DestinationSelector from '@/app/components/organisms/DestinationSelector';
 
@@ -72,11 +71,33 @@ export default function TripForm({
   const [showDropWarning, setShowDropWarning] = useState(false);
   const [showResumeConfirm, setShowResumeConfirm] = useState(false);
   const [allowDateEdit, setAllowDateEdit] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   // Populate form when editing
   useEffect(() => {
     const loadTripData = async () => {
       if (trip) {
+        setIsLoadingData(true);
+        // Fetch destinations first before setting form data
+        let loadedDestinations: Array<{ country: string; city: string | null; country_code?: string }> = [];
+
+        if (trip.trip_id) {
+          try {
+            const response = await fetch(`/api/trips/${trip.trip_id}/destinations`);
+            if (response.ok) {
+              const data = await response.json();
+              loadedDestinations = data.destinations.map((d: any) => ({
+                country: d.country,
+                city: d.city,
+                country_code: d.country_code
+              }));
+            }
+          } catch (error) {
+            console.error('Error fetching destinations:', error);
+          }
+        }
+
+        // Set both form data and destinations together
         setFormData({
           trip_name: trip.trip_name,
           trip_description: trip.trip_description || '',
@@ -85,22 +106,7 @@ export default function TripForm({
           start_date: trip.start_date,
           end_date: trip.end_date,
         });
-
-        // Fetch destinations for existing trips
-        if (trip.trip_id) {
-          try {
-            const response = await fetch(`/api/trips/${trip.trip_id}/destinations`);
-            if (response.ok) {
-              const data = await response.json();
-              setDestinations(data.destinations.map((d: any) => ({
-                country: d.country,
-                city: d.city
-              })));
-            }
-          } catch (error) {
-            console.error('Error fetching destinations:', error);
-          }
-        }
+        setDestinations(loadedDestinations);
       } else {
         setFormData({
           trip_name: '',
@@ -113,9 +119,12 @@ export default function TripForm({
         setDestinations([]);
       }
       setErrors({});
+      setIsLoadingData(false);
     };
 
-    loadTripData();
+    if (isOpen) {
+      loadTripData();
+    }
   }, [trip, isOpen]);
 
   const fetchDestinations = async (tripId: number) => {
@@ -160,6 +169,10 @@ export default function TripForm({
       if (new Date(formData.end_date) < new Date(formData.start_date)) {
         newErrors.end_date = 'End date must be after start date';
       }
+    }
+
+    if (destinations.length === 0) {
+      newErrors.general = 'Please add at least one destination';
     }
 
     setErrors(newErrors);
@@ -220,7 +233,7 @@ export default function TripForm({
       const response = await fetch(`/api/trips/${trip!.trip_id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           status_code: 4 // Suspend trip
         }),
       });
@@ -307,6 +320,18 @@ export default function TripForm({
     }
   };
 
+  // Show fullscreen loading overlay while fetching data in edit mode
+  if (isEditMode && isLoadingData) {
+    return (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-md">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <p className="text-white/90 text-sm">Loading trip data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -351,7 +376,7 @@ export default function TripForm({
           tripId={trip?.trip_id}
           initialDestinations={destinations}
           onChange={(dests: Array<{ country: string; city: string | null }>) => setDestinations(dests)}
-          readOnly={isReadOnly || isLimitedEdit}
+          readOnly={isReadOnly}
         />
 
         <div className="grid grid-cols-2 gap-4">
