@@ -41,6 +41,9 @@ export default function ItineraryActivityRow({
   const [editNotes, setEditNotes] = useState(activity.notes || '');
   const [showLinksModal, setShowLinksModal] = useState(false);
   const [linkCount, setLinkCount] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   const {
     attributes,
     listeners,
@@ -65,24 +68,25 @@ export default function ItineraryActivityRow({
   };
 
   useEffect(() => {
-  const fetchLinkCount = async () => {
-    try {
-      const res = await fetch(
-        `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}/links`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setLinkCount(data.links?.length || 0);
+    const fetchLinkCount = async () => {
+      try {
+        const res = await fetch(
+          `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}/links`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setLinkCount(data.links?.length || 0);
+        }
+      } catch (err) {
+        console.error('Error fetching link count:', err);
       }
-    } catch (err) {
-      console.error('Error fetching link count:', err);
-    }
-  };
+    };
 
-  fetchLinkCount();
-}, [tripId, dayId, categoryId, activity.activity_id]);
+    fetchLinkCount();
+  }, [tripId, dayId, categoryId, activity.activity_id]);
 
   const handleToggle = async () => {
+    setIsToggling(true);
     try {
       const res = await fetch(
         `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}/toggle`,
@@ -95,10 +99,13 @@ export default function ItineraryActivityRow({
       }
     } catch (err) {
       console.error('Error toggling activity:', err);
+    } finally {
+      setIsToggling(false);
     }
   };
 
   const handleSave = async () => {
+    setIsSaving(true);
     try {
       const res = await fetch(
         `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}`,
@@ -125,10 +132,13 @@ export default function ItineraryActivityRow({
       }
     } catch (err) {
       console.error('Error updating activity:', err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
+    setIsDeleting(true);
     try {
       const res = await fetch(
         `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}`,
@@ -140,6 +150,8 @@ export default function ItineraryActivityRow({
       }
     } catch (err) {
       console.error('Error deleting activity:', err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -219,47 +231,61 @@ export default function ItineraryActivityRow({
         <div className="flex justify-end gap-2">
           <button
             onClick={() => setIsEditing(false)}
-            className="px-3 py-1.5 text-sm text-purple-300 hover:text-white"
+            className="p-1.5 rounded hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+            title="Cancel"
           >
-            Cancel
+            <X className="w-4 h-4" />
           </button>
           <button
             onClick={handleSave}
-            disabled={!editName.trim()}
-            className="px-3 py-1.5 text-sm bg-purple-500/30 text-white rounded-lg hover:bg-purple-500/40 disabled:opacity-50"
+            disabled={!editName.trim() || isSaving}
+            className="p-1.5 rounded hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+            title={isSaving ? 'Saving...' : 'Save'}
           >
-            Save
+            {isSaving ? (
+              <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Check className="w-4 h-4" />
+            )}
           </button>
         </div>
       </div>
     );
   }
 
-    return (
-      <div 
-        ref={setNodeRef}
-        style={style}
-        className={`px-4 py-3 flex items-center gap-3 group hover:bg-white/5 ${activity.is_completed ? 'opacity-60' : ''} ${!isActive ? 'opacity-40' : ''}`}
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`px-4 py-3 flex items-center gap-3 group hover:bg-white/5 ${activity.is_completed ? 'opacity-60' : ''} ${!isActive ? 'opacity-40' : ''}`}
+    >
+      {/* Drag Handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing touch-none"
       >
-        {/* Drag Handle */}
-        <button
-          {...attributes}
-          {...listeners}
-          className="p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing touch-none"
-        >
-          <GripVertical className="w-4 h-4 text-purple-300" />
-        </button>
+        <GripVertical className="w-4 h-4 text-purple-300" />
+      </button>
 
-        {/* Checkbox */}
-        <button
+      {/* Checkbox */}
+      <button
         onClick={handleToggle}
-        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-          activity.is_completed
-            ? 'bg-green-500/30 border-green-400'
-            : 'border-purple-400 hover:border-purple-300'
-        }`}
+        disabled={isToggling}
+        className="flex-shrink-0"
+        title={isToggling ? 'Processing...' : (activity.is_completed ? 'Mark incomplete' : 'Mark complete')}
       >
-        {activity.is_completed && <Check className="w-3 h-3 text-green-300" />}
+        {isToggling ? (
+          <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+        ) : activity.is_completed ? (
+          <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+        ) : (
+          <svg className="w-5 h-5 text-white/30 hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" strokeWidth="2" />
+          </svg>
+        )}
       </button>
 
       {/* Activity Name */}

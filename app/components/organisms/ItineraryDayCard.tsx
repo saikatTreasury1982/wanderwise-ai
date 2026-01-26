@@ -36,6 +36,8 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
   const [description, setDescription] = useState(day.description || '');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [isSavingDescription, setIsSavingDescription] = useState(false);
+  const [isAddingCategoryLoading, setIsAddingCategoryLoading] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -61,7 +63,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
     if (oldIndex === -1 || newIndex === -1) return;
 
     const reorderedCategories = arrayMove(day.categories || [], oldIndex, newIndex);
-    
+
     // Update local state immediately for smooth UX
     onUpdate({
       ...day,
@@ -134,6 +136,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
   const dayTotals = getDayTotals();
 
   const handleSaveDescription = async () => {
+    setIsSavingDescription(true);
     try {
       const res = await fetch(`/api/trips/${tripId}/itinerary/${day.day_id}`, {
         method: 'PUT',
@@ -148,12 +151,15 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
       }
     } catch (err) {
       console.error('Error updating description:', err);
+    } finally {
+      setIsSavingDescription(false);
     }
   };
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
 
+    setIsAddingCategoryLoading(true);
     try {
       const res = await fetch(`/api/trips/${tripId}/itinerary/${day.day_id}/categories`, {
         method: 'POST',
@@ -173,13 +179,15 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
       }
     } catch (err) {
       console.error('Error adding category:', err);
+    } finally {
+      setIsAddingCategoryLoading(false);
     }
   };
 
   const handleCategoryUpdate = (updatedCategory: ItineraryDayCategory) => {
     const updatedDay = {
       ...day,
-      categories: day.categories?.map(c => 
+      categories: day.categories?.map(c =>
         c.category_id === updatedCategory.category_id ? updatedCategory : c
       ),
     };
@@ -197,7 +205,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
   return (
     <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
       {/* Day Header */}
-      <div 
+      <div
         className={`px-6 py-4 ${!isCollapsed ? 'border-b border-white/10' : ''} cursor-pointer`}
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
@@ -238,7 +246,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
         </div>
 
         {/* Description - Always visible in header */}
-        <div 
+        <div
           className="mt-3"
           onClick={(e) => e.stopPropagation()}
         >
@@ -266,9 +274,15 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
                   e.stopPropagation();
                   handleSaveDescription();
                 }}
-                className="p-2 rounded-full bg-green-500/20 text-green-300 hover:bg-green-500/30"
+                disabled={isSavingDescription}
+                className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                title={isSavingDescription ? 'Saving...' : 'Save'}
               >
-                <Check className="w-4 h-4" />
+                {isSavingDescription ? (
+                  <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
               </button>
               <button
                 onClick={(e) => {
@@ -276,7 +290,8 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
                   setIsEditingDescription(false);
                   setDescription(day.description || '');
                 }}
-                className="p-2 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+                title="Cancel"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -298,7 +313,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
 
       {/* Categories */}
       {!isCollapsed && (
-        <div className="p-4 space-y-4"> 
+        <div className="p-4 space-y-4">
           {day.categories && day.categories.length > 0 ? (
             <DndContext
               sensors={sensors}
@@ -348,17 +363,23 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
               />
               <button
                 onClick={handleAddCategory}
-                disabled={!newCategoryName.trim()}
-                className="p-3 rounded-xl bg-green-500/20 text-green-300 hover:bg-green-500/30 disabled:opacity-50"
+                disabled={!newCategoryName.trim() || isAddingCategoryLoading}
+                className="p-3 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                title={isAddingCategoryLoading ? 'Adding...' : 'Add Category'}
               >
-                <Check className="w-5 h-5" />
+                {isAddingCategoryLoading ? (
+                  <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Check className="w-5 h-5" />
+                )}
               </button>
               <button
                 onClick={() => {
                   setIsAddingCategory(false);
                   setNewCategoryName('');
                 }}
-                className="p-3 rounded-xl bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                className="p-3 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+                title="Cancel"
               >
                 <X className="w-5 h-5" />
               </button>

@@ -135,7 +135,7 @@ export default function RecommendationSlider({
           <RecommendationCard
             key={index}
             type="itinerary"
-            title={rec.day_code}
+            title={`Day ${rec.day_number}`}
             subtitle={rec.day_description || 'No description'}
             details={[
               { label: `${totalCategories} categories`, value: `${totalActivities} activities` }

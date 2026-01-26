@@ -40,20 +40,23 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   const [editCurrency, setEditCurrency] = useState(category.currency_code || '');
   const [editCostType, setEditCostType] = useState<'total' | 'per_head'>(category.cost_type || 'total');
   const [editHeadcount, setEditHeadcount] = useState(category.headcount?.toString() || '');
-  const [isAddingActivity, setIsAddingActivity] = useState(false);
   const [isBulkAdding, setIsBulkAdding] = useState(false);
   const [newActivityName, setNewActivityName] = useState('');
   const [bulkActivities, setBulkActivities] = useState('');
   const [isActive, setIsActive] = useState(category.is_active !== 0);
   const [isCopying, setIsCopying] = useState(false);
   const [isTogglingActive, setIsTogglingActive] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isAddingActivity, setIsAddingActivity] = useState(false);
+  const [isAddingBulk, setIsAddingBulk] = useState(false);
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-      isDragging,
+    isDragging,
   } = useSortable({ id: category.category_id });
 
   const style = {
@@ -87,7 +90,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
     if (oldIndex === -1 || newIndex === -1) return;
 
     const reorderedActivities = arrayMove(activities, oldIndex, newIndex);
-    
+
     // Update local state
     onUpdate({
       ...category,
@@ -113,15 +116,15 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
 
   // Calculate category totals
   const getCategoryTotals = (): CostSummary[] => {
-  if (category.category_cost !== null && category.currency_code) {
-    let cost = category.category_cost;
-    if (category.cost_type === 'per_head' && category.headcount) {
-      cost = category.category_cost * category.headcount;
+    if (category.category_cost !== null && category.currency_code) {
+      let cost = category.category_cost;
+      if (category.cost_type === 'per_head' && category.headcount) {
+        cost = category.category_cost * category.headcount;
+      }
+      return [{ currency_code: category.currency_code, total: cost }];
     }
-    return [{ currency_code: category.currency_code, total: cost }];
-  }
 
-  const totals: Record<string, number> = {};
+    const totals: Record<string, number> = {};
     category.activities?.forEach(activity => {
       if (activity.activity_cost !== null && activity.currency_code) {
         let cost = activity.activity_cost;
@@ -158,16 +161,16 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   const handleToggleActive = async () => {
     const newActive = !isActive;
     setIsTogglingActive(true);
-    
+
     try {
       await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_active: newActive ? 1 : 0 }),
       });
-      
+
       setIsActive(newActive);
-      
+
       // Update parent
       onUpdate({
         ...category,
@@ -181,6 +184,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   };
 
   const handleSaveEdit = async () => {
+    setIsSaving(true);
     try {
       const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
         method: 'PUT',
@@ -201,12 +205,15 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
       }
     } catch (err) {
       console.error('Error updating category:', err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!confirm('Delete this category and all its activities?')) return;
 
+    setIsDeleting(true);
     try {
       const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
         method: 'DELETE',
@@ -217,12 +224,14 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
       }
     } catch (err) {
       console.error('Error deleting category:', err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const handleCopy = async () => {
     setIsCopying(true);
-    
+
     try {
       const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/copy`, {
         method: 'POST',
@@ -245,11 +254,12 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
     } finally {
       setIsCopying(false);
     }
-  };  
+  };
 
   const handleAddActivity = async () => {
     if (!newActivityName.trim()) return;
 
+    setIsAddingActivity(true);
     try {
       const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/activities`, {
         method: 'POST',
@@ -268,6 +278,8 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
       }
     } catch (err) {
       console.error('Error adding activity:', err);
+    } finally {
+      setIsAddingActivity(false);
     }
   };
 
@@ -275,6 +287,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
     const activities = bulkActivities.split('\n').filter(line => line.trim());
     if (activities.length === 0) return;
 
+    setIsAddingBulk(true);
     try {
       const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/activities`, {
         method: 'POST',
@@ -293,6 +306,8 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
       }
     } catch (err) {
       console.error('Error bulk adding activities:', err);
+    } finally {
+      setIsAddingBulk(false);
     }
   };
 
@@ -313,27 +328,25 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   };
 
   return (
-    <div 
+    <div
       ref={setNodeRef}
       style={style}
       className="bg-white/5 border border-white/10 rounded-xl overflow-hidden"
     >
       {/* Category Header */}
-      <div 
-        className={`px-4 py-3 flex items-center gap-3 transition-opacity ${
-          !isActive ? 'opacity-50' : 'opacity-100'
-        }`}
+      <div
+        className={`px-4 py-3 flex items-center gap-3 transition-opacity ${!isActive ? 'opacity-50' : 'opacity-100'
+          }`}
       >
-        
+
         {/* Active/Inactive Toggle */}
         <button
           onClick={handleToggleActive}
           disabled={isTogglingActive}
-          className={`p-1 rounded transition-colors ${
-            isTogglingActive 
-              ? 'cursor-wait' 
+          className={`p-1 rounded transition-colors ${isTogglingActive
+              ? 'cursor-wait'
               : 'hover:bg-white/10'
-          }`}
+            }`}
           title={isTogglingActive ? 'Processing...' : (isActive ? 'Mark as inactive' : 'Mark as active')}
         >
           {isTogglingActive ? (
@@ -408,10 +421,23 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                 min="1"
               />
             )}
-            <button onClick={handleSaveEdit} className="p-1 rounded bg-green-500/20 text-green-300 hover:bg-green-500/30">
-              <Check className="w-4 h-4" />
+            <button 
+              onClick={handleSaveEdit}
+              disabled={isSaving}
+              className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+              title={isSaving ? 'Saving...' : 'Save'}
+            >
+              {isSaving ? (
+                <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
             </button>
-            <button onClick={() => setIsEditing(false)} className="p-1 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30">
+            <button 
+              onClick={() => setIsEditing(false)}
+              className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+              title="Cancel"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -473,11 +499,10 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               <button
                 onClick={handleCopy}
                 disabled={isCopying}
-                className={`p-1.5 rounded-full transition-colors ${
-                  isCopying 
-                    ? 'bg-purple-500/30 text-purple-200 cursor-wait' 
+                className={`p-1.5 rounded-full transition-colors ${isCopying
+                    ? 'bg-purple-500/30 text-purple-200 cursor-wait'
                     : 'hover:bg-white/10 text-purple-300 hover:text-white'
-                }`}
+                  }`}
                 title={isCopying ? 'Copying...' : 'Copy category'}
               >
                 {isCopying ? (
@@ -488,17 +513,23 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               </button>
               <button
                 onClick={() => setIsEditing(true)}
-                className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+                disabled={isSaving || isDeleting}
+                className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
                 title="Edit category"
               >
                 <Edit2 className="w-4 h-4" />
               </button>
               <button
                 onClick={handleDelete}
-                className="p-1.5 rounded-full hover:bg-red-500/20 text-purple-300 hover:text-red-300 transition-colors"
-                title="Delete category"
+                disabled={isDeleting || isSaving}
+                className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                title={isDeleting ? 'Deleting...' : 'Delete category'}
               >
-                <Trash2 className="w-4 h-4" />
+                {isDeleting ? (
+                  <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
               </button>
             </div>
           </>
@@ -524,16 +555,22 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                     setIsBulkAdding(false);
                     setBulkActivities('');
                   }}
-                  className="px-3 py-1.5 text-sm text-purple-300 hover:text-white"
+                  className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+                  title="Cancel"
                 >
-                  Cancel
+                  <X className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleBulkAdd}
-                  disabled={!bulkActivities.trim()}
-                  className="px-3 py-1.5 text-sm bg-purple-500/30 text-white rounded-lg hover:bg-purple-500/40 disabled:opacity-50"
+                  disabled={!bulkActivities.trim() || isAddingBulk}
+                  className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                  title={isAddingBulk ? 'Adding...' : 'Add All'}
                 >
-                  Add All
+                  {isAddingBulk ? (
+                    <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -593,17 +630,22 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               />
               <button
                 onClick={handleAddActivity}
-                disabled={!newActivityName.trim()}
-                className="p-2 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 disabled:opacity-50"
+                disabled={!newActivityName.trim() || isAddingActivity}
+                className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                title={isAddingActivity ? 'Adding...' : 'Add'}
               >
-                <Check className="w-4 h-4" />
+                {isAddingActivity ? (
+                  <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
               </button>
               <button
                 onClick={() => {
                   setIsAddingActivity(false);
                   setNewActivityName('');
                 }}
-                className="p-2 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"title="Cancel"
               >
                 <X className="w-4 h-4" />
               </button>

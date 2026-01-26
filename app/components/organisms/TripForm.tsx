@@ -381,19 +381,6 @@ export default function TripForm({
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          {/* Cancel/Close button - always shown */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all"
-            title={isCompleted ? 'Close' : 'Cancel'}
-            disabled={isLoading}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-
           {/* Save button - shown for Draft and Active */}
           {(isDraft || isActive) && (
             <button
