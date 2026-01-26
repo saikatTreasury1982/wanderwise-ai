@@ -23,7 +23,7 @@ interface CreateTripInput {
   start_date: string;
   end_date: string;
   status_code?: number;
-  destinations?: Array<{ country: string; city?: string | null }>;
+  destinations?: Array<{ country: string; city?: string | null; country_code?: string | null }>;
 }
 
 interface UpdateTripInput {
@@ -66,8 +66,8 @@ export async function createTrip(input: CreateTripInput): Promise<Trip> {
       for (let i = 0; i < input.destinations.length; i++) {
         const dest = input.destinations[i];
         await query(
-          `INSERT INTO trip_destinations (trip_id, country, city, display_order) VALUES (?, ?, ?, ?)`,
-          [trip.trip_id, dest.country, dest.city || null, i]
+          `INSERT INTO trip_destinations (trip_id, country, city, country_code, display_order) VALUES (?, ?, ?, ?, ?)`,
+          [trip.trip_id, dest.country, dest.city || null, (dest as any).country_code || null, i]
         );
       }
     }

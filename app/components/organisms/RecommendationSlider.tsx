@@ -51,7 +51,7 @@ export default function RecommendationSlider({
 
   const typeLabels = {
     flights: 'Flight',
-    accommodations: 'Accommodation',
+    accommodations: 'Lodging',
     packing: 'Packing',
     itinerary: 'Itinerary',
   };

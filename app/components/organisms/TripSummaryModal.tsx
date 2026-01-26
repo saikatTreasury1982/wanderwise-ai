@@ -104,7 +104,7 @@ export default function TripSummaryModal({
       <div
         className={cn(
           'relative z-10 w-full max-w-lg md:max-w-5xl',
-          'bg-gray-900/95 backdrop-blur-xl',
+          'bg-gradient-to-br from-Black-900/40 via-indigo-900/30 to-black-900/40 backdrop-blur-xl',
           'border border-white/20 rounded-2xl',
           'shadow-2xl'
         )}
