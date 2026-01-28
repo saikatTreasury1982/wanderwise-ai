@@ -380,7 +380,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Settings Button */}
-            <div className="fixed top-6 right-20 z-40">
+            <div className="fixed top-6 right-14 sm:right-20 z-40">
               <CircleIconButton
                 variant="default"
                 onClick={() => router.push('/dashboard/preferences')}
@@ -395,7 +395,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Sign Off Button */}
-            <div className="fixed top-6 right-6 z-40">
+            <div className="fixed top-6 right-4 sm:right-6 z-40">
               <CircleIconButton
                 variant="danger"
                 onClick={async () => {
