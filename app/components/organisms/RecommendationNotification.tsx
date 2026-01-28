@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
+import { X } from 'lucide-react';
 
 interface RecommendationNotificationProps {
   tripId: number;
@@ -19,27 +20,19 @@ export default function RecommendationNotification({
   const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
-    console.log('RecommendationNotification mounted for trip:', tripId);
-
     const checkAvailability = async () => {
-      console.log('Starting checkAvailability...');
       setIsChecking(true);
 
       try {
-        console.log('Fetching from API:', `/api/recommendations/check?tripId=${tripId}`);
         const response = await fetch(`/api/recommendations/check?tripId=${tripId}`);
-        console.log('Response status:', response.status, 'OK:', response.ok);
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Availability data:', data);
 
           if (data.hasRecommendations) {
-            console.log('✅ Recommendations found! Setting availability and showing notification...');
             setAvailability(data);
             // Show notification after 2 seconds
             setTimeout(() => {
-              console.log('Showing notification now!');
               setIsVisible(true);
             }, 2000);
           } else {
@@ -70,17 +63,12 @@ export default function RecommendationNotification({
     onExplore();
   };
 
-  console.log('Render state:', { isChecking, availability, isVisible });
-
   if (!availability?.hasRecommendations) {
-    console.log('Not rendering - no recommendations');
     return null;
   }
 
   const { sources, counts } = availability;
   const totalItems = counts.flights + counts.accommodations + counts.packingCategories + counts.itineraryDays;
-
-  console.log('Rendering notification with visibility:', isVisible);
 
   return (
     <div
@@ -111,7 +99,7 @@ export default function RecommendationNotification({
             </p>
 
             <p className="text-white/70 text-sm mb-2">
-              Would you like suggestions for:
+              Check recommendations on respective pages:
             </p>
 
             <ul className="text-white/70 text-sm space-y-1 ml-1">
@@ -123,19 +111,13 @@ export default function RecommendationNotification({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-center gap-3">
-            <button
+          <div className="flex items-center justify-center">
+            <CircleIconButton
+              variant="default"
               onClick={handleDismiss}
-              className="px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/20 hover:border-white/30 hover:text-white transition-all text-sm font-medium"
-            >
-              No, thanks
-            </button>
-            <button
-              onClick={handleExplore}
-              className="px-6 py-2.5 rounded-full bg-purple-500/20 backdrop-blur-sm border border-purple-400/30 text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 hover:text-purple-200 transition-all text-sm font-medium"
-            >
-              Yes, show suggestions
-            </button>
+              title="Close Notification"
+              icon={<X className="w-5 h-5" />}
+            />
           </div>
         </div>
       </div>
