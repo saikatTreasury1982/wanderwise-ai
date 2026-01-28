@@ -367,7 +367,7 @@ export default function LoginForm() {
           ? "You haven't set up a password yet. Create one to continue."
           : "Sign in to continue your travel planning"
         }
-        passwordRequirements={passwordRequirements}
+        passwordRequirements={passwordModalMode === 'create' ? passwordRequirements : ''}
         isLoading={isLoading}
         error={passwordError}
         mode={passwordModalMode}
