@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
-import { X } from 'lucide-react';
+import { ALargeSmall, X } from 'lucide-react';
 
 interface RecommendationNotificationProps {
   tripId: number;
@@ -84,12 +84,22 @@ export default function RecommendationNotification({
 
         {/* Main card */}
         <div className="relative bg-white/10 backdrop-blur-xl border border-purple-400/40 rounded-2xl shadow-2xl p-6 ring-1 ring-purple-400/20">
+          {/* Close button - top right */}
+          <div className="absolute top-3 right-3">
+            <CircleIconButton
+              variant="default"
+              onClick={handleDismiss}
+              size="small"
+              title="Close Notification"
+              icon={<X className="w-4 h-4" />}
+            />
+          </div>
           {/* Content */}
           <div className="mb-6">
             <div className="flex items-start gap-2 mb-3">
               <span className="text-xl">💡</span>
               <h4 className="text-white/90 font-medium text-sm">
-                Smart Recommendations Available
+                Smart Recommendations
               </h4>
             </div>
 
@@ -99,7 +109,7 @@ export default function RecommendationNotification({
             </p>
 
             <p className="text-white/70 text-sm mb-2">
-              Check recommendations on respective pages:
+              Explore recommendations for:
             </p>
 
             <ul className="text-white/70 text-sm space-y-1 ml-1">
@@ -108,16 +118,6 @@ export default function RecommendationNotification({
               {counts.packingCategories > 0 && <li>• Packing Items</li>}
               {counts.itineraryDays > 0 && <li>• Itinerary activities</li>}
             </ul>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-center">
-            <CircleIconButton
-              variant="default"
-              onClick={handleDismiss}
-              title="Close Notification"
-              icon={<X className="w-5 h-5" />}
-            />
           </div>
         </div>
       </div>
