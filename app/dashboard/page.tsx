@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import TripSummaryModal from '@/app/components/organisms/TripSummaryModal';
 import PackingAlertWidget from '@/app/components/organisms/PackingAlertWidget';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
-import { Settings, LogOut } from 'lucide-react';
+import { MoreVertical, Settings, LogOut } from 'lucide-react';
 
 interface Trip {
   trip_id: number;
@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const [filterYear, setFilterYear] = useState<string>('all');
   const [filterDestination, setFilterDestination] = useState<string>('all');
   const [destinationsMap, setDestinationsMap] = useState<Map<number, string[]>>(new Map());
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const fetchTrips = async () => {
     try {
@@ -293,41 +294,69 @@ export default function DashboardPage() {
       <div className="relative z-10 max-w-3xl mx-auto">
         {hasTrips ? (
           <>
-            {/* Header with Action Buttons */}
+            {/* Header with Menu */}
             <div className="mb-6 flex items-center justify-between">
               <h1 className="text-3xl font-bold text-white">My Trips</h1>
-              
-              {/* Action Buttons - absolute right edge */}
-              <div className="fixed right-4 sm:right-6 flex items-center gap-2">
+
+              {/* Menu Button */}
+              <div className="relative">
                 <CircleIconButton
                   variant="default"
-                  size="small"
-                  className="sm:w-12 sm:h-12"
-                  onClick={() => router.push('/dashboard/preferences')}
-                  title="Preferences"
-                  icon={<Settings className="w-4 h-4 sm:w-6 sm:h-6" />}
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  title="Menu"
+                  icon={<MoreVertical className="w-6 h-6" />}
                 />
-                <CircleIconButton
-                  variant="danger"
-                  size="small"
-                  className="sm:w-12 sm:h-12"
-                  onClick={async () => {
-                    if (confirm('Are you sure you want to sign out?')) {
-                      try {
-                        await fetch('/api/auth/session/close', { method: 'POST' });
-                        router.push('/login');
-                      } catch (error) {
-                        console.error('Logout error:', error);
-                      }
-                    }
-                  }}
-                  title="Sign Out"
-                  icon={<LogOut className="w-4 h-4 sm:w-6 sm:h-6" />}
-                />
-              </div>
 
-              {/* Filter Pills */}
-              {trips.length > 1 && (
+                {/* Dropdown Menu */}
+                {isMenuOpen && (
+                  <>
+                    {/* Backdrop */}
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsMenuOpen(false)}
+                    />
+
+                    {/* Menu */}
+                    <div className="absolute right-0 top-14 z-50 w-48 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl overflow-hidden">
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          router.push('/dashboard/preferences');
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-white/90 hover:bg-white/10 transition-colors"
+                      >
+                        <Settings className="w-5 h-5" />
+                        <span>Preferences</span>
+                      </button>
+
+                      <div className="h-px bg-white/10" />
+
+                      <button
+                        onClick={async () => {
+                          setIsMenuOpen(false);
+                          if (confirm('Are you sure you want to sign out?')) {
+                            try {
+                              await fetch('/api/auth/session/close', { method: 'POST' });
+                              router.push('/login');
+                            } catch (error) {
+                              console.error('Logout error:', error);
+                            }
+                          }
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-red-500/10 transition-colors"
+                      >
+                        <LogOut className="w-5 h-5" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Filter Pills */}
+            {trips.length > 1 && (
+              <div className="mb-4">
                 <div className="flex items-center gap-3 mt-4 flex-wrap">
                   {/* Year Filter */}
                   <select
@@ -373,8 +402,8 @@ export default function DashboardPage() {
                     </span>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Packing Alerts */}
             <PackingAlertWidget />
@@ -436,6 +465,6 @@ export default function DashboardPage() {
         dateFormat={preferences.date_format}
         statuses={statuses}
       />
-    </div>
+    </div >
   );
 }
