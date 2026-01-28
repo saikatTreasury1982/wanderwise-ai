@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import TripSummaryModal from '@/app/components/organisms/TripSummaryModal';
 import PackingAlertWidget from '@/app/components/organisms/PackingAlertWidget';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
+import { Settings, LogOut } from 'lucide-react';
 
 interface Trip {
   trip_id: number;
@@ -292,43 +293,38 @@ export default function DashboardPage() {
       <div className="relative z-10 max-w-3xl mx-auto">
         {hasTrips ? (
           <>
-            {/* Top Action Buttons - aligned with header */}
-            <div className="fixed top-6 right-6 z-40 flex items-center gap-2">
-              <CircleIconButton
-                variant="default"
-                onClick={() => router.push('/dashboard/preferences')}
-                title="Preferences"
-                icon={
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                }
-              />
-              <CircleIconButton
-                variant="danger"
-                onClick={async () => {
-                  if (confirm('Are you sure you want to sign out?')) {
-                    try {
-                      await fetch('/api/auth/session/close', { method: 'POST' });
-                      router.push('/login');
-                    } catch (error) {
-                      console.error('Logout error:', error);
-                    }
-                  }
-                }}
-                title="Sign Out"
-                icon={
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                }
-              />
-            </div>
-
-            {/* Header */}
-            <div className="mb-6">
+            {/* Header with Action Buttons */}
+            <div className="mb-6 flex items-center justify-between">
               <h1 className="text-3xl font-bold text-white">My Trips</h1>
+              
+              {/* Action Buttons - absolute right edge */}
+              <div className="fixed right-4 sm:right-6 flex items-center gap-2">
+                <CircleIconButton
+                  variant="default"
+                  size="small"
+                  className="sm:w-12 sm:h-12"
+                  onClick={() => router.push('/dashboard/preferences')}
+                  title="Preferences"
+                  icon={<Settings className="w-4 h-4 sm:w-6 sm:h-6" />}
+                />
+                <CircleIconButton
+                  variant="danger"
+                  size="small"
+                  className="sm:w-12 sm:h-12"
+                  onClick={async () => {
+                    if (confirm('Are you sure you want to sign out?')) {
+                      try {
+                        await fetch('/api/auth/session/close', { method: 'POST' });
+                        router.push('/login');
+                      } catch (error) {
+                        console.error('Logout error:', error);
+                      }
+                    }
+                  }}
+                  title="Sign Out"
+                  icon={<LogOut className="w-4 h-4 sm:w-6 sm:h-6" />}
+                />
+              </div>
 
               {/* Filter Pills */}
               {trips.length > 1 && (
