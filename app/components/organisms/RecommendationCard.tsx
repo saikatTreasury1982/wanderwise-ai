@@ -94,6 +94,7 @@ export default function RecommendationCard({
             <CircleIconButton
               variant="default"
               onClick={onPreview}
+              size="small"
               title="Preview details"
               icon={
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,6 +108,7 @@ export default function RecommendationCard({
             <CircleIconButton
               variant="primary"
               onClick={onAdd}
+              size="small"
               title="Add to trip"
               icon={
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
