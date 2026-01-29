@@ -214,19 +214,18 @@ export default function PackingItemRow({
         <GripVertical className="w-4 h-4 text-purple-300" />
       </button>
 
-      {/* Checkbox */}
+      {/* Checkbox - Circular */}
       <button
         onClick={() => onToggle(item.item_id)}
-        className={cn(
-          'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
-          item.is_packed
-            ? 'bg-green-500 border-green-500'
-            : 'border-white/30 hover:border-white/50'
-        )}
+        className="flex-shrink-0"
       >
-        {item.is_packed === 1 && (
-          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+        {item.is_packed === 1 ? (
+          <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+        ) : (
+          <svg className="w-5 h-5 text-white/30 hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" strokeWidth="2" />
           </svg>
         )}
       </button>

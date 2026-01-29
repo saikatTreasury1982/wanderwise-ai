@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Check } from 'lucide-react';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
+import ToggleSlider from '@/app/components/ui/ToggleSlider';
 import type { AdhocExpense } from '@/app/lib/types/adhoc-expense';
 
 interface Traveler {
@@ -270,21 +271,30 @@ export default function AdhocExpenseEntryForm({
         
         {/* Assign to Travelers */}
         <div>
-          <label className="block text-sm text-white/60 mb-1.5">
+          <label className="block text-sm text-white/70 mb-3">
             Assign to Travelers <span className="text-red-400">*</span>
           </label>
-          <div className="space-y-2 bg-white/5 border border-white/10 rounded-lg p-3 max-h-48 overflow-y-auto">
+          <div className="space-y-2">
             {sortedTravelers.map(traveler => (
               <label
                 key={traveler.traveler_id}
-                className="flex items-center gap-3 cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors"
+                className="flex items-center gap-3 cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors group"
               >
-                <input
-                  type="checkbox"
-                  checked={selectedTravelers.includes(traveler.traveler_id)}
-                  onChange={() => handleToggleTraveler(traveler.traveler_id)}
-                  className="w-5 h-5 rounded border-2 border-white/30 bg-white/10 checked:bg-purple-500 checked:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                />
+                <button
+                  type="button"
+                  onClick={() => handleToggleTraveler(traveler.traveler_id)}
+                  className="flex-shrink-0"
+                >
+                  {selectedTravelers.includes(traveler.traveler_id) ? (
+                    <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                    </svg>
+                  )}
+                </button>
                 <span className="text-white flex-1 text-base">{traveler.traveler_name}</span>
                 {traveler.is_active === 0 && (
                   <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-400/30">
@@ -322,27 +332,16 @@ export default function AdhocExpenseEntryForm({
 
         {/* Status */}
         <div>
-          <label className="block text-sm text-white/60 mb-1.5">Status</label>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                checked={isActive}
-                onChange={() => setIsActive(true)}
-                className="w-4 h-4"
-              />
-              <span className="text-white text-base">Active (include in forecast)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                checked={!isActive}
-                onChange={() => setIsActive(false)}
-                className="w-4 h-4"
-              />
-              <span className="text-white/70 text-base">Inactive (exclude)</span>
-            </label>
-          </div>
+          <label className="block text-sm text-white/60 mb-2">Status</label>
+          <ToggleSlider
+            checked={isActive}
+            onChange={setIsActive}
+            leftLabel="Inactive"
+            rightLabel="Active"
+          />
+          <p className="text-xs text-white/40 mt-2">
+            {isActive ? 'Include in forecast' : 'Exclude from forecast'}
+          </p>
         </div>
       </div>
 
