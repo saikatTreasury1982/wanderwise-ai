@@ -219,17 +219,17 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
               }}
             >
               {isCollapsed ? (
-                <ChevronRight className="w-5 h-5 text-purple-300" />
+                <ChevronRight className="w-5 h-5 text-primary-300" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-purple-300" />
+                <ChevronDown className="w-5 h-5 text-primary-300" />
               )}
             </button>
-            <div className="w-12 h-12 rounded-full bg-purple-500/30 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-primary-500/30 flex items-center justify-center">
               <span className="text-xl font-bold text-white">{day.day_number}</span>
             </div>
             <div>
               <h2 className="text-lg font-semibold text-white">Day {day.day_number}</h2>
-              <p className="text-sm text-purple-200">{formatDate(dayDate)}</p>
+              <p className="text-sm text-primary-200">{formatDate(dayDate)}</p>
             </div>
           </div>
 
@@ -237,7 +237,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
           {dayTotals.length > 0 && (
             <div className="text-right">
               {dayTotals.map(({ currency_code, total }) => (
-                <div key={currency_code} className="text-purple-200">
+                <div key={currency_code} className="text-primary-200">
                   <span className="text-white font-semibold">{currency_code} {total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               ))}
@@ -257,7 +257,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Add a description for this day..."
-                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 text-sm"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-primary-300 text-sm"
                 autoFocus
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => {
@@ -275,11 +275,11 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
                   handleSaveDescription();
                 }}
                 disabled={isSavingDescription}
-                className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
                 title={isSavingDescription ? 'Saving...' : 'Save'}
               >
                 {isSavingDescription ? (
-                  <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Check className="w-4 h-4" />
                 )}
@@ -290,7 +290,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
                   setIsEditingDescription(false);
                   setDescription(day.description || '');
                 }}
-                className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+                className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors"
                 title="Cancel"
               >
                 <X className="w-4 h-4" />
@@ -302,7 +302,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
                 e.stopPropagation();
                 setIsEditingDescription(true);
               }}
-              className="flex items-center gap-2 text-sm text-purple-300 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-sm text-primary-300 hover:text-white transition-colors"
             >
               <Edit2 className="w-3 h-3" />
               {day.description || 'Add description...'}
@@ -338,7 +338,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
               </SortableContext>
             </DndContext>
           ) : (
-            <div className="text-center py-8 text-purple-300">
+            <div className="text-center py-8 text-primary-300">
               <p>No categories yet. Add one to start planning!</p>
             </div>
           )}
@@ -351,7 +351,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 placeholder="Category name (e.g., Morning Activities, Meals...)"
-                className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300"
+                className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-primary-300"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleAddCategory();
@@ -364,11 +364,11 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
               <button
                 onClick={handleAddCategory}
                 disabled={!newCategoryName.trim() || isAddingCategoryLoading}
-                className="p-3 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                className="p-3 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
                 title={isAddingCategoryLoading ? 'Adding...' : 'Add Category'}
               >
                 {isAddingCategoryLoading ? (
-                  <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Check className="w-5 h-5" />
                 )}
@@ -378,7 +378,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
                   setIsAddingCategory(false);
                   setNewCategoryName('');
                 }}
-                className="p-3 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+                className="p-3 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors"
                 title="Cancel"
               >
                 <X className="w-5 h-5" />
@@ -387,7 +387,7 @@ export default function ItineraryDayCard({ tripId, day, dayDate, dateFormat = 'D
           ) : (
             <button
               onClick={() => setIsAddingCategory(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white/5 border border-dashed border-white/20 rounded-xl text-purple-300 hover:bg-white/10 hover:text-white transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white/5 border border-dashed border-white/20 rounded-xl text-primary-300 hover:bg-white/10 hover:text-white transition-colors"
             >
               <Plus className="w-5 h-5" />
               <span>Add Category</span>

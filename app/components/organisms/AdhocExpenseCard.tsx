@@ -49,7 +49,7 @@ export default function AdhocExpenseCard({
               {expense.is_active === 1 ? 'Active' : 'Inactive'}
             </span>
             {expense.category && (
-              <span className="px-2 py-0.5 text-xs font-medium rounded-full border bg-purple-500/20 text-purple-300 border-purple-400/30">
+              <span className="px-2 py-0.5 text-xs font-medium rounded-full border bg-primary-500/20 text-primary-300 border-primary-400/30">
                 {expense.category}
               </span>
             )}
@@ -98,7 +98,7 @@ export default function AdhocExpenseCard({
          {/* Price */}
           <div className="mt-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold text-purple-300">
+              <span className="text-lg font-bold text-primary-300">
                 {expense.currency_code} {expense.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
               <span className="text-xs text-white/50">total</span>
@@ -146,7 +146,7 @@ export default function AdhocExpenseCard({
           {/* View */}
           <button
             onClick={() => onView(expense)}
-            className="p-2 rounded-full text-white/70 hover:text-purple-400 hover:bg-purple-500/10 transition-colors"
+            className="p-2 rounded-full text-white/70 hover:text-primary-400 hover:bg-primary-500/10 transition-colors"
             title="View details"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

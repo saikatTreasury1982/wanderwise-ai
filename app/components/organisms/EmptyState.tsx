@@ -12,7 +12,7 @@ export default function EmptyState({ onCreateTrip }: EmptyStateProps) {
       {/* SVG Illustration - Suitcase with Globe */}
       <div className="mb-8">
         <svg
-          className="w-48 h-48 text-purple-400/80"
+          className="w-48 h-48 text-primary-400/80"
           viewBox="0 0 200 200"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
