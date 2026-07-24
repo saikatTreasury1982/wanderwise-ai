@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import PageBackground from '@/app/components/ui/PageBackground';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import type { AlertType, AlertCategory } from '@/app/lib/types/alert';
+import { ThemePicker } from '@/app/components/ThemePicker';
+import { getTheme } from '@/app/lib/config/theme';
+import { useTheme } from '@/app/components/ThemeProvider';
+import Modal from '@/app/components/ui/Modal';
+
 
 interface UserPreferences {
   user_id: string;
@@ -38,6 +43,8 @@ export default function PreferencesPage() {
   const [alertCategories, setAlertCategories] = useState<AlertCategory[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [themeModalOpen, setThemeModalOpen] = useState(false);
+  const { theme } = useTheme();
 
   // Alert form states
   const [isAddingAlert, setIsAddingAlert] = useState(false);
@@ -661,9 +668,8 @@ export default function PreferencesPage() {
                 {paymentMethods.map(method => (
                   <div
                     key={method.payment_method_id}
-                    className={`flex flex-col gap-2 p-3 bg-white/5 rounded-lg border transition-colors ${
-                      method.is_active ? 'border-white/10 hover:bg-white/10' : 'border-red-400/30 bg-red-500/5 opacity-60'
-                    }`}
+                    className={`flex flex-col gap-2 p-3 bg-white/5 rounded-lg border transition-colors ${method.is_active ? 'border-white/10 hover:bg-white/10' : 'border-red-400/30 bg-red-500/5 opacity-60'
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-xl flex-shrink-0">{getChannelIcon(method.payment_channel)}</span>

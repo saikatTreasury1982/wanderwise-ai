@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { cn } from '@/app/lib/utils';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
 
 interface ModalProps {
   isOpen: boolean;
@@ -57,7 +58,7 @@ export default function Modal({
         ref={modalRef}
         className={cn(
           'relative z-10 w-full max-w-lg',
-          'bg-gradient-to-br from-Black-900/40 via-indigo-900/30 to-black-900/40 backdrop-blur-xl',
+          'bg-white/10 backdrop-blur-xl',
           'border border-white/20',
           'rounded-2xl shadow-2xl',
           'overflow-hidden',
@@ -67,29 +68,21 @@ export default function Modal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <h2 className="text-xl font-semibold text-white">{title}</h2>
-          <button
+          <CircleIconButton
+            variant="default"
             onClick={onClose}
-            className="p-1 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label="Close modal"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+            title="Close"
+            className="w-9 h-9 sm:w-10 sm:h-10"
+            icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            }
+          />
         </div>
 
         {/* Content */}
-        <div className="px-6 py-4">{children}</div>
+        <div className="px-6 py-4 max-h-[70vh] overflow-y-auto custom-scrollbar">{children}</div>
       </div>
     </div>
   );
