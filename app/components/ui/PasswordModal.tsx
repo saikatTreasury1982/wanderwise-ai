@@ -100,7 +100,7 @@ export default function PasswordModal({
           // Form state
           <>
             {passwordRequirements && (
-              <div className="p-3 rounded-lg bg-purple-500/20 border border-purple-500/30 text-white/90 text-sm mb-4">
+              <div className="p-3 rounded-lg bg-primary-500/20 border border-primary-500/30 text-white/90 text-sm mb-4">
                 <p className="font-semibold mb-1">Password Requirements:</p>
                 <p>{passwordRequirements}</p>
               </div>
