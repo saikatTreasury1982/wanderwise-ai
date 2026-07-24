@@ -250,10 +250,10 @@ export default function AdhocExpenseEntryForm({
           const costSharerCount = costSharers.length;
           
           return costSharerCount > 0 && (
-            <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-4">
+            <div className="bg-primary-500/10 border border-primary-400/30 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-white/70">Split Among Cost Sharers</span>
-                <span className="text-lg font-bold text-purple-300">
+                <span className="text-lg font-bold text-primary-300">
                   {currency} {(parseFloat(amount) / costSharerCount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>

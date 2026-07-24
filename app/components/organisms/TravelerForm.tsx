@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Input from '@/app/components/ui/Input';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
 
 interface Traveler {
   traveler_id: number;
@@ -317,33 +318,30 @@ export default function TravelerForm({
 
         {/* Buttons */}
         <div className="flex justify-end gap-3 pt-4">
-          {/* Clear button */}
-          <button
+          <CircleIconButton
             type="button"
+            variant="default"
             onClick={handleClear}
-            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all"
             title="Clear form"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            }
+          />
 
-          {/* Save button */}
-          <button
+          <CircleIconButton
             type="submit"
+            variant="primary"
             disabled={isLoading}
-            className="w-12 h-12 rounded-full bg-purple-500/20 backdrop-blur-sm border border-purple-400/30 flex items-center justify-center text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 hover:text-purple-200 transition-all disabled:opacity-50"
+            isLoading={isLoading}
             title={isEditMode ? 'Update traveler' : 'Add traveler'}
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
-            ) : (
+            icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-            )}
-          </button>
+            }
+          />
         </div>
       </form>
     </div>

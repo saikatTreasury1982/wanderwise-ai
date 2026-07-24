@@ -37,7 +37,7 @@ export default function FlightViewModal({
       )}
       <div className="flex items-center gap-2 sm:gap-3 mb-3">
         <span className="text-base sm:text-lg font-bold text-white">{leg.departure_airport}</span>
-        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
         </svg>
         <span className="text-base sm:text-lg font-bold text-white">{leg.arrival_airport}</span>
@@ -222,7 +222,7 @@ export default function FlightViewModal({
                       className={cn(
                         "px-2.5 py-1.5 text-sm rounded-lg",
                         t.is_cost_sharer === 1
-                          ? "bg-purple-500/20 text-purple-300 border border-purple-400/30"
+                          ? "bg-primary-500/20 text-primary-300 border border-primary-400/30"
                           : "bg-gray-500/20 text-gray-400 border border-gray-400/30"
                       )}
                     >

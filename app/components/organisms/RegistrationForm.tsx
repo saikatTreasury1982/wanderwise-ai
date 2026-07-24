@@ -267,7 +267,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       <div className="text-center pt-4 border-t border-white/20">
         <p className="text-sm text-white/90">
           Already have an account?{' '}
-          <Link href="/login" className="font-semibold text-purple-300 hover:text-purple-200 transition-colors underline">
+          <Link href="/login" className="font-semibold text-primary-300 hover:text-primary-200 transition-colors underline">
             Sign in
           </Link>
         </p>

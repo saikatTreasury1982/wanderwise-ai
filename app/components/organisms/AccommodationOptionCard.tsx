@@ -59,7 +59,7 @@ export default function AccommodationOptionCard({
               {accommodation.status.replace('_', ' ')}
             </span>
             {accommodation.type_name && (
-              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">
+              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary-500/20 text-primary-300 border border-primary-400/30">
                 {accommodation.type_name}
               </span>
             )}
@@ -97,7 +97,7 @@ export default function AccommodationOptionCard({
               </span>
             )}
             {nights && (
-              <span className="text-purple-300">
+              <span className="text-primary-300">
                 {nights} night{nights > 1 ? 's' : ''}
               </span>
             )}
@@ -113,7 +113,7 @@ export default function AccommodationOptionCard({
           {/* Price */}
           <div className="flex items-center gap-3">
             {accommodation.total_price && (
-              <div className="text-lg font-bold text-purple-300">
+              <div className="text-lg font-bold text-primary-300">
                 {accommodation.currency_code} {accommodation.total_price.toLocaleString()}
               </div>
             )}
@@ -182,7 +182,7 @@ export default function AccommodationOptionCard({
           {/* View */}
           <button
             onClick={() => onView(accommodation)}
-            className="p-2 rounded-full text-white/70 hover:text-purple-400 hover:bg-purple-500/10 transition-colors"
+            className="p-2 rounded-full text-white/70 hover:text-primary-400 hover:bg-primary-500/10 transition-colors"
             title="View details"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

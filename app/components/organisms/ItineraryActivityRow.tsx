@@ -163,19 +163,19 @@ export default function ItineraryActivityRow({
           value={editName}
           onChange={(e) => setEditName(e.target.value)}
           placeholder="Activity name"
-          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 text-sm"
+          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-primary-300 text-sm"
           autoFocus
         />
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4 text-purple-300" />
+            <Clock className="w-4 h-4 text-primary-300" />
             <input
               type="time"
               value={editStartTime}
               onChange={(e) => setEditStartTime(e.target.value)}
               className="px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
             />
-            <span className="text-purple-300">-</span>
+            <span className="text-primary-300">-</span>
             <input
               type="time"
               value={editEndTime}
@@ -226,12 +226,12 @@ export default function ItineraryActivityRow({
           value={editNotes}
           onChange={(e) => setEditNotes(e.target.value)}
           placeholder="Notes (optional)"
-          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 text-sm"
+          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-primary-300 text-sm"
         />
         <div className="flex justify-end gap-2">
           <button
             onClick={() => setIsEditing(false)}
-            className="p-1.5 rounded hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+            className="p-1.5 rounded hover:bg-white/10 text-primary-300 hover:text-white transition-colors"
             title="Cancel"
           >
             <X className="w-4 h-4" />
@@ -239,11 +239,11 @@ export default function ItineraryActivityRow({
           <button
             onClick={handleSave}
             disabled={!editName.trim() || isSaving}
-            className="p-1.5 rounded hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+            className="p-1.5 rounded hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
             title={isSaving ? 'Saving...' : 'Save'}
           >
             {isSaving ? (
-              <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
             ) : (
               <Check className="w-4 h-4" />
             )}
@@ -265,7 +265,7 @@ export default function ItineraryActivityRow({
         {...listeners}
         className="p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing touch-none"
       >
-        <GripVertical className="w-4 h-4 text-purple-300" />
+        <GripVertical className="w-4 h-4 text-primary-300" />
       </button>
 
       {/* Checkbox */}
@@ -276,7 +276,7 @@ export default function ItineraryActivityRow({
         title={isToggling ? 'Processing...' : (activity.is_completed ? 'Mark incomplete' : 'Mark complete')}
       >
         {isToggling ? (
-          <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
         ) : activity.is_completed ? (
           <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -289,30 +289,30 @@ export default function ItineraryActivityRow({
       </button>
 
       {/* Activity Name */}
-      <div className={`flex-1 ${activity.is_completed ? 'text-purple-400' : 'text-white'}`}>
+      <div className={`flex-1 ${activity.is_completed ? 'text-primary-400' : 'text-white'}`}>
         {activity.activity_name}
         {activity.notes && (
-          <span className="ml-2 text-xs text-purple-400">({activity.notes})</span>
+          <span className="ml-2 text-xs text-primary-400">({activity.notes})</span>
         )}
       </div>
 
       {/* Time Range */}
       {activity.start_time && (
-        <div className="flex items-center gap-1 text-sm text-purple-300">
+        <div className="flex items-center gap-1 text-sm text-primary-300">
           <Clock className="w-3 h-3" />
           <span>
             {activity.start_time}
             {activity.end_time && `-${activity.end_time}`}
           </span>
           {activity.duration_minutes && (
-            <span className="text-purple-400">({formatDuration(activity.duration_minutes)})</span>
+            <span className="text-primary-400">({formatDuration(activity.duration_minutes)})</span>
           )}
         </div>
       )}
 
       {/* Cost */}
       {!disableCost && activity.activity_cost !== null && activity.currency_code && (
-        <div className="text-sm text-purple-200">
+        <div className="text-sm text-primary-200">
           {activity.cost_type === 'per_head' && activity.headcount ? (
             <>
               {activity.currency_code} {activity.activity_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {activity.headcount} = {activity.currency_code} {(activity.activity_cost * activity.headcount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -329,25 +329,25 @@ export default function ItineraryActivityRow({
       <div className="flex items-center gap-1">
         <button
           onClick={() => setShowLinksModal(true)}
-          className="p-1 rounded hover:bg-white/10 text-purple-300 hover:text-white relative"
+          className="p-1 rounded hover:bg-white/10 text-primary-300 hover:text-white relative"
           title="Manage links"
         >
           <LinkIcon className="w-3 h-3" />
           {linkCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 text-white text-[8px] rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary-500 text-white text-[8px] rounded-full flex items-center justify-center">
               {linkCount}
             </span>
           )}
         </button>
         <button
           onClick={() => setIsEditing(true)}
-          className="p-1 rounded hover:bg-white/10 text-purple-300 hover:text-white"
+          className="p-1 rounded hover:bg-white/10 text-primary-300 hover:text-white"
         >
           <Edit2 className="w-3 h-3" />
         </button>
         <button
           onClick={handleDelete}
-          className="p-1 rounded hover:bg-red-500/20 text-purple-300 hover:text-red-300"
+          className="p-1 rounded hover:bg-red-500/20 text-primary-300 hover:text-red-300"
         >
           <Trash2 className="w-3 h-3" />
         </button>

@@ -55,7 +55,7 @@ export default function TravelerCard({
               {traveler.traveler_name}
             </h3>
             {traveler.is_primary === 1 && (
-              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">
+              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary-500/20 text-primary-300 border border-primary-400/30">
                 Primary
               </span>
             )}
