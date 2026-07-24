@@ -1,30 +1,224 @@
 @import "tailwindcss";
 
-@theme {
-  /* Color Palette */
-/*
-  --color-primary-50: #F3E8FF;
-  --color-primary-100: #E9D5FF;
-  --color-primary-200: #D8B4FE;
-  --color-primary-300: #C084FC;
-  --color-primary-400: #A855F7;
-  --color-primary-500: #9333EA;
-  --color-primary-600: #7E22CE;
-  --color-primary-700: #6B21A8;
-  --color-primary-800: #581C87;
-  --color-primary-900: #3B0764;
-*/
+/* ============================================================
+   THEME TOKENS
+   Every theme supplies the same variable set.
+   Switch by setting data-theme on <html>.
+   ============================================================ */
 
-  --color-primary-50: #FAF5FF;
-  --color-primary-100: #F3E8FF;
-  --color-primary-200: #E9D5FF;
-  --color-primary-300: #D8B4FE;
-  --color-primary-400: #C084FC;
-  --color-primary-500: #A855F7;
-  --color-primary-600: #9333EA;
-  --color-primary-700: #7E22CE;
-  --color-primary-800: #6B21A8;
-  --color-primary-900: #581C87;
+/* ---------- Aurora Dreams (default — matches current design) ---------- */
+:root,
+:root[data-theme="aurora-dreams"] {
+  --p50:  #FAF5FF;
+  --p100: #F3E8FF;
+  --p200: #E9D5FF;
+  --p300: #D8B4FE;
+  --p400: #C084FC;
+  --p500: #A855F7;
+  --p600: #9333EA;
+  --p700: #7E22CE;
+  --p800: #6B21A8;
+  --p900: #581C87;
+
+  --page-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 100%);
+
+  --glass-bg:           rgba(255, 255, 255, 0.15);
+  --glass-border:       rgba(255, 255, 255, 0.25);
+  --glass-inset:        rgba(255, 255, 255, 0.20);
+  --glass-card-bg:      rgba(255, 255, 255, 0.10);
+  --glass-card-border:  rgba(255, 255, 255, 0.20);
+  --glass-card-inset:   rgba(255, 255, 255, 0.25);
+  --glass-shadow:       rgba(0, 0, 0, 0.30);
+  --glass-shadow-hover: rgba(0, 0, 0, 0.50);
+  --glass-inset-hover:  rgba(255, 255, 255, 0.40);
+  --glass-border-hover: rgba(255, 255, 255, 0.50);
+
+  --orb-1: rgba(168, 85, 247, 0.20);
+  --orb-2: rgba(59, 130, 246, 0.20);
+  --orb-3: rgba(99, 102, 241, 0.10);
+
+  --text-primary:   #F0EEFC;
+  --text-secondary: #C3BDDE;
+  --text-muted:     #8B85AB;
+
+  --scrollbar-thumb:       rgba(168, 85, 247, 0.40);
+  --scrollbar-thumb-hover: rgba(168, 85, 247, 0.60);
+  --scrollbar-track:       rgba(255, 255, 255, 0.05);
+}
+
+/* ---------- Midnight Ocean ---------- */
+:root[data-theme="midnight-ocean"] {
+  --p50:  #ECFDF9;
+  --p100: #D0F7EC;
+  --p200: #9FE1CB;
+  --p300: #6FD4B4;
+  --p400: #3FC49C;
+  --p500: #1D9E75;
+  --p600: #148561;
+  --p700: #0F6E56;
+  --p800: #0A5342;
+  --p900: #06382D;
+
+  --page-gradient: linear-gradient(135deg, #0B1B2B 0%, #0D2436 25%, #103449 50%, #12545B 100%);
+
+  --glass-bg:           rgba(255, 255, 255, 0.13);
+  --glass-border:       rgba(180, 240, 225, 0.24);
+  --glass-inset:        rgba(255, 255, 255, 0.18);
+  --glass-card-bg:      rgba(255, 255, 255, 0.09);
+  --glass-card-border:  rgba(180, 240, 225, 0.20);
+  --glass-card-inset:   rgba(255, 255, 255, 0.22);
+  --glass-shadow:       rgba(0, 0, 0, 0.34);
+  --glass-shadow-hover: rgba(0, 0, 0, 0.52);
+  --glass-inset-hover:  rgba(255, 255, 255, 0.38);
+  --glass-border-hover: rgba(180, 240, 225, 0.48);
+
+  --orb-1: rgba(29, 158, 117, 0.20);
+  --orb-2: rgba(56, 189, 248, 0.18);
+  --orb-3: rgba(20, 133, 97, 0.10);
+
+  --text-primary:   #EAF6F3;
+  --text-secondary: #B4D5CD;
+  --text-muted:     #7B9E98;
+
+  --scrollbar-thumb:       rgba(29, 158, 117, 0.45);
+  --scrollbar-thumb-hover: rgba(29, 158, 117, 0.65);
+  --scrollbar-track:       rgba(255, 255, 255, 0.05);
+}
+
+/* ---------- Warm Sunset ---------- */
+:root[data-theme="warm-sunset"] {
+  --p50:  #FEF3E9;
+  --p100: #FBE0C8;
+  --p200: #F7C49B;
+  --p300: #F2A46E;
+  --p400: #E9834A;
+  --p500: #D85A30;
+  --p600: #B84623;
+  --p700: #993C1D;
+  --p800: #712B13;
+  --p900: #4A1B0C;
+
+  --page-gradient: linear-gradient(135deg, #241A22 0%, #33202C 25%, #4A2733 50%, #7A3A34 100%);
+
+  --glass-bg:           rgba(255, 250, 245, 0.14);
+  --glass-border:       rgba(255, 225, 205, 0.24);
+  --glass-inset:        rgba(255, 245, 235, 0.20);
+  --glass-card-bg:      rgba(255, 250, 245, 0.10);
+  --glass-card-border:  rgba(255, 225, 205, 0.20);
+  --glass-card-inset:   rgba(255, 245, 235, 0.24);
+  --glass-shadow:       rgba(0, 0, 0, 0.36);
+  --glass-shadow-hover: rgba(0, 0, 0, 0.54);
+  --glass-inset-hover:  rgba(255, 245, 235, 0.40);
+  --glass-border-hover: rgba(255, 225, 205, 0.48);
+
+  --orb-1: rgba(216, 90, 48, 0.20);
+  --orb-2: rgba(190, 60, 100, 0.18);
+  --orb-3: rgba(234, 130, 60, 0.10);
+
+  --text-primary:   #F9EFE9;
+  --text-secondary: #DEC3B8;
+  --text-muted:     #A8887D;
+
+  --scrollbar-thumb:       rgba(216, 90, 48, 0.45);
+  --scrollbar-thumb-hover: rgba(216, 90, 48, 0.65);
+  --scrollbar-track:       rgba(255, 255, 255, 0.05);
+}
+
+/* ---------- Forest Expedition ---------- */
+:root[data-theme="forest-expedition"] {
+  --p50:  #FBF3E0;
+  --p100: #F7E3B4;
+  --p200: #F0CD80;
+  --p300: #E5B554;
+  --p400: #D19A2E;
+  --p500: #B07C18;
+  --p600: #8F6212;
+  --p700: #6F4B0D;
+  --p800: #503509;
+  --p900: #332105;
+
+  --page-gradient: linear-gradient(135deg, #12211C 0%, #16291F 25%, #1D3A28 50%, #2E5136 100%);
+
+  --glass-bg:           rgba(250, 255, 248, 0.13);
+  --glass-border:       rgba(215, 240, 205, 0.24);
+  --glass-inset:        rgba(250, 255, 248, 0.19);
+  --glass-card-bg:      rgba(250, 255, 248, 0.09);
+  --glass-card-border:  rgba(215, 240, 205, 0.19);
+  --glass-card-inset:   rgba(250, 255, 248, 0.23);
+  --glass-shadow:       rgba(0, 0, 0, 0.35);
+  --glass-shadow-hover: rgba(0, 0, 0, 0.53);
+  --glass-inset-hover:  rgba(250, 255, 248, 0.38);
+  --glass-border-hover: rgba(215, 240, 205, 0.46);
+
+  --orb-1: rgba(176, 124, 24, 0.18);
+  --orb-2: rgba(99, 153, 34, 0.20);
+  --orb-3: rgba(46, 81, 54, 0.14);
+
+  --text-primary:   #EEF5EA;
+  --text-secondary: #C3D6BC;
+  --text-muted:     #8AA187;
+
+  --scrollbar-thumb:       rgba(176, 124, 24, 0.45);
+  --scrollbar-thumb-hover: rgba(176, 124, 24, 0.65);
+  --scrollbar-track:       rgba(255, 255, 255, 0.05);
+}
+
+/* ---------- Coastal Depths ---------- */
+:root[data-theme="coastal-depths"] {
+  --p50:  #EFF7F6;
+  --p100: #D3EBE7;
+  --p200: #A9D8D2;
+  --p300: #7BC0BA;
+  --p400: #4EA5A0;
+  --p500: #2E8783;
+  --p600: #226C6A;
+  --p700: #1A5453;
+  --p800: #123B3B;
+  --p900: #0B2626;
+
+  --page-gradient: linear-gradient(135deg, #17262B 0%, #1D3339 25%, #2A4348 50%, #4A5A50 100%);
+
+  --glass-bg:           rgba(255, 253, 248, 0.14);
+  --glass-border:       rgba(235, 228, 210, 0.24);
+  --glass-inset:        rgba(255, 253, 248, 0.20);
+  --glass-card-bg:      rgba(255, 253, 248, 0.10);
+  --glass-card-border:  rgba(235, 228, 210, 0.20);
+  --glass-card-inset:   rgba(255, 253, 248, 0.24);
+  --glass-shadow:       rgba(0, 0, 0, 0.32);
+  --glass-shadow-hover: rgba(0, 0, 0, 0.50);
+  --glass-inset-hover:  rgba(255, 253, 248, 0.38);
+  --glass-border-hover: rgba(235, 228, 210, 0.46);
+
+  --orb-1: rgba(46, 135, 131, 0.20);
+  --orb-2: rgba(125, 155, 145, 0.18);
+  --orb-3: rgba(78, 165, 160, 0.10);
+
+  --text-primary:   #F2F4EF;
+  --text-secondary: #C5CFC5;
+  --text-muted:     #8B9791;
+
+  --scrollbar-thumb:       rgba(46, 135, 131, 0.45);
+  --scrollbar-thumb-hover: rgba(46, 135, 131, 0.65);
+  --scrollbar-track:       rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================================
+   TAILWIND THEME
+   Primary ramp points at theme variables so every existing
+   bg-primary-500 / text-primary-400 utility shifts per theme.
+   ============================================================ */
+
+@theme {
+  --color-primary-50:  var(--p50);
+  --color-primary-100: var(--p100);
+  --color-primary-200: var(--p200);
+  --color-primary-300: var(--p300);
+  --color-primary-400: var(--p400);
+  --color-primary-500: var(--p500);
+  --color-primary-600: var(--p600);
+  --color-primary-700: var(--p700);
+  --color-primary-800: var(--p800);
+  --color-primary-900: var(--p900);
 
   --color-neutral-50: #FAFBFC;
   --color-neutral-100: #F1F5F9;
@@ -49,6 +243,10 @@
   --color-error-main: #EF4444;
   --color-error-dark: #DC2626;
 
+  --color-content-primary: var(--text-primary);
+  --color-content-secondary: var(--text-secondary);
+  --color-content-muted: var(--text-muted);
+
   --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
 }
 
@@ -72,10 +270,11 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* Base Styles - DARKER BACKGROUND */
+/* Base Styles */
 body {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 100%);
-  color: #1E293B;
+  background: var(--page-gradient);
+  background-attachment: fixed;
+  color: var(--text-primary);
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -86,25 +285,25 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Glassmorphism Effects - Enhanced for dark background */
+/* Glassmorphism Effects */
 .glass {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: var(--glass-bg) !important;
   backdrop-filter: blur(25px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 
-    0 8px 32px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow:
+    0 8px 32px 0 var(--glass-shadow),
+    inset 0 1px 0 0 var(--glass-inset) !important;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.10) !important;
+  background: var(--glass-card-bg) !important;
   backdrop-filter: blur(25px) saturate(100%) !important;
   -webkit-backdrop-filter: blur(25px) saturate(100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.20) !important;
-  box-shadow: 
-    0 12px 20px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid var(--glass-card-border) !important;
+  box-shadow:
+    0 12px 20px 0 var(--glass-shadow),
+    inset 0 1px 0 0 var(--glass-card-inset) !important;
 }
 
 .glass-hover {
@@ -113,11 +312,16 @@ html {
 
 .glass-hover:hover {
   transform: translateY(-4px) !important;
-  box-shadow: 
-    0 20px 60px 0 rgba(0, 0, 0, 0.5),
-    inset 0 2px 0 0 rgba(255, 255, 255, 0.4) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow:
+    0 20px 60px 0 var(--glass-shadow-hover),
+    inset 0 2px 0 0 var(--glass-inset-hover) !important;
+  border-color: var(--glass-border-hover) !important;
 }
+
+/* Text helpers — use these to replace hardcoded text colours */
+.text-content       { color: var(--text-primary); }
+.text-content-soft  { color: var(--text-secondary); }
+.text-content-muted { color: var(--text-muted); }
 
 /* Animation Classes */
 .animate-fade-in {
@@ -138,18 +342,17 @@ html {
 
 /* Custom scrollbar for flight modal */
 .flight-modal-scroll {
-  scrollbar-width: none; /* Firefox - hide on mobile */
+  scrollbar-width: none;
 }
 
 .flight-modal-scroll::-webkit-scrollbar {
-  display: none; /* Chrome/Safari - hide on mobile */
+  display: none;
 }
 
-/* Show styled scrollbar on desktop */
 @media (min-width: 640px) {
   .flight-modal-scroll {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-color: var(--glass-border) transparent;
   }
 
   .flight-modal-scroll::-webkit-scrollbar {
@@ -162,12 +365,12 @@ html {
   }
 
   .flight-modal-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--glass-border);
     border-radius: 10px;
   }
 
   .flight-modal-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--glass-border-hover);
   }
 }
 
@@ -177,20 +380,20 @@ html {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--scrollbar-track);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.4);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.6);
+  background: var(--scrollbar-thumb-hover);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(168, 85, 247, 0.4) rgba(255, 255, 255, 0.05);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
