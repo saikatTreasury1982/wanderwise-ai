@@ -9,6 +9,7 @@ import { ThemePicker } from '@/app/components/ThemePicker';
 import { getTheme } from '@/app/lib/config/theme';
 import { useTheme } from '@/app/components/ThemeProvider';
 import Modal from '@/app/components/ui/Modal';
+import SettingsRow from '@/app/components/ui/SettingsRow';
 
 
 interface UserPreferences {
@@ -322,7 +323,7 @@ export default function PreferencesPage() {
       <div className="min-h-screen relative flex items-center justify-center">
         <PageBackground />
         <div className="relative z-10">
-          <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-primary-400 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -362,36 +363,30 @@ export default function PreferencesPage() {
 
             {preferences ? (
               <div className="space-y-3 sm:space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/70 text-sm sm:text-base">Date Format</span>
-                  <span className="text-white font-medium text-sm sm:text-base">{preferences.date_format}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/70 text-sm sm:text-base">Time Format</span>
-                  <span className="text-white font-medium text-sm sm:text-base">{preferences.time_format}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/70 text-sm sm:text-base">Decimal Places</span>
-                  <span className="text-white font-medium text-sm sm:text-base">{preferences.decimal_places}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/70 text-sm sm:text-base">Theme</span>
-                  <span className="text-white font-medium capitalize text-sm sm:text-base">{preferences.theme}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/70 text-sm sm:text-base">First Day of Week</span>
-                  <span className="text-white font-medium capitalize text-sm sm:text-base">{preferences.first_day_of_week}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/70 text-sm sm:text-base">Measurement System</span>
-                  <span className="text-white font-medium capitalize text-sm sm:text-base">{preferences.measurement_system}</span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-white/70 text-sm sm:text-base">Notifications</span>
-                  <span className={`font-medium text-sm sm:text-base ${preferences.notifications_enabled ? 'text-green-400' : 'text-red-400'}`}>
-                    {preferences.notifications_enabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
+                <SettingsRow label="Date Format" value={preferences.date_format} />
+                <SettingsRow label="Time Format" value={preferences.time_format} />
+                <SettingsRow label="Decimal Places" value={preferences.decimal_places} />
+                <SettingsRow
+                  label="Theme"
+                  value={getTheme(theme).label}
+                  onClick={() => setThemeModalOpen(true)}
+                />
+                <SettingsRow
+                  label="First Day of Week"
+                  value={preferences.first_day_of_week}
+                  valueClassName="capitalize"
+                />
+                <SettingsRow
+                  label="Measurement System"
+                  value={preferences.measurement_system}
+                  valueClassName="capitalize"
+                />
+                <SettingsRow
+                  label="Notifications"
+                  value={preferences.notifications_enabled ? 'Enabled' : 'Disabled'}
+                  valueClassName={preferences.notifications_enabled ? 'text-green-400' : 'text-red-400'}
+                  showDivider={false}
+                />
               </div>
             ) : (
               <p className="text-white/50 text-center py-4 text-sm">No preferences found</p>
@@ -718,6 +713,15 @@ export default function PreferencesPage() {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={themeModalOpen}
+        onClose={() => setThemeModalOpen(false)}
+        title="Choose theme"
+        className="max-w-md"
+      >
+        <ThemePicker />
+      </Modal>
     </div>
   );
 }
