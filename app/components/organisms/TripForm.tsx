@@ -325,7 +325,7 @@ export default function TripForm({
     return (
       <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-md">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-16 h-16 border-4 border-primary-400 border-t-transparent rounded-full animate-spin" />
           <p className="text-white/90 text-sm">Loading trip data...</p>
         </div>
       </div>
@@ -368,7 +368,7 @@ export default function TripForm({
             onChange={handleChange}
             rows={3}
             disabled={isReadOnly}
-            className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent resize-none ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent resize-none ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
         </div>
 
@@ -410,12 +410,12 @@ export default function TripForm({
           {(isDraft || isActive) && (
             <button
               type="submit"
-              className="w-12 h-12 rounded-full bg-purple-500/20 backdrop-blur-sm border border-purple-400/30 flex items-center justify-center text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 hover:text-purple-200 transition-all disabled:opacity-50"
+              className="w-12 h-12 rounded-full bg-primary-500/20 backdrop-blur-sm border border-primary-400/30 flex items-center justify-center text-primary-300 hover:bg-primary-500/30 hover:border-primary-400/50 hover:text-primary-200 transition-all disabled:opacity-50"
               title={isEditMode ? 'Save changes' : 'Save as draft'}
               disabled={isLoading}
             >
               {isLoading ? (
-                <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
               ) : (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -550,7 +550,7 @@ export default function TripForm({
                 <button
                   onClick={() => handleResumePlanning(true)}
                   disabled={isLoading}
-                  className="group w-12 h-12 rounded-full bg-purple-500/20 backdrop-blur-sm border border-purple-400/30 flex items-center justify-center text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 hover:text-purple-200 transition-all disabled:opacity-50 relative"
+                  className="group w-12 h-12 rounded-full bg-primary-500/20 backdrop-blur-sm border border-primary-400/30 flex items-center justify-center text-primary-300 hover:bg-primary-500/30 hover:border-primary-400/50 hover:text-primary-200 transition-all disabled:opacity-50 relative"
                   title="Update Dates"
                 >
                   <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">

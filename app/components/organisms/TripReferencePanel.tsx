@@ -109,14 +109,14 @@ export default function TripReferencePanel({
               className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <Plane className="w-5 h-5 text-purple-300" />
+                <Plane className="w-5 h-5 text-primary-300" />
                 <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Flights</h3>
                 <span className="text-xs text-white/50">({relevantFlights.length})</span>
               </div>
               {flightsCollapsed ? (
-                <ChevronRight className="w-4 h-4 text-purple-300" />
+                <ChevronRight className="w-4 h-4 text-primary-300" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-purple-300" />
+                <ChevronDown className="w-4 h-4 text-primary-300" />
               )}
             </button>
             
@@ -209,14 +209,14 @@ export default function TripReferencePanel({
               className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-purple-300" />
+                <Building2 className="w-5 h-5 text-primary-300" />
                 <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Lodging</h3>
                 <span className="text-xs text-white/50">({relevantAccommodations.length})</span>
               </div>
               {accommodationsCollapsed ? (
-                <ChevronRight className="w-4 h-4 text-purple-300" />
+                <ChevronRight className="w-4 h-4 text-primary-300" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-purple-300" />
+                <ChevronDown className="w-4 h-4 text-primary-300" />
               )}
             </button>
             
@@ -240,7 +240,7 @@ export default function TripReferencePanel({
                           {accommodation.status}
                         </span>
                         {accommodation.type_name && (
-                          <span className="text-xs text-purple-300">{accommodation.type_name}</span>
+                          <span className="text-xs text-primary-300">{accommodation.type_name}</span>
                         )}
                       </div>
 
@@ -258,7 +258,7 @@ export default function TripReferencePanel({
                       <div className="flex items-center gap-2 text-sm text-white/70">
                         <span>📅 {formatDateRange(accommodation.check_in_date, accommodation.check_out_date, dateFormat)}</span>
                         {nights && (
-                          <span className="text-purple-300">({nights}N)</span>
+                          <span className="text-primary-300">({nights}N)</span>
                         )}
                       </div>
 

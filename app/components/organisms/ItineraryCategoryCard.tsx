@@ -350,7 +350,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
           title={isTogglingActive ? 'Processing...' : (isActive ? 'Mark as inactive' : 'Mark as active')}
         >
           {isTogglingActive ? (
-            <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
           ) : isActive ? (
             <Eye className="w-5 h-5 text-green-400" />
           ) : (
@@ -365,7 +365,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
           className="p-1 rounded hover:bg-white/10 transition-colors cursor-grab active:cursor-grabbing touch-none"
           title="Drag to reorder"
         >
-          <GripVertical className="w-5 h-5 text-purple-300" />
+          <GripVertical className="w-5 h-5 text-primary-300" />
         </button>
 
         <button
@@ -373,9 +373,9 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
           className="p-1 rounded hover:bg-white/10 transition-colors"
         >
           {isExpanded ? (
-            <ChevronDown className="w-5 h-5 text-purple-300" />
+            <ChevronDown className="w-5 h-5 text-primary-300" />
           ) : (
-            <ChevronRight className="w-5 h-5 text-purple-300" />
+            <ChevronRight className="w-5 h-5 text-primary-300" />
           )}
         </button>
 
@@ -424,18 +424,18 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
             <button 
               onClick={handleSaveEdit}
               disabled={isSaving}
-              className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+              className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
               title={isSaving ? 'Saving...' : 'Save'}
             >
               {isSaving ? (
-                <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
               ) : (
                 <Check className="w-4 h-4" />
               )}
             </button>
             <button 
               onClick={() => setIsEditing(false)}
-              className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+              className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors"
               title="Cancel"
             >
               <X className="w-4 h-4" />
@@ -454,7 +454,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                   </span>
                 )}
                 {totalCount > 0 && (
-                  <span className="text-xs text-purple-300">
+                  <span className="text-xs text-primary-300">
                     ({completedCount}/{totalCount})
                   </span>
                 )}
@@ -464,14 +464,14 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
             {/* Category Totals - Only show for active categories */}
             {isActive && categoryTotals.length > 0 && (
               <div className="flex items-center gap-1 text-sm">
-                <DollarSign className="w-3 h-3 text-purple-300" />
+                <DollarSign className="w-3 h-3 text-primary-300" />
                 {category.category_cost !== null && category.cost_type === 'per_head' && category.headcount ? (
-                  <span className="text-purple-200">
+                  <span className="text-primary-200">
                     {category.currency_code} {category.category_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {category.headcount} = {category.currency_code} {(category.category_cost * category.headcount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 ) : (
                   categoryTotals.map(({ currency_code, total }, idx) => (
-                    <span key={currency_code} className="text-purple-200">
+                    <span key={currency_code} className="text-primary-200">
                       {idx > 0 && ' + '}
                       {currency_code} {total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
@@ -484,14 +484,14 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsAddingActivity(true)}
-                className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+                className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors"
                 title="Add activity"
               >
                 <Plus className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setIsBulkAdding(true)}
-                className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+                className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors"
                 title="Bulk add"
               >
                 <List className="w-4 h-4" />
@@ -500,13 +500,13 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                 onClick={handleCopy}
                 disabled={isCopying}
                 className={`p-1.5 rounded-full transition-colors ${isCopying
-                    ? 'bg-purple-500/30 text-purple-200 cursor-wait'
-                    : 'hover:bg-white/10 text-purple-300 hover:text-white'
+                    ? 'bg-primary-500/30 text-primary-200 cursor-wait'
+                    : 'hover:bg-white/10 text-primary-300 hover:text-white'
                   }`}
                 title={isCopying ? 'Copying...' : 'Copy category'}
               >
                 {isCopying ? (
-                  <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Copy className="w-4 h-4" />
                 )}
@@ -514,7 +514,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               <button
                 onClick={() => setIsEditing(true)}
                 disabled={isSaving || isDeleting}
-                className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
                 title="Edit category"
               >
                 <Edit2 className="w-4 h-4" />
@@ -522,11 +522,11 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               <button
                 onClick={handleDelete}
                 disabled={isDeleting || isSaving}
-                className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
                 title={isDeleting ? 'Deleting...' : 'Delete category'}
               >
                 {isDeleting ? (
-                  <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Trash2 className="w-4 h-4" />
                 )}
@@ -546,7 +546,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                 value={bulkActivities}
                 onChange={(e) => setBulkActivities(e.target.value)}
                 placeholder="Enter activities, one per line..."
-                className="w-full h-32 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 text-sm resize-none"
+                className="w-full h-32 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-primary-300 text-sm resize-none"
                 autoFocus
               />
               <div className="flex justify-end gap-2 mt-2">
@@ -555,7 +555,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                     setIsBulkAdding(false);
                     setBulkActivities('');
                   }}
-                  className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"
+                  className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors"
                   title="Cancel"
                 >
                   <X className="w-4 h-4" />
@@ -563,11 +563,11 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                 <button
                   onClick={handleBulkAdd}
                   disabled={!bulkActivities.trim() || isAddingBulk}
-                  className="p-1.5 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                  className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
                   title={isAddingBulk ? 'Adding...' : 'Add All'}
                 >
                   {isAddingBulk ? (
-                    <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Check className="w-4 h-4" />
                   )}
@@ -605,7 +605,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               </SortableContext>
             </DndContext>
           ) : !isBulkAdding && !isAddingActivity && (
-            <div className="px-4 py-6 text-center text-sm text-purple-300">
+            <div className="px-4 py-6 text-center text-sm text-primary-300">
               No activities yet
             </div>
           )}
@@ -618,7 +618,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                 value={newActivityName}
                 onChange={(e) => setNewActivityName(e.target.value)}
                 placeholder="Activity name..."
-                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 text-sm"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-primary-300 text-sm"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleAddActivity();
@@ -631,11 +631,11 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
               <button
                 onClick={handleAddActivity}
                 disabled={!newActivityName.trim() || isAddingActivity}
-                className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+                className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
                 title={isAddingActivity ? 'Adding...' : 'Add'}
               >
                 {isAddingActivity ? (
-                  <div className="w-4 h-4 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Check className="w-4 h-4" />
                 )}
@@ -645,7 +645,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                   setIsAddingActivity(false);
                   setNewActivityName('');
                 }}
-                className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors"title="Cancel"
+                className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors"title="Cancel"
               >
                 <X className="w-4 h-4" />
               </button>

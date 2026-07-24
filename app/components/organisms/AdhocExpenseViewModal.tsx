@@ -93,7 +93,7 @@ export default function AdhocExpenseViewModal({
                 {expense.is_active === 1 ? 'Active' : 'Inactive'}
               </span>
               {expense.category && (
-                <span className="px-2.5 py-1 text-sm font-medium rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                <span className="px-2.5 py-1 text-sm font-medium rounded-full bg-primary-500/20 text-primary-300 border border-primary-400/30">
                   {expense.category}
                 </span>
               )}
@@ -153,7 +153,7 @@ export default function AdhocExpenseViewModal({
                       key={t.traveler_id}
                       className={`px-2.5 py-1.5 text-sm rounded-lg ${
                         t.is_cost_sharer === 1
-                          ? 'bg-purple-500/20 text-purple-300 border border-purple-400/30'
+                          ? 'bg-primary-500/20 text-primary-300 border border-primary-400/30'
                           : 'bg-gray-500/20 text-gray-400 border border-gray-400/30'
                       }`}
                     >

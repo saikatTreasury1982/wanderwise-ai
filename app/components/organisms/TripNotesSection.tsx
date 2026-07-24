@@ -155,7 +155,7 @@ export default function TripNotesSection({ tripId }: TripNotesSectionProps) {
     return (
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6">
         <div className="flex justify-center">
-          <div className="w-8 h-8 border-3 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-3 border-primary-400 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -189,7 +189,7 @@ export default function TripNotesSection({ tripId }: TripNotesSectionProps) {
               <select
                 value={newNoteType}
                 onChange={e => setNewNoteType(e.target.value)}
-                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary-400"
               >
                 {noteTypes.map(type => (
                   <option key={type.type_name} value={type.type_name} className="bg-gray-800">
@@ -205,7 +205,7 @@ export default function TripNotesSection({ tripId }: TripNotesSectionProps) {
                     onChange={e => setNewNoteContent(e.target.value)}
                     placeholder="Enter notes...&#10;Each line becomes a bullet point"
                     rows={4}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400 resize-none"
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400 resize-none"
                 />
             </div>
             <div className="flex justify-end gap-2">
@@ -271,7 +271,7 @@ export default function TripNotesSection({ tripId }: TripNotesSectionProps) {
                             <textarea
                             value={editContent}
                             onChange={e => setEditContent(e.target.value)}
-                            className="w-full px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm focus:outline-none focus:border-purple-400 resize-none"
+                            className="w-full px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm focus:outline-none focus:border-primary-400 resize-none"
                             rows={3}
                             autoFocus
                             onKeyDown={e => {
@@ -306,7 +306,7 @@ export default function TripNotesSection({ tripId }: TripNotesSectionProps) {
                                 {note.content.split('\n').map((line, idx) => (
                                 line.trim() && (
                                     <div key={idx} className="flex items-start gap-2">
-                                    <span className="text-purple-400 mt-0.5">•</span>
+                                    <span className="text-primary-400 mt-0.5">•</span>
                                     <span>{line.trim()}</span>
                                     </div>
                                 )

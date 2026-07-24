@@ -197,13 +197,13 @@ export default function DestinationSelector({
         {destinations.map((dest, index) => (
           <div
             key={index}
-            className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 rounded-full border border-purple-400/30"
+            className="flex items-center gap-2 px-3 py-1.5 bg-primary-500/20 rounded-full border border-primary-400/30"
           >
-            <MapPin className="w-3.5 h-3.5 text-purple-300" />
+            <MapPin className="w-3.5 h-3.5 text-primary-300" />
             <span className="text-sm text-white/90">
               {dest.city ? `${dest.city}, ${dest.country}` : dest.country}
               {dest.country_code && (
-                <span className="ml-1.5 text-xs text-purple-300">({dest.country_code})</span>
+                <span className="ml-1.5 text-xs text-primary-300">({dest.country_code})</span>
               )}
             </span>
             {!readOnly && (
@@ -246,7 +246,7 @@ export default function DestinationSelector({
                   setLookupError('');
                   setCountryCode(''); // Reset code when user types
                 }}
-                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
                 autoFocus
                 disabled={isLookingUp}
               />
@@ -261,11 +261,11 @@ export default function DestinationSelector({
               type="button"
               onClick={handleCountryLookup}
               disabled={isLookingUp || !country.trim()}
-              className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-0.5"
+              className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-0.5"
               title={isLookingUp ? 'Looking up...' : 'Lookup country code'}
             >
               {isLookingUp ? (
-                <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
               ) : (
                 <Search className="w-5 h-5" />
               )}
@@ -277,7 +277,7 @@ export default function DestinationSelector({
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 disabled={!countryCode}
-                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -295,7 +295,7 @@ export default function DestinationSelector({
               type="button"
               onClick={handleCancelAdd}
               disabled={isSaving}
-              className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50"
+              className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
               title="Cancel"
             >
               <X className="w-5 h-5" />
@@ -304,11 +304,11 @@ export default function DestinationSelector({
               type="button"
               onClick={handleAdd}
               disabled={!countryCode || isSaving}
-              className="p-2 rounded-full hover:bg-white/10 text-purple-300 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title={isSaving ? 'Adding...' : 'Add destination'}
             >
               {isSaving ? (
-                <div className="w-5 h-5 border-2 border-purple-300 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
               ) : (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

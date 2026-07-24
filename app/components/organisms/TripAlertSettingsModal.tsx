@@ -118,7 +118,7 @@ export default function TripAlertSettingsModal({
         <div className="p-4">
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <div className="w-8 h-8 border-3 border-purple-400 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-3 border-primary-400 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : alertTypes.length === 0 ? (
             <div className="text-center py-8">
@@ -150,7 +150,7 @@ export default function TripAlertSettingsModal({
                       max="365"
                       value={localSettings[alertType.alert_code] ?? 0}
                       onChange={e => handleDaysChange(alertType.alert_code, parseInt(e.target.value) || 0)}
-                      className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded-lg text-white text-sm text-center focus:outline-none focus:border-purple-400"
+                      className="w-16 px-2 py-1 bg-white/10 border border-white/20 rounded-lg text-white text-sm text-center focus:outline-none focus:border-primary-400"
                     />
                     <span className="text-white/50 text-sm">days</span>
                   </div>

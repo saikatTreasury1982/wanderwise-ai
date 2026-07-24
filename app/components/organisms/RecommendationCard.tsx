@@ -50,7 +50,7 @@ export default function RecommendationCard({
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="text-purple-300 mt-0.5 flex-shrink-0">
+          <div className="text-primary-300 mt-0.5 flex-shrink-0">
             {typeIcons[type]}
           </div>
           <div className="flex-1 min-w-0">
@@ -83,10 +83,10 @@ export default function RecommendationCard({
       <div className="flex items-center justify-between pt-3 border-t border-white/10">
         {sourceTripName && (
           <div className="flex items-center gap-1.5">
-            <svg className="w-3.5 h-3.5 text-purple-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 text-primary-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xs text-purple-300 truncate">From: {sourceTripName}</span>
+            <span className="text-xs text-primary-300 truncate">From: {sourceTripName}</span>
           </div>
         )}
         <div className="ml-auto flex items-center gap-2">

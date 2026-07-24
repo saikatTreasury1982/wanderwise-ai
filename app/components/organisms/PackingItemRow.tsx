@@ -185,7 +185,7 @@ export default function PackingItemRow({
           >
             <span>{categoryIcon.icon}</span>
             <span className="text-white/90">
-              <span className="text-purple-300 font-medium">{alertType.alert_code}</span>
+              <span className="text-primary-300 font-medium">{alertType.alert_code}</span>
               <span className="text-white/50"> - </span>
               <span>{alertType.alert_description}</span>
             </span>
@@ -211,7 +211,7 @@ export default function PackingItemRow({
         {...listeners}
         className="p-1 rounded hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing touch-none"
       >
-        <GripVertical className="w-4 h-4 text-purple-300" />
+        <GripVertical className="w-4 h-4 text-primary-300" />
       </button>
 
       {/* Checkbox - Circular */}
@@ -239,7 +239,7 @@ export default function PackingItemRow({
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
           autoFocus
-          className="flex-1 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm focus:outline-none focus:border-purple-400"
+          className="flex-1 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm focus:outline-none focus:border-primary-400"
         />
       ) : (
         <span

@@ -226,7 +226,7 @@ export default function TravelerForm({
             name="relationship"
             value={formData.relationship}
             onChange={handleChange}
-            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
           >
             <option value="" className="bg-gray-800 text-white">Select relationship</option>
             {relationships.map((rel) => (
@@ -245,7 +245,7 @@ export default function TravelerForm({
             name="traveler_currency"
             value={formData.traveler_currency}
             onChange={handleChange}
-            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
           >
             <option value="" className="bg-gray-800 text-white">Select currency</option>
             {currencies.map((curr) => (

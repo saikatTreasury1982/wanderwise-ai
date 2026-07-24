@@ -220,7 +220,7 @@ export default function AccommodationEntryForm({
             <select
               value={typeName}
               onChange={e => setTypeName(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
             >
               <option value="" className="bg-gray-800">Select</option>
               {accommodationTypes.map(t => (
@@ -237,7 +237,7 @@ export default function AccommodationEntryForm({
               value={accommodationName}
               onChange={e => setAccommodationName(e.target.value)}
               placeholder="Hilton Seoul"
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
             />
           </div>
         </div>
@@ -250,7 +250,7 @@ export default function AccommodationEntryForm({
             value={location}
             onChange={e => setLocation(e.target.value)}
             placeholder="Seoul, South Korea"
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
           />
         </div>
 
@@ -261,7 +261,7 @@ export default function AccommodationEntryForm({
             value={address}
             onChange={e => setAddress(e.target.value)}
             placeholder="123 Main Street, Gangnam-gu"
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
           />
         </div>
 
@@ -273,7 +273,7 @@ export default function AccommodationEntryForm({
               type="date"
               value={checkInDate}
               onChange={e => setCheckInDate(e.target.value)}
-              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
             />
           </div>
           <div className="min-w-0">
@@ -282,7 +282,7 @@ export default function AccommodationEntryForm({
               type="time"
               value={checkInTime}
               onChange={e => setCheckInTime(e.target.value)}
-              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
             />
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function AccommodationEntryForm({
               type="date"
               value={checkOutDate}
               onChange={e => setCheckOutDate(e.target.value)}
-              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
             />
           </div>
           <div className="min-w-0">
@@ -304,14 +304,14 @@ export default function AccommodationEntryForm({
               type="time"
               value={checkOutTime}
               onChange={e => setCheckOutTime(e.target.value)}
-              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
             />
           </div>
         </div>
 
         {/* Nights Display */}
         {nights && (
-          <div className="text-sm sm:text-base text-purple-300 font-medium">
+          <div className="text-sm sm:text-base text-primary-300 font-medium">
             {nights} night{nights > 1 ? 's' : ''}
           </div>
         )}
@@ -324,7 +324,7 @@ export default function AccommodationEntryForm({
             value={numRooms}
             onChange={e => setNumRooms(parseInt(e.target.value) || 1)}
             min="1"
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
           />
         </div>
 
@@ -338,7 +338,7 @@ export default function AccommodationEntryForm({
               onChange={e => setPricePerNight(e.target.value)}
               placeholder="0.00"
               step="0.01"
-              className="w-full px-3 py-3 sm:px-4 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-3 py-3 sm:px-4 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
             />
           </div>
           <div>
@@ -349,7 +349,7 @@ export default function AccommodationEntryForm({
               onChange={e => setTotalPrice(e.target.value)}
               placeholder="0.00"
               step="0.01"
-              className="w-full px-3 py-3 sm:px-4 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-3 py-3 sm:px-4 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
             />
           </div>
           <div className="col-span-2 sm:col-span-1">
@@ -357,7 +357,7 @@ export default function AccommodationEntryForm({
             <select
               value={currencyCode}
               onChange={e => setCurrencyCode(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
             >
               <option value="" className="bg-gray-800">Select</option>
               {currencies.map(c => (
@@ -378,7 +378,7 @@ export default function AccommodationEntryForm({
               value={bookingReference}
               onChange={e => setBookingReference(e.target.value)}
               placeholder="CONF123456"
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
             />
           </div>
           <div>
@@ -388,7 +388,7 @@ export default function AccommodationEntryForm({
               value={bookingSource}
               onChange={e => setBookingSource(e.target.value)}
               placeholder="Booking.com"
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
             />
           </div>
         </div>
@@ -443,7 +443,7 @@ export default function AccommodationEntryForm({
             onChange={e => setNotes(e.target.value)}
             rows={4}
             placeholder="Parking details&#10;WiFi password&#10;Check-in instructions"
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400 resize-none"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400 resize-none"
           />
           {notes && notes.trim() && (
             <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
