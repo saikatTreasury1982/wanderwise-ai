@@ -20,13 +20,13 @@ export default function FloatingActionButton({
       className={cn(
         'fixed bottom-6 right-6 z-50',
         'w-14 h-14 rounded-full',
-        'bg-gradient-to-r from-purple-600 to-purple-700',
-        'hover:from-purple-500 hover:to-purple-600',
-        'shadow-lg shadow-purple-500/30',
+        'bg-gradient-to-r from-primary-600 to-primary-700',
+        'hover:from-primary-500 hover:to-primary-600',
+        'shadow-lg shadow-primary-500/30',
         'flex items-center justify-center',
         'transition-all duration-200',
         'hover:scale-110 active:scale-95',
-        'focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent',
+        'focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-transparent',
         className
       )}
     >

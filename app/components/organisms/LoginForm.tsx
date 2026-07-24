@@ -194,7 +194,7 @@ export default function LoginForm() {
   if (showPasskeySetup) {
     return (
       <div className="space-y-4">
-        <div className="p-4 rounded-lg bg-purple-500/20 border border-purple-500/30 text-white">
+        <div className="p-4 rounded-lg bg-primary-500/20 border border-primary-500/30 text-white">
           <p className="font-semibold mb-2">Set up your passkey</p>
           <p className="text-sm text-white/80">
             Use your device's biometrics or PIN to create a secure passkey.
@@ -347,7 +347,7 @@ export default function LoginForm() {
       <div className="text-center pt-4 border-t border-white/20">
         <p className="text-sm text-white/90">
           Don't have an account?{' '}
-          <Link href="/register" className="font-semibold text-purple-300 hover:text-purple-200 transition-colors underline">
+          <Link href="/register" className="font-semibold text-primary-300 hover:text-primary-200 transition-colors underline">
             Create one
           </Link>
         </p>

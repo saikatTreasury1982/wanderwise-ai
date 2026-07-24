@@ -27,7 +27,7 @@ export default function CircleIconButton({
 }: CircleIconButtonProps) {
   const variants = {
     default: 'bg-white/10 border-white/20 text-white/70 hover:text-white hover:bg-white/20 hover:border-white/30',
-    primary: 'bg-purple-500/20 border-purple-400/30 text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 hover:text-purple-200',
+    primary: 'bg-primary-500/20 border-primary-400/30 text-primary-300 hover:bg-primary-500/30 hover:border-primary-400/50 hover:text-primary-200',
     danger: 'bg-red-500/20 border-red-400/30 text-red-300 hover:bg-red-500/30 hover:border-red-400/50 hover:text-red-200',
   };
 

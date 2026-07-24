@@ -32,7 +32,7 @@ export default function HubTile({
         'rounded-2xl p-4',
         'transition-all duration-200',
         'hover:bg-white/15 hover:border-white/30 hover:scale-105',
-        'focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-transparent',
+        'focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-transparent',
         'text-left',
         className
       )}
@@ -40,7 +40,7 @@ export default function HubTile({
       {/* Count badge */}
       {count !== undefined && count > 0 && (
         <div 
-          className="absolute bottom-3 right-3 min-w-8 h-8 px-2 flex items-center justify-center rounded-full bg-purple-500/80 text-white text-xs font-semibold"
+          className="absolute bottom-3 right-3 min-w-8 h-8 px-2 flex items-center justify-center rounded-full bg-primary-500/80 text-white text-xs font-semibold"
           title={countLabel || 'Total'}
         >
           {count}
@@ -49,7 +49,7 @@ export default function HubTile({
 
       {/* Header: Icon + Title */}
       <div className="flex items-center gap-2 mb-3">
-        <div className="text-purple-400 shrink-0">
+        <div className="text-primary-400 shrink-0">
           {icon}
         </div>
         <span className="text-white font-semibold text-base">
