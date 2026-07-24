@@ -222,7 +222,7 @@ export default function TripCard({
           {/* View */}
           <button
             onClick={(e) => { e.stopPropagation(); onView(trip); }}
-            className="p-2 rounded-lg text-white/70 hover:text-purple-400 hover:bg-purple-500/10 transition-colors"
+            className="p-2 rounded-lg text-white/70 hover:text-primary-400 hover:bg-primary-500/10 transition-colors"
             aria-label="View trip summary"
             title="View trip summary"
           >
@@ -391,15 +391,15 @@ export default function TripCard({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         {/* Duration */}
         {duration && (
-          <div className="flex items-center gap-1.5 text-purple-200">
-            <Calendar className="w-4 h-4 text-purple-400" />
+          <div className="flex items-center gap-1.5 text-primary-200">
+            <Calendar className="w-4 h-4 text-primary-400" />
             <span>{duration.days}D / {duration.nights}N</span>
           </div>
         )}
 
         {/* Travelers */}
         {stats && stats.activeTravelers > 0 && (
-          <div className="flex items-center gap-1.5 text-purple-200">
+          <div className="flex items-center gap-1.5 text-primary-200">
             <Users className="w-4 h-4 text-blue-400" />
             <span>
               {stats.activeTravelers}

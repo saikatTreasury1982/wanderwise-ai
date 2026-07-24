@@ -354,7 +354,7 @@ export default function PreferencesPage() {
           {/* User Preferences Section */}
           <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-4 sm:p-6">
             <h2 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -397,7 +397,7 @@ export default function PreferencesPage() {
           <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 Alert Types
@@ -428,7 +428,7 @@ export default function PreferencesPage() {
                       value={alertFormData.alert_code}
                       onChange={e => setAlertFormData({ ...alertFormData, alert_code: e.target.value.toLowerCase().replace(/\s/g, '_') })}
                       placeholder="e.g., essentials"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400"
                     />
                   </div>
                 )}
@@ -439,7 +439,7 @@ export default function PreferencesPage() {
                     value={alertFormData.alert_description}
                     onChange={e => setAlertFormData({ ...alertFormData, alert_description: e.target.value })}
                     placeholder="e.g., Must-have items"
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400"
                   />
                 </div>
                 <div>
@@ -447,7 +447,7 @@ export default function PreferencesPage() {
                   <select
                     value={alertFormData.category_code}
                     onChange={e => setAlertFormData({ ...alertFormData, category_code: e.target.value })}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary-400"
                   >
                     {alertCategories.map(cat => (
                       <option key={cat.category_code} value={cat.category_code} className="bg-gray-800">
@@ -533,7 +533,7 @@ export default function PreferencesPage() {
           <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-4 sm:p-6 lg:col-span-2">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
                 Payment Methods
@@ -562,7 +562,7 @@ export default function PreferencesPage() {
                     <select
                       value={paymentFormData.payment_type}
                       onChange={e => setPaymentFormData({ ...paymentFormData, payment_type: e.target.value })}
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary-400"
                     >
                       <option value="Credit Card" className="bg-gray-800">Credit Card</option>
                       <option value="Debit Card" className="bg-gray-800">Debit Card</option>
@@ -578,7 +578,7 @@ export default function PreferencesPage() {
                     <select
                       value={paymentFormData.payment_channel}
                       onChange={e => setPaymentFormData({ ...paymentFormData, payment_channel: e.target.value })}
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-purple-400"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary-400"
                     >
                       <option value="Card" className="bg-gray-800">Card</option>
                       <option value="On_Account" className="bg-gray-800">On Account</option>
@@ -593,7 +593,7 @@ export default function PreferencesPage() {
                       value={paymentFormData.issuer}
                       onChange={e => setPaymentFormData({ ...paymentFormData, issuer: e.target.value })}
                       placeholder="e.g., Visa, Chase"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400"
                     />
                   </div>
                   <div>
@@ -603,7 +603,7 @@ export default function PreferencesPage() {
                       value={paymentFormData.payment_network}
                       onChange={e => setPaymentFormData({ ...paymentFormData, payment_network: e.target.value })}
                       placeholder="e.g., Visa Card ending 1234"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400"
                     />
                   </div>
                 </div>
@@ -614,7 +614,7 @@ export default function PreferencesPage() {
                     value={paymentFormData.payment_method_key}
                     onChange={e => setPaymentFormData({ ...paymentFormData, payment_method_key: e.target.value })}
                     placeholder="e.g., visa_1234, paypal_account"
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400"
                   />
                 </div>
                 <div>
@@ -623,7 +623,7 @@ export default function PreferencesPage() {
                       type="checkbox"
                       checked={paymentFormData.is_active === 1}
                       onChange={e => setPaymentFormData({ ...paymentFormData, is_active: e.target.checked ? 1 : 0 })}
-                      className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-400"
+                      className="w-4 h-4 rounded border-white/20 bg-white/10 text-primary-500 focus:ring-primary-400"
                     />
                     <span className="text-white text-sm">Active</span>
                   </label>

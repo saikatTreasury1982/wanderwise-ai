@@ -130,7 +130,7 @@ export default function ActivityLinksModal({
                                     key={link.link_id}
                                     className="flex items-start gap-2 p-3 bg-white/5 border border-white/10 rounded-lg group hover:bg-white/10 transition-colors"
                                 >
-                                    <ExternalLink className="w-4 h-4 text-purple-300 mt-0.5 flex-shrink-0" />
+                                    <ExternalLink className="w-4 h-4 text-primary-300 mt-0.5 flex-shrink-0" />
                                     <div className="flex-1 min-w-0">
                                         {link.link_description && (
                                             <div className="text-sm font-medium text-white mb-0.5 truncate">
@@ -141,7 +141,7 @@ export default function ActivityLinksModal({
                                             href={link.link_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-sm text-purple-300 hover:text-purple-200 truncate block"
+                                            className="text-sm text-primary-300 hover:text-primary-200 truncate block"
                                         >
                                             {link.link_url}
                                         </a>
@@ -166,7 +166,7 @@ export default function ActivityLinksModal({
                             value={newDescription}
                             onChange={(e) => setNewDescription(e.target.value)}
                             placeholder="Description (optional)"
-                            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 text-sm focus:outline-none focus:border-purple-400"
+                            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 text-sm focus:outline-none focus:border-primary-400"
                         />
                         <div className="flex gap-2">
                             <input
@@ -174,13 +174,13 @@ export default function ActivityLinksModal({
                                 value={newUrl}
                                 onChange={(e) => setNewUrl(e.target.value)}
                                 placeholder="https://example.com"
-                                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 text-sm focus:outline-none focus:border-purple-400"
+                                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 text-sm focus:outline-none focus:border-primary-400"
                                 onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                             />
                             <button
                                 onClick={handleAdd}
                                 disabled={!newUrl.trim() || isLoading}
-                                className="px-4 py-2 bg-purple-500/30 text-white rounded-lg hover:bg-purple-500/40 disabled:opacity-50 transition-colors flex items-center gap-2"
+                                className="px-4 py-2 bg-primary-500/30 text-white rounded-lg hover:bg-primary-500/40 disabled:opacity-50 transition-colors flex items-center gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 Add

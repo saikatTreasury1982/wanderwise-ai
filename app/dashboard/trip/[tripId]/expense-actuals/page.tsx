@@ -300,7 +300,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
       <div className="min-h-screen relative flex items-center justify-center">
         <PageBackground />
         <div className="relative z-10">
-          <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-primary-400 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -335,7 +335,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
           <div className="flex flex-wrap items-center gap-3">
             {destination && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
-                <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -344,7 +344,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
             )}
 
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
-              <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-sm text-white/90">{formatDateRange(trip.start_date, trip.end_date, dateFormat)}</span>
@@ -356,8 +356,8 @@ export default function ExpenseActualsPage({ params }: PageProps) {
               const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
               const nights = days - 1;
               return (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 rounded-full border border-purple-400/30">
-                  <span className="text-sm font-medium text-purple-200">{days}D / {nights}N</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-500/20 rounded-full border border-primary-400/30">
+                  <span className="text-sm font-medium text-primary-200">{days}D / {nights}N</span>
                 </div>
               );
             })()}
@@ -367,8 +367,8 @@ export default function ExpenseActualsPage({ params }: PageProps) {
         {/* No Actuals Yet */}
         {!hasActuals ? (
           <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-8 sm:p-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 rounded-full bg-primary-500/20 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
             </div>
@@ -515,7 +515,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                     {settlement.settlements.map((s, idx) => (
                       <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-purple-500/30 flex items-center justify-center text-white text-sm font-medium">
+                          <div className="w-8 h-8 rounded-full bg-primary-500/30 flex items-center justify-center text-white text-sm font-medium">
                             {s.from_name.charAt(0)}
                           </div>
                           <div>
@@ -526,7 +526,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                             </p>
                           </div>
                         </div>
-                        <div className="text-purple-300 font-semibold">
+                        <div className="text-primary-300 font-semibold">
                           {s.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </div>
@@ -600,7 +600,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                     onChange={e => setEditForm({ ...editForm, actual_amount: e.target.value })}
                     step="0.01"
                     placeholder="0.00"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
                     required
                   />
                   <p className="text-xs text-white/50 mt-1.5">
@@ -614,7 +614,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                   <select
                     value={editForm.paid_by_traveler_id}
                     onChange={e => setEditForm({ ...editForm, paid_by_traveler_id: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
                   >
                     <option value="" className="bg-gray-800">Not set</option>
                     {travelers.map(t => (
@@ -632,7 +632,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                     type="date"
                     value={editForm.actual_date}
                     onChange={e => setEditForm({ ...editForm, actual_date: e.target.value })}
-                    className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+                    className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
                   />
                 </div>
 
@@ -642,7 +642,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                   <select
                     value={editForm.payment_method_key}
                     onChange={e => setEditForm({ ...editForm, payment_method_key: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
                   >
                     <option value="" className="bg-gray-800">Not set</option>
                     {paymentMethods.map(pm => (
@@ -663,7 +663,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                     value={editForm.receipt_url}
                     onChange={e => setEditForm({ ...editForm, receipt_url: e.target.value })}
                     placeholder="https://..."
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
                   />
                 </div>
 
@@ -675,7 +675,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                     onChange={e => setEditForm({ ...editForm, actual_notes: e.target.value })}
                     rows={3}
                     placeholder="Add any notes about this payment..."
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400 resize-none"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400 resize-none"
                   />
                 </div>
 

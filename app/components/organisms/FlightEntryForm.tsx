@@ -267,7 +267,7 @@ export default function FlightEntryForm({
                 onChange={e => updateLeg(legs, setLegs, index, 'departure_airport', e.target.value)}
                 placeholder="BNE"
                 maxLength={3}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base uppercase placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base uppercase placeholder:text-white/30 focus:outline-none focus:border-primary-400"
                 required
               />
             </div>
@@ -279,7 +279,7 @@ export default function FlightEntryForm({
                 onChange={e => updateLeg(legs, setLegs, index, 'arrival_airport', e.target.value)}
                 placeholder="SIN"
                 maxLength={3}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base uppercase placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base uppercase placeholder:text-white/30 focus:outline-none focus:border-primary-400"
                 required
               />
             </div>
@@ -293,7 +293,7 @@ export default function FlightEntryForm({
                 type="date"
                 value={leg.departure_date}
                 onChange={e => updateLeg(legs, setLegs, index, 'departure_date', e.target.value)}
-                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
                 required
               />
             </div>
@@ -303,7 +303,7 @@ export default function FlightEntryForm({
                 type="time"
                 value={leg.departure_time}
                 onChange={e => updateLeg(legs, setLegs, index, 'departure_time', e.target.value)}
-                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
               />
             </div>
           </div>
@@ -316,7 +316,7 @@ export default function FlightEntryForm({
                 type="date"
                 value={leg.arrival_date}
                 onChange={e => updateLeg(legs, setLegs, index, 'arrival_date', e.target.value)}
-                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
                 required
               />
             </div>
@@ -326,7 +326,7 @@ export default function FlightEntryForm({
                 type="time"
                 value={leg.arrival_time}
                 onChange={e => updateLeg(legs, setLegs, index, 'arrival_time', e.target.value)}
-                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
               />
             </div>
           </div>
@@ -340,7 +340,7 @@ export default function FlightEntryForm({
                 value={leg.airline}
                 onChange={e => updateLeg(legs, setLegs, index, 'airline', e.target.value)}
                 placeholder="QF"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
               />
             </div>
             <div>
@@ -350,7 +350,7 @@ export default function FlightEntryForm({
                 value={leg.flight_number}
                 onChange={e => updateLeg(legs, setLegs, index, 'flight_number', e.target.value)}
                 placeholder="52"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
               />
             </div>
           </div>
@@ -364,7 +364,7 @@ export default function FlightEntryForm({
                 value={leg.stops_count}
                 onChange={e => updateLeg(legs, setLegs, index, 'stops_count', parseInt(e.target.value) || 0)}
                 min="0"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
               />
             </div>
             <div>
@@ -374,10 +374,10 @@ export default function FlightEntryForm({
                 value={leg.duration_minutes}
                 onChange={e => updateLeg(legs, setLegs, index, 'duration_minutes', e.target.value ? parseInt(e.target.value) : '')}
                 placeholder="480"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
               />
               {leg.duration_minutes && Number(leg.duration_minutes) > 0 && (
-                <p className="text-sm text-purple-300 mt-1.5">
+                <p className="text-sm text-primary-300 mt-1.5">
                   {Math.floor(Number(leg.duration_minutes) / 60)}h {Number(leg.duration_minutes) % 60}m
                 </p>
               )}
@@ -390,7 +390,7 @@ export default function FlightEntryForm({
         <button
           type="button"
           onClick={() => addLeg(setLegs)}
-          className="w-full py-3 text-base text-purple-400 hover:text-purple-300 border border-dashed border-purple-400/50 rounded-lg hover:border-purple-400 transition-colors"
+          className="w-full py-3 text-base text-primary-400 hover:text-primary-300 border border-dashed border-primary-400/50 rounded-lg hover:border-primary-400 transition-colors"
         >
           + Add Leg
         </button>
@@ -426,7 +426,7 @@ export default function FlightEntryForm({
                 className={cn(
                   'px-4 py-3 text-base rounded-lg border transition-colors',
                   flightType === type
-                    ? 'bg-purple-500/30 border-purple-400 text-white'
+                    ? 'bg-primary-500/30 border-primary-400 text-white'
                     : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
                 )}
               >
@@ -459,7 +459,7 @@ export default function FlightEntryForm({
               onChange={e => setUnitFare(e.target.value)}
               placeholder="0.00"
               step="0.01"
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
             />
           </div>
           <div>
@@ -467,7 +467,7 @@ export default function FlightEntryForm({
             <select
               value={currencyCode}
               onChange={e => setCurrencyCode(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
             >
               <option value="" className="bg-gray-800">Select</option>
               {currencies.map(c => (
@@ -487,10 +487,10 @@ export default function FlightEntryForm({
           const costSharerCount = costSharers.length;
           
           return costSharerCount > 0 && (
-            <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-4">
+            <div className="bg-primary-500/10 border border-primary-400/30 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm sm:text-base text-white/70">Total Projected</span>
-                <span className="text-xl font-bold text-purple-300">
+                <span className="text-xl font-bold text-primary-300">
                   {currencyCode || ''} {(parseFloat(unitFare) * costSharerCount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
@@ -556,7 +556,7 @@ export default function FlightEntryForm({
             onChange={e => setNotes(e.target.value)}
             rows={4}
             placeholder="Flight source&#10;Seat preferences&#10;Baggage details"
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400 resize-none"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400 resize-none"
           />
           {notes && notes.trim() && (
             <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">

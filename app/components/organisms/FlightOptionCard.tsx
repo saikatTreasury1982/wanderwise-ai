@@ -76,7 +76,7 @@ export default function FlightOptionCard({
             </span>
             <span className={cn(
               'px-2 py-0.5 text-xs font-medium rounded-full border',
-              flight.flight_type === 'round_trip' && 'bg-purple-500/20 text-purple-300 border-purple-400/30',
+              flight.flight_type === 'round_trip' && 'bg-primary-500/20 text-primary-300 border-primary-400/30',
               flight.flight_type === 'one_way' && 'bg-blue-500/20 text-blue-300 border-blue-400/30',
               flight.flight_type === 'multi_city' && 'bg-orange-500/20 text-orange-300 border-orange-400/30'
             )}>
@@ -99,10 +99,10 @@ export default function FlightOptionCard({
             {flight.legs && flight.legs.map((leg, index) => (
               <div key={index} className={cn(
                 "flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60",
-                flight.legs && flight.legs.length > 1 && "pl-2 border-l-2 border-purple-500/30 mb-2"
+                flight.legs && flight.legs.length > 1 && "pl-2 border-l-2 border-primary-500/30 mb-2"
               )}>
                 {flight.legs && flight.legs.length > 1 && (
-                  <span className="text-xs text-purple-300 font-medium w-full">Leg {index + 1}</span>
+                  <span className="text-xs text-primary-300 font-medium w-full">Leg {index + 1}</span>
                 )}
                 
                 {/* Departure */}
@@ -123,7 +123,7 @@ export default function FlightOptionCard({
                 )}
                 {/* Duration */}
                 {leg.duration_minutes && leg.duration_minutes > 0 && (
-                  <span className="text-purple-300">({formatDuration(leg.duration_minutes)})</span>
+                  <span className="text-primary-300">({formatDuration(leg.duration_minutes)})</span>
                 )}
                 {/* Stops */}
                 <span>{leg.stops_count === 0 ? 'Direct' : `${leg.stops_count} stop${leg.stops_count > 1 ? 's' : ''}`}</span>
@@ -147,10 +147,10 @@ export default function FlightOptionCard({
               {flight.return_legs.map((leg, index) => (
                 <div key={index} className={cn(
                   "flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60",
-                  flight.return_legs && flight.return_legs.length > 1 && "pl-2 border-l-2 border-purple-500/30 mb-2"
+                  flight.return_legs && flight.return_legs.length > 1 && "pl-2 border-l-2 border-primary-500/30 mb-2"
                 )}>
                   {flight.return_legs && flight.return_legs.length > 1 && (
-                    <span className="text-xs text-purple-300 font-medium w-full">Leg {index + 1}</span>
+                    <span className="text-xs text-primary-300 font-medium w-full">Leg {index + 1}</span>
                   )}
                   
                   {/* Departure */}
@@ -171,7 +171,7 @@ export default function FlightOptionCard({
                   )}
                   {/* Duration */}
                   {leg.duration_minutes && leg.duration_minutes > 0 && (
-                    <span className="text-purple-300">({formatDuration(leg.duration_minutes)})</span>
+                    <span className="text-primary-300">({formatDuration(leg.duration_minutes)})</span>
                   )}
                   {/* Stops */}
                   <span>{leg.stops_count === 0 ? 'Direct' : `${leg.stops_count} stop${leg.stops_count > 1 ? 's' : ''}`}</span>
@@ -191,7 +191,7 @@ export default function FlightOptionCard({
             return (
               <div className="mt-2">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-bold text-purple-300">
+                  <span className="text-lg font-bold text-primary-300">
                     {flight.currency_code} {totalCost.toLocaleString()}
                   </span>
                   <span className="text-xs text-white/50">total</span>
@@ -257,7 +257,7 @@ export default function FlightOptionCard({
           {/* View */}
           <button
             onClick={() => onView(flight)}
-            className="p-2 rounded-full text-white/70 hover:text-purple-400 hover:bg-purple-500/10 transition-colors"
+            className="p-2 rounded-full text-white/70 hover:text-primary-400 hover:bg-primary-500/10 transition-colors"
             title="View details"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

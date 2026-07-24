@@ -198,7 +198,7 @@ export default function RecommendationSlider({
         <div className="p-6 overflow-y-auto h-[calc(100%-88px)]">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-primary-400 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : recommendations.length === 0 ? (
             <div className="text-center py-12">

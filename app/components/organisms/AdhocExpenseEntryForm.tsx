@@ -170,7 +170,7 @@ export default function AdhocExpenseEntryForm({
             value={expenseName}
             onChange={(e) => setExpenseName(e.target.value)}
             placeholder="Taxi to airport"
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
           />
         </div>
 
@@ -182,7 +182,7 @@ export default function AdhocExpenseEntryForm({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Brief description"
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
           />
         </div>
 
@@ -198,7 +198,7 @@ export default function AdhocExpenseEntryForm({
               onChange={(e) => setAmount(e.target.value)}
               placeholder="50"
               step="0.01"
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
             />
           </div>
           <div>
@@ -208,7 +208,7 @@ export default function AdhocExpenseEntryForm({
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-purple-400"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
             >
               {currencies.map(c => (
                 <option key={c.currency_code} value={c.currency_code} className="bg-gray-800">
@@ -227,7 +227,7 @@ export default function AdhocExpenseEntryForm({
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="e.g., Transport, Food, Entertainment"
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
           />
         </div>
 
@@ -238,7 +238,7 @@ export default function AdhocExpenseEntryForm({
             type="date"
             value={expenseDate}
             onChange={(e) => setExpenseDate(e.target.value)}
-            className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-purple-400"
+            className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
           />
         </div>
 
@@ -316,7 +316,7 @@ export default function AdhocExpenseEntryForm({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Airport transfer&#10;Shared ride&#10;Toll included"
             rows={4}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-purple-400 resize-none"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400 resize-none"
           />
           {notes && notes.trim() && (
             <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">

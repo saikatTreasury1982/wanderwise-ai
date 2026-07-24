@@ -237,7 +237,7 @@ export default function CostForecastPage({ params }: PageProps) {
       <div className="min-h-screen relative flex items-center justify-center">
         <PageBackground />
         <div className="relative z-10">
-          <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-primary-400 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -266,7 +266,7 @@ export default function CostForecastPage({ params }: PageProps) {
           <div className="flex flex-wrap items-center gap-3">
             {(trip?.destination_city || trip?.destination_country) && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
-                <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -277,7 +277,7 @@ export default function CostForecastPage({ params }: PageProps) {
             {trip?.start_date && trip?.end_date && (
               <>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
-                  <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span className="text-sm text-white/90">{formatDateRange(trip.start_date, trip.end_date, dateFormat)}</span>
@@ -289,8 +289,8 @@ export default function CostForecastPage({ params }: PageProps) {
                   const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
                   const nights = days - 1;
                   return (
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 rounded-full border border-purple-400/30">
-                      <span className="text-sm font-medium text-purple-200">{days}D / {nights}N</span>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-500/20 rounded-full border border-primary-400/30">
+                      <span className="text-sm font-medium text-primary-200">{days}D / {nights}N</span>
                     </div>
                   );
                 })()}
@@ -311,7 +311,7 @@ export default function CostForecastPage({ params }: PageProps) {
                     onClick={() => handleStatusToggle(status.value)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                       selectedStatuses.includes(status.value)
-                        ? 'bg-purple-500/30 border border-purple-400/50'
+                        ? 'bg-primary-500/30 border border-primary-400/50'
                         : 'bg-white/5 border border-white/10 hover:bg-white/10'
                     }`}
                   >
@@ -364,8 +364,8 @@ export default function CostForecastPage({ params }: PageProps) {
         {/* No Report Yet */}
         {!report && !collecting && (
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-              <Play className="w-8 h-8 text-purple-300" />
+            <div className="w-16 h-16 rounded-full bg-primary-500/20 flex items-center justify-center mx-auto mb-4">
+              <Play className="w-8 h-8 text-primary-300" />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Ready to Collect Costs</h3>
             <p className="text-white/70 mb-4">
@@ -377,7 +377,7 @@ export default function CostForecastPage({ params }: PageProps) {
         {/* Loading State */}
         {collecting && (
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-12 text-center">
-            <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-12 h-12 border-4 border-primary-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-white/70">Collecting costs from all modules...</p>
           </div>
         )}
@@ -385,8 +385,8 @@ export default function CostForecastPage({ params }: PageProps) {
         {report && !collecting && (
           <>
             {/* Total Cost Card */}
-            <div className="bg-gradient-to-r from-purple-500/30 to-blue-500/30 backdrop-blur-md border border-white/20 rounded-xl p-4 sm:p-6 mb-6">
-              <div className="text-purple-200 text-xs sm:text-sm mb-1">Total Estimated Cost</div>
+            <div className="bg-gradient-to-r from-primary-500/30 to-blue-500/30 backdrop-blur-md border border-white/20 rounded-xl p-4 sm:p-6 mb-6">
+              <div className="text-primary-200 text-xs sm:text-sm mb-1">Total Estimated Cost</div>
               <div className="text-2xl sm:text-4xl font-bold text-white">
                 {formatCurrency(report.total_cost, report.base_currency)}
               </div>
@@ -409,11 +409,11 @@ export default function CostForecastPage({ params }: PageProps) {
                     >
                       <div className="flex items-center gap-3">
                         {expandedModules[module.module] ? (
-                          <ChevronDown className="w-4 h-4 text-purple-300" />
+                          <ChevronDown className="w-4 h-4 text-primary-300" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 text-purple-300" />
+                          <ChevronRight className="w-4 h-4 text-primary-300" />
                         )}
-                        <div className="text-purple-300">{getModuleIcon(module.module)}</div>
+                        <div className="text-primary-300">{getModuleIcon(module.module)}</div>
                         <span className="text-white font-medium">{getModuleLabel(module.module)}</span>
                         <span className="text-white/50 text-sm">({module.items_count} items)</span>
                       </div>
@@ -429,7 +429,7 @@ export default function CostForecastPage({ params }: PageProps) {
                             <span className="text-white/70">{item.description}</span>
                             <span className="text-white/90 text-left sm:text-right">
                               {item.currency_code !== report.base_currency ? (
-                                <span className="text-purple-300">
+                                <span className="text-primary-300">
                                   {formatCurrency(item.amount, item.currency_code)} → {formatCurrency(item.converted_amount || item.amount, report.base_currency)}
                                 </span>
                               ) : (
@@ -450,7 +450,7 @@ export default function CostForecastPage({ params }: PageProps) {
               <div className="px-6 py-4 border-b border-white/10">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-white">Cost Share by Traveler</h3>
-                  <div className="flex items-center gap-2 text-sm text-purple-200">
+                  <div className="flex items-center gap-2 text-sm text-primary-200">
                     <Users className="w-4 h-4" />
                     <span>Equal split among {report.cost_sharers_count} cost sharers</span>
                   </div>
@@ -460,14 +460,14 @@ export default function CostForecastPage({ params }: PageProps) {
                 {report.traveler_shares.map(traveler => (
                   <div key={traveler.traveler_id} className="px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-purple-500/30 flex items-center justify-center text-white font-medium">
+                      <div className="w-10 h-10 rounded-full bg-primary-500/30 flex items-center justify-center text-white font-medium">
                         {traveler.traveler_name.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <div className="text-white font-medium">
                           {traveler.traveler_name}
                           {traveler.is_primary === 1 && (
-                            <span className="ml-2 text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded-full">
+                            <span className="ml-2 text-xs bg-primary-500/30 text-primary-200 px-2 py-0.5 rounded-full">
                               Primary
                             </span>
                           )}
@@ -483,7 +483,7 @@ export default function CostForecastPage({ params }: PageProps) {
                           {formatCurrency(traveler.share_amount, report.base_currency)}
                         </div>
                         {travelerConvertedAmounts[traveler.traveler_id] && (
-                          <div className="text-purple-300 text-sm">
+                          <div className="text-primary-300 text-sm">
                             ≈ {formatCurrency(
                               travelerConvertedAmounts[traveler.traveler_id].amount,
                               travelerCurrencies[traveler.traveler_id]
@@ -536,7 +536,7 @@ export default function CostForecastPage({ params }: PageProps) {
                           <td className="px-6 py-3 text-right text-white/70">
                             {formatCurrency(item.original_amount, item.original_currency)}
                           </td>
-                          <td className="px-6 py-3 text-right text-purple-300 text-sm">
+                          <td className="px-6 py-3 text-right text-primary-300 text-sm">
                             {item.exchange_rate.toFixed(6)}
                           </td>
                           <td className="px-6 py-3 text-right text-white font-medium">

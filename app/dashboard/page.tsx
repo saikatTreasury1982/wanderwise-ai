@@ -279,7 +279,7 @@ export default function DashboardPage() {
       <div className="min-h-screen relative flex items-center justify-center">
         <PageBackground />
         <div className="relative z-10">
-          <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-primary-400 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -362,7 +362,7 @@ export default function DashboardPage() {
                   <select
                     value={filterYear}
                     onChange={(e) => setFilterYear(e.target.value)}
-                    className="px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/15 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent [&>option]:bg-gray-800 [&>option]:text-white"
+                    className="px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/15 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent [&>option]:bg-gray-800 [&>option]:text-white"
                   >
                     <option value="all">All Years</option>
                     {uniqueYears.map(year => (
@@ -374,7 +374,7 @@ export default function DashboardPage() {
                   <select
                     value={filterDestination}
                     onChange={(e) => setFilterDestination(e.target.value)}
-                    className="px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/15 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent [&>option]:bg-gray-800 [&>option]:text-white"
+                    className="px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/15 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent [&>option]:bg-gray-800 [&>option]:text-white"
                   >
                     <option value="all">All Destinations</option>
                     {uniqueDestinations.map(dest => (
@@ -415,7 +415,7 @@ export default function DashboardPage() {
                   <p className="text-white/60 text-lg mb-4">No trips match your filters</p>
                   <button
                     onClick={clearFilters}
-                    className="px-6 py-3 rounded-full bg-purple-500/20 backdrop-blur-sm border border-purple-400/30 text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 transition-all"
+                    className="px-6 py-3 rounded-full bg-primary-500/20 backdrop-blur-sm border border-primary-400/30 text-primary-300 hover:bg-primary-500/30 hover:border-primary-400/50 transition-all"
                   >
                     Clear Filters
                   </button>

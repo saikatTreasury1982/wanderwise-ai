@@ -147,7 +147,7 @@ export default function ItineraryPreviewModal({
                             {day.day_description && (
                                 <p className="text-white/60 text-sm">{day.day_description}</p>
                             )}
-                            <p className="text-purple-300 text-sm mt-2">
+                            <p className="text-primary-300 text-sm mt-2">
                                 From: {day.source.trip_name}
                             </p>
                         </div>
@@ -164,16 +164,16 @@ export default function ItineraryPreviewModal({
                     </div>
 
                     {/* Summary */}
-                    <div className="px-6 py-4 bg-purple-500/10 border-b border-white/10">
+                    <div className="px-6 py-4 bg-primary-500/10 border-b border-white/10">
                         <div className="flex items-center gap-6 text-sm">
                             <div className="flex items-center gap-2">
-                                <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                 </svg>
                                 <span className="text-white/70">{totalCategories} Categories</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                                 <span className="text-white/70">{totalActivities} Activities</span>
@@ -210,7 +210,7 @@ export default function ItineraryPreviewModal({
                                                     </svg>
                                                 )}
                                             </button>
-                                            <svg className="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-5 h-5 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                             </svg>
                                             <h4 className="text-white font-semibold">{category.category_name}</h4>
@@ -249,7 +249,7 @@ export default function ItineraryPreviewModal({
                                                             </p>
                                                         )}
                                                         {activity.activity_cost && (
-                                                            <p className="text-purple-300 text-xs mt-1">
+                                                            <p className="text-primary-300 text-xs mt-1">
                                                                 {activity.currency_code} {activity.activity_cost.toFixed(2)}
                                                             </p>
                                                         )}
@@ -266,10 +266,10 @@ export default function ItineraryPreviewModal({
                     </div>
 
                     {/* Selection Footer */}
-                    <div className="flex items-center justify-between p-2 border-t border-white/10 bg-purple-500/5">
+                    <div className="flex items-center justify-between p-2 border-t border-white/10 bg-primary-500/5">
                         <div className="flex items-center gap-6 text-sm">
                             <div className="flex items-center gap-2">
-                                <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                 </svg>
                                 <span className="text-white font-medium">{selectedCategoriesCount}</span>
@@ -277,7 +277,7 @@ export default function ItineraryPreviewModal({
                             </div>
                             <div className="w-px h-4 bg-white/20" />
                             <div className="flex items-center gap-2">
-                                <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                                 <span className="text-white font-medium">{selectedActivitiesCount}</span>

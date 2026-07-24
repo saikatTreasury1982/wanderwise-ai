@@ -176,7 +176,7 @@ export default function PackingCategoryCard({
           className="p-1 rounded hover:bg-white/10 transition-colors cursor-grab active:cursor-grabbing touch-none"
           title="Drag to reorder"
         >
-          <GripVertical className="w-4 h-4 text-purple-300" />
+          <GripVertical className="w-4 h-4 text-primary-300" />
         </button>
 
         {/* Expand/Collapse Icon - Always clickable */}
@@ -213,7 +213,7 @@ export default function PackingCategoryCard({
             }}
             onClick={e => e.stopPropagation()}
             autoFocus
-            className="flex-1 px-2 py-1 bg-white/10 border border-white/20 rounded text-white font-medium focus:outline-none focus:border-purple-400"
+            className="flex-1 px-2 py-1 bg-white/10 border border-white/20 rounded text-white font-medium focus:outline-none focus:border-primary-400"
           />
         ) : (
           <button
@@ -238,7 +238,7 @@ export default function PackingCategoryCard({
               setIsAddingItem(true);
               setIsBulkAdding(false);
             }}
-            className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 hover:bg-purple-500/30 transition-colors"
+            className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-400/30 flex items-center justify-center text-primary-300 hover:bg-primary-500/30 transition-colors"
             title="Add item"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,7 +334,7 @@ export default function PackingCategoryCard({
                 }}
                 placeholder="Enter item name..."
                 autoFocus
-                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400"
               />
               <button
                 onClick={() => {
@@ -351,7 +351,7 @@ export default function PackingCategoryCard({
               <button
                 onClick={handleAddItem}
                 disabled={!newItemName.trim()}
-                className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 hover:bg-purple-500/30 disabled:opacity-50 transition-colors"
+                className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-400/30 flex items-center justify-center text-primary-300 hover:bg-primary-500/30 disabled:opacity-50 transition-colors"
                 title="Save"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

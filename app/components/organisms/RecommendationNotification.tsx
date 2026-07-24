@@ -80,10 +80,10 @@ export default function RecommendationNotification({
     >
       <div className="relative">
         {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-2xl blur-xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/30 to-pink-500/30 rounded-2xl blur-xl" />
 
         {/* Main card */}
-        <div className="relative bg-white/10 backdrop-blur-xl border border-purple-400/40 rounded-2xl shadow-2xl p-6 ring-1 ring-purple-400/20">
+        <div className="relative bg-white/10 backdrop-blur-xl border border-primary-400/40 rounded-2xl shadow-2xl p-6 ring-1 ring-primary-400/20">
           {/* Close button - top right */}
           <div className="absolute top-3 right-3">
             <CircleIconButton

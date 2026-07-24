@@ -104,7 +104,7 @@ export default function TripSummaryModal({
       <div
         className={cn(
           'relative z-10 w-full max-w-lg md:max-w-5xl',
-          'bg-gradient-to-br from-Black-900/40 via-indigo-900/30 to-black-900/40 backdrop-blur-xl',
+          'bg-white/10 backdrop-blur-xl',
           'border border-white/20 rounded-2xl',
           'shadow-2xl'
         )}
@@ -154,7 +154,7 @@ export default function TripSummaryModal({
             <div className="space-y-4">
               {isLoading ? (
                 <div className="flex justify-center py-8">
-                  <div className="w-8 h-8 border-3 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-3 border-primary-400 border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : notes.length === 0 ? (
                 <div className="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
@@ -177,7 +177,7 @@ export default function TripSummaryModal({
                             {note.content.split('\n').map((line, idx) => (
                               line.trim() && (
                                 <div key={idx} className="flex items-start gap-2">
-                                  <span className="text-purple-400 mt-1">•</span>
+                                  <span className="text-primary-400 mt-1">•</span>
                                   <span>{line.trim()}</span>
                                 </div>
                               )
