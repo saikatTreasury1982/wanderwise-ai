@@ -1,601 +1,245 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { cn } from '@/app/lib/utils';
+import { useState } from 'react';
+import AirportCombobox, { type AirportChoice } from '@/app/components/ui/AirportCombobox';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
-import type { FlightOption, CreateFlightLegInput } from '@/app/lib/types/flight';
+import TogglePill from '@/app/components/ui/TogglePill';
+import NoteField from '@/app/components/ui/NoteField';
+import { cn } from '@/app/lib/utils';
+import type { FlightOption } from '@/app/lib/types/flight';
 
-interface Traveler {
-  traveler_id: number;
-  traveler_name: string;
-  is_active: number;
-  is_cost_sharer: number;
-}
+interface Currency { currency_code: string; currency_name: string; }
 
-interface Currency {
-  currency_code: string;
-  currency_name: string;
-}
-
-interface FlightEntryFormProps {
+interface Props {
   tripId: number;
-  flight?: FlightOption | null;
-  travelers: Traveler[];
+  option?: FlightOption | null;
   currencies: Currency[];
   onSuccess: () => void;
-  onClear: () => void;
+  onCancel: () => void;
 }
 
-interface LegFormData {
-  departure_airport: string;
-  arrival_airport: string;
-  departure_date: string;
-  departure_time: string;
-  arrival_date: string;
-  arrival_time: string;
-  airline: string;
-  flight_number: string;
-  stops_count: number;
-  duration_minutes: number | '';
-}
-
-const emptyLeg: LegFormData = {
-  departure_airport: '',
-  arrival_airport: '',
-  departure_date: '',
-  departure_time: '',
-  arrival_date: '',
-  arrival_time: '',
-  airline: '',
-  flight_number: '',
-  stops_count: 0,
-  duration_minutes: '',
+const empty: FlightOption = {
+  flight_type: 'one_way',
+  departure_airport: null, arrival_airport: null,
+  connection_1_airport: null, connection_2_airport: null,
+  airline: null,
+  depart_datetime: null, arrive_datetime: null,
+  return_depart_datetime: null, return_arrive_datetime: null,
+  outbound_duration_minutes: null, return_duration_minutes: null,
+  price: null, currency_code: null, notes: null,
 };
 
-export default function FlightEntryForm({
-  tripId,
-  flight,
-  travelers,
-  currencies,
-  onSuccess,
-  onClear,
-}: FlightEntryFormProps) {
-  const [flightType, setFlightType] = useState<'one_way' | 'round_trip' | 'multi_city'>('one_way');
-  const [outboundLegs, setOutboundLegs] = useState<LegFormData[]>([{ ...emptyLeg }]);
-  const [returnLegs, setReturnLegs] = useState<LegFormData[]>([{ ...emptyLeg }]);
-  const [unitFare, setUnitFare] = useState<string>('');
-  const [currencyCode, setCurrencyCode] = useState<string>('');
-  const [notes, setNotes] = useState<string>('');
-  const [selectedTravelers, setSelectedTravelers] = useState<number[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const splitDT = (dt: string | null) => {
+  if (!dt) return { date: '', time: '' };
+  const [date, time] = dt.split('T');
+  return { date: date ?? '', time: time?.slice(0, 5) ?? '' };
+};
+
+export default function FlightEntryForm({ tripId, option, currencies, onSuccess, onCancel }: Props) {
+  const [form, setForm] = useState<FlightOption>(option ?? empty);
+  const [connections, setConnections] = useState<'0' | '1' | '2'>(
+    option?.connection_2_airport ? '2' : option?.connection_1_airport ? '1' : '0'
+  );
+  const [outHours, setOutHours] = useState(option?.outbound_duration_minutes != null ? String(Math.floor(option.outbound_duration_minutes / 60)) : '');
+  const [outMins, setOutMins] = useState(option?.outbound_duration_minutes != null ? String(option.outbound_duration_minutes % 60) : '');
+  const [retHours, setRetHours] = useState(option?.return_duration_minutes != null ? String(Math.floor(option.return_duration_minutes / 60)) : '');
+  const [retMins, setRetMins] = useState(option?.return_duration_minutes != null ? String(option.return_duration_minutes % 60) : '');
+  const [depDate, setDepDate] = useState(splitDT(option?.depart_datetime ?? null).date);
+  const [depTime, setDepTime] = useState(splitDT(option?.depart_datetime ?? null).time);
+  const [arrDate, setArrDate] = useState(splitDT(option?.arrive_datetime ?? null).date);
+  const [arrTime, setArrTime] = useState(splitDT(option?.arrive_datetime ?? null).time);
+  const [retDepDate, setRetDepDate] = useState(splitDT(option?.return_depart_datetime ?? null).date);
+  const [retDepTime, setRetDepTime] = useState(splitDT(option?.return_depart_datetime ?? null).time);
+  const [retArrDate, setRetArrDate] = useState(splitDT(option?.return_arrive_datetime ?? null).date);
+  const [retArrTime, setRetArrTime] = useState(splitDT(option?.return_arrive_datetime ?? null).time);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isEditing = flight && flight.flight_option_id > 0;
+  const set = <K extends keyof FlightOption>(k: K, v: FlightOption[K]) => setForm((f) => ({ ...f, [k]: v }));
 
-  // Load flight data when editing
-  useEffect(() => {
-    if (flight) {
-      setFlightType(flight.flight_type);
-      setUnitFare(flight.unit_fare?.toString() || '');
-      setCurrencyCode(flight.currency_code || '');
-      setNotes(flight.notes || '');
-      setSelectedTravelers(flight.travelers?.map(t => t.traveler_id) || []);
+  const setConn = (n: '0' | '1' | '2') => {
+    setConnections(n);
+    if (n < '2') set('connection_2_airport', null);
+    if (n < '1') set('connection_1_airport', null);
+  };
 
-      // Load outbound legs
-      if (flight.legs && flight.legs.length > 0) {
-        const legs: LegFormData[] = flight.legs.map(leg => ({
-          departure_airport: leg.departure_airport,
-          arrival_airport: leg.arrival_airport,
-          departure_date: leg.departure_date,
-          departure_time: leg.departure_time || '',
-          arrival_date: leg.arrival_date,
-          arrival_time: leg.arrival_time || '',
-          airline: leg.airline || '',
-          flight_number: leg.flight_number || '',
-          stops_count: leg.stops_count,
-          duration_minutes: leg.duration_minutes !== null ? leg.duration_minutes : '',
-        }));
-        setOutboundLegs(legs);
-      }
+  const canSave = !!form.departure_airport && !!form.arrival_airport;
 
-      // Load return legs (for round-trip)
-      if (flight.return_legs && flight.return_legs.length > 0) {
-        const legs: LegFormData[] = flight.return_legs.map(leg => ({
-          departure_airport: leg.departure_airport,
-          arrival_airport: leg.arrival_airport,
-          departure_date: leg.departure_date,
-          departure_time: leg.departure_time || '',
-          arrival_date: leg.arrival_date,
-          arrival_time: leg.arrival_time || '',
-          airline: leg.airline || '',
-          flight_number: leg.flight_number || '',
-          stops_count: leg.stops_count,
-          duration_minutes: leg.duration_minutes !== null ? leg.duration_minutes : '',
-        }));
-        setReturnLegs(legs);
-      } else {
-        setReturnLegs([{ ...emptyLeg }]);
-      }
-    } else {
-      resetForm();
-    }
-  }, [flight]);
-
-  const resetForm = () => {
-    setFlightType('one_way');
-    setOutboundLegs([{ ...emptyLeg }]);
-    setReturnLegs([{ ...emptyLeg }]);
-    setUnitFare('');
-    setCurrencyCode('');
-    setNotes('');
-    setSelectedTravelers([]);
+  const save = async () => {
+    setSaving(true);
     setError(null);
-  };
+    const compose = (date: string, time: string) => (date ? (time ? `${date}T${time}` : date) : null);
+    const toMin = (h: string, m: string) => (h || m ? Number(h || 0) * 60 + Number(m || 0) : null);
 
-  const handleClear = () => {
-    resetForm();
-    onClear();
-  };
-
-  const updateLeg = (
-    legs: LegFormData[],
-    setLegs: React.Dispatch<React.SetStateAction<LegFormData[]>>,
-    index: number,
-    field: keyof LegFormData,
-    value: string | number
-  ) => {
-    const updated = [...legs];
-    updated[index] = { ...updated[index], [field]: value };
-    setLegs(updated);
-  };
-
-  const addLeg = (setLegs: React.Dispatch<React.SetStateAction<LegFormData[]>>) => {
-    setLegs(prev => [...prev, { ...emptyLeg }]);
-  };
-
-  const removeLeg = (
-    legs: LegFormData[],
-    setLegs: React.Dispatch<React.SetStateAction<LegFormData[]>>,
-    index: number
-  ) => {
-    if (legs.length > 1) {
-      setLegs(prev => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  const toggleTraveler = (travelerId: number) => {
-    setSelectedTravelers(prev =>
-      prev.includes(travelerId)
-        ? prev.filter(id => id !== travelerId)
-        : [...prev, travelerId]
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-
+    const payload = {
+      ...form,
+      outbound_duration_minutes: toMin(outHours, outMins),
+      return_duration_minutes: form.flight_type === 'round_trip' ? toMin(retHours, retMins) : null,
+      depart_datetime: compose(depDate, depTime),
+      arrive_datetime: compose(arrDate, arrTime),
+      return_depart_datetime: form.flight_type === 'round_trip' ? compose(retDepDate, retDepTime) : null,
+      return_arrive_datetime: form.flight_type === 'round_trip' ? compose(retArrDate, retArrTime) : null,
+    };
+    const editing = form.flight_option_id != null;
     try {
-      const formatLegs = (legs: LegFormData[]): CreateFlightLegInput[] =>
-        legs.map((leg, index) => ({
-          leg_order: index + 1,
-          departure_airport: leg.departure_airport.toUpperCase(),
-          arrival_airport: leg.arrival_airport.toUpperCase(),
-          departure_date: leg.departure_date,
-          departure_time: leg.departure_time || undefined,
-          arrival_date: leg.arrival_date,
-          arrival_time: leg.arrival_time || undefined,
-          airline: leg.airline || undefined,
-          flight_number: leg.flight_number || undefined,
-          stops_count: leg.stops_count,
-          duration_minutes: leg.duration_minutes ? Number(leg.duration_minutes) : undefined,
-        }));
-
-      const payload: any = {
-        flight_type: flightType,
-        unit_fare: unitFare  ? parseFloat(unitFare) : undefined,
-        currency_code: currencyCode || undefined,
-        notes: notes || undefined,
-        legs: formatLegs(outboundLegs),
-        traveler_ids: selectedTravelers,
-      };
-
-      if (flightType === 'round_trip') {
-        payload.return_legs = formatLegs(returnLegs);
-      }
-
-      let response;
-      if (isEditing) {
-        response = await fetch(`/api/trips/${tripId}/flights/${flight.flight_option_id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-      } else {
-        response = await fetch(`/api/trips/${tripId}/flights`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-      }
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to save flight');
-      }
-
-      resetForm();
+      const res = await fetch(
+        editing ? `/api/trips/${tripId}/flights/${form.flight_option_id}` : `/api/trips/${tripId}/flights`,
+        { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+      );
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to save');
       onSuccess();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save flight');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
-      setIsSubmitting(false);
+      setSaving(false);
     }
   };
 
-  const renderLegInputs = (
-    legs: LegFormData[],
-    setLegs: React.Dispatch<React.SetStateAction<LegFormData[]>>,
-    label: string,
-    showAddRemove: boolean = false
-  ) => (
-    <div className="space-y-4">
-      <h4 className="text-sm font-medium text-white/80">{label}</h4>
-      {legs.map((leg, index) => (
-        <div key={index} className="space-y-3 p-4 bg-white/5 rounded-lg border border-white/10">
-          {showAddRemove && legs.length > 1 && (
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-white/50">Leg {index + 1}</span>
-              <button
-                type="button"
-                onClick={() => removeLeg(legs, setLegs, index)}
-                className="text-sm py-1 px-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
-              >
-                Remove
-              </button>
-            </div>
-          )}
-
-          {/* Airports row - Stack on mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm text-white/60 mb-1.5">From</label>
-              <input
-                type="text"
-                value={leg.departure_airport}
-                onChange={e => updateLeg(legs, setLegs, index, 'departure_airport', e.target.value)}
-                placeholder="BNE"
-                maxLength={3}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base uppercase placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-white/60 mb-1.5">To</label>
-              <input
-                type="text"
-                value={leg.arrival_airport}
-                onChange={e => updateLeg(legs, setLegs, index, 'arrival_airport', e.target.value)}
-                placeholder="SIN"
-                maxLength={3}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base uppercase placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Departure date/time - Stack on mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="min-w-0">
-              <label className="block text-sm text-white/60 mb-1.5">Departure Date</label>
-              <input
-                type="date"
-                value={leg.departure_date}
-                onChange={e => updateLeg(legs, setLegs, index, 'departure_date', e.target.value)}
-                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
-                required
-              />
-            </div>
-            <div className="min-w-0">
-              <label className="block text-sm text-white/60 mb-1.5">Time</label>
-              <input
-                type="time"
-                value={leg.departure_time}
-                onChange={e => updateLeg(legs, setLegs, index, 'departure_time', e.target.value)}
-                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
-              />
-            </div>
-          </div>
-
-          {/* Arrival date/time - Stack on mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="min-w-0">
-              <label className="block text-sm text-white/60 mb-1.5">Arrival Date</label>
-              <input
-                type="date"
-                value={leg.arrival_date}
-                onChange={e => updateLeg(legs, setLegs, index, 'arrival_date', e.target.value)}
-                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
-                required
-              />
-            </div>
-            <div className="min-w-0">
-              <label className="block text-sm text-white/60 mb-1.5">Time</label>
-              <input
-                type="time"
-                value={leg.arrival_time}
-                onChange={e => updateLeg(legs, setLegs, index, 'arrival_time', e.target.value)}
-                className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
-              />
-            </div>
-          </div>
-
-          {/* Airline & Flight Number - Stack on mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm text-white/60 mb-1.5">Airline</label>
-              <input
-                type="text"
-                value={leg.airline}
-                onChange={e => updateLeg(legs, setLegs, index, 'airline', e.target.value)}
-                placeholder="QF"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-white/60 mb-1.5">Flight #</label>
-              <input
-                type="text"
-                value={leg.flight_number}
-                onChange={e => updateLeg(legs, setLegs, index, 'flight_number', e.target.value)}
-                placeholder="52"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-              />
-            </div>
-          </div>
-
-          {/* Stops & Duration - Stack on mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm text-white/60 mb-1.5">Stops</label>
-              <input
-                type="number"
-                value={leg.stops_count}
-                onChange={e => updateLeg(legs, setLegs, index, 'stops_count', parseInt(e.target.value) || 0)}
-                min="0"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-white/60 mb-1.5">Duration (min)</label>
-              <input
-                type="number"
-                value={leg.duration_minutes}
-                onChange={e => updateLeg(legs, setLegs, index, 'duration_minutes', e.target.value ? parseInt(e.target.value) : '')}
-                placeholder="480"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-              />
-              {leg.duration_minutes && Number(leg.duration_minutes) > 0 && (
-                <p className="text-sm text-primary-300 mt-1.5">
-                  {Math.floor(Number(leg.duration_minutes) / 60)}h {Number(leg.duration_minutes) % 60}m
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {showAddRemove && (
-        <button
-          type="button"
-          onClick={() => addLeg(setLegs)}
-          className="w-full py-3 text-base text-primary-400 hover:text-primary-300 border border-dashed border-primary-400/50 rounded-lg hover:border-primary-400 transition-colors"
-        >
-          + Add Leg
-        </button>
-      )}
-    </div>
-  );
-
-  // Sort travelers: active first, then inactive
-  const sortedTravelers = [...travelers].sort((a, b) => b.is_active - a.is_active);
+  const label = 'block text-xs text-white/50 mb-1.5';
+  const field = 'w-full px-3 py-2 rounded-lg text-sm bg-white/10 border border-white/20 text-white focus:outline-none focus:border-primary-400 transition-colors';
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-4 sm:p-6">
-      <h3 className="text-xl font-semibold text-white mb-4">
-        {isEditing ? 'Edit Flight' : 'Add Flight Option'}
+    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-5">
+      <h3 className="text-lg font-semibold text-white mb-4">
+        {form.flight_option_id != null ? 'Edit option' : 'Add flight option'}
       </h3>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-500/20 border border-red-400/30 rounded-lg text-red-300 text-sm">
-          {error}
-        </div>
-      )}
-
-      <div className="space-y-5">
-        {/* Flight Type - Stack on mobile */}
+      {/* Row 1 — route, type, connections, airline, duration */}
+      <div className="flex flex-wrap items-end gap-4 mb-4">
         <div>
-          <label className="block text-sm text-white/70 mb-2">Flight Type</label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {(['one_way', 'round_trip', 'multi_city'] as const).map(type => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setFlightType(type)}
-                className={cn(
-                  'px-4 py-3 text-base rounded-lg border transition-colors',
-                  flightType === type
-                    ? 'bg-primary-500/30 border-primary-400 text-white'
-                    : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
-                )}
-              >
-                {type.replace('_', ' ')}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Outbound Legs */}
-        {renderLegInputs(
-          outboundLegs,
-          setOutboundLegs,
-          flightType === 'round_trip' ? 'Outbound Flight' : flightType === 'multi_city' ? 'Flight Legs' : 'Flight Details',
-          flightType === 'multi_city'
-        )}
-
-        {/* Return Flight (for round_trip) */}
-        {flightType === 'round_trip' && (
-          renderLegInputs(returnLegs, setReturnLegs, 'Return Flight', false)
-        )}
-
-        {/* Fare - Stack on mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm text-white/60 mb-1.5">Unit Fare</label>
-            <input
-              type="number"
-              value={unitFare}
-              onChange={e => setUnitFare(e.target.value)}
-              placeholder="0.00"
-              step="0.01"
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-white/60 mb-1.5">Currency</label>
-            <select
-              value={currencyCode}
-              onChange={e => setCurrencyCode(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
-            >
-              <option value="" className="bg-gray-800">Select</option>
-              {currencies.map(c => (
-                <option key={c.currency_code} value={c.currency_code} className="bg-gray-800">
-                  {c.currency_code}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Total Projected Amount */}
-        {unitFare && selectedTravelers.length > 0 && (() => {
-          const costSharers = travelers.filter(t => 
-            selectedTravelers.includes(t.traveler_id) && t.is_cost_sharer === 1
-          );
-          const costSharerCount = costSharers.length;
-          
-          return costSharerCount > 0 && (
-            <div className="bg-primary-500/10 border border-primary-400/30 rounded-lg p-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm sm:text-base text-white/70">Total Projected</span>
-                <span className="text-xl font-bold text-primary-300">
-                  {currencyCode || ''} {(parseFloat(unitFare) * costSharerCount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-white/50 mt-1">
-                {currencyCode || ''} {parseFloat(unitFare).toLocaleString()} × {costSharerCount} cost sharer{costSharerCount > 1 ? 's' : ''}
-              </p>
-              {selectedTravelers.length > costSharerCount && (
-                <p className="text-xs text-white/40 mt-1">
-                  ({selectedTravelers.length - costSharerCount} non-cost sharer{selectedTravelers.length - costSharerCount > 1 ? 's' : ''} not included in total)
-                </p>
-              )}
+          <div className={label}>Route</div>
+          <div className="flex items-center gap-2">
+            <div className="w-44">
+              <AirportCombobox value={form.departure_airport} onSelect={(a: AirportChoice) => set('departure_airport', a.iata_code)} />
             </div>
-          );
-        })()}
-
-        {/* Travelers - Circular checkboxes */}
-        {sortedTravelers.length > 0 && (
-          <div>
-            <label className="block text-sm text-white/70 mb-3">Travelers</label>
-            <div className="space-y-2">
-              {sortedTravelers.map(t => (
-                <label
-                  key={t.traveler_id}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-white/5 transition-colors group",
-                    t.is_active === 0 && "opacity-60"
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleTraveler(t.traveler_id)}
-                    className="flex-shrink-0"
-                  >
-                    {selectedTravelers.includes(t.traveler_id) ? (
-                      <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                      </svg>
-                    )}
-                  </button>
-                  <span className="text-base text-white/80">{t.traveler_name}</span>
-                  {t.is_active === 0 && (
-                    <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-400/30">
-                      inactive
-                    </span>
-                  )}
-                </label>
-              ))}
+            <span className="text-white/40">→</span>
+            <div className="w-44">
+              <AirportCombobox value={form.arrival_airport} onSelect={(a: AirportChoice) => set('arrival_airport', a.iata_code)} />
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Notes */}
         <div>
-          <label className="block text-sm text-white/60 mb-1.5">
-            Notes <span className="text-xs text-white/40">(each line becomes a bullet point)</span>
-          </label>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            rows={4}
-            placeholder="Flight source&#10;Seat preferences&#10;Baggage details"
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400 resize-none"
+          <div className={label}>Type</div>
+          <TogglePill
+            value={form.flight_type}
+            onChange={(v) => set('flight_type', v)}
+            options={[{ value: 'one_way', label: 'one-way' }, { value: 'round_trip', label: 'return' }]}
           />
-          {notes && notes.trim() && (
-            <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
-              <p className="text-xs text-white/50 mb-1.5">Preview:</p>
-              <ul className="list-disc list-inside space-y-1">
-                {notes.split('\n').filter(line => line.trim()).map((line, i) => (
-                  <li key={i} className="text-sm text-white/70">{line.trim()}</li>
-                ))}
-              </ul>
+        </div>
+
+        <div>
+          <div className={label}>Connections</div>
+          <TogglePill
+            value={connections}
+            onChange={setConn}
+            options={[{ value: '0', label: 'direct' }, { value: '1', label: '1 stop' }, { value: '2', label: '2 stops' }]}
+          />
+        </div>
+
+        <div className="flex-1 min-w-[160px]">
+          <div className={label}>Airline</div>
+          <input className={field} value={form.airline ?? ''} onChange={(e) => set('airline', e.target.value)} />
+        </div>
+      </div>
+
+      {/* Connection vias */}
+      {connections >= '1' && (
+        <div className="flex items-center gap-2 mb-4 pl-1">
+          <span className="text-xs text-white/40 w-8">via</span>
+          <div className="w-44">
+            <AirportCombobox value={form.connection_1_airport} highlight onSelect={(a: AirportChoice) => set('connection_1_airport', a.iata_code)} />
+          </div>
+          {connections === '2' && (
+            <div className="w-44">
+              <AirportCombobox value={form.connection_2_airport} highlight onSelect={(a: AirportChoice) => set('connection_2_airport', a.iata_code)} />
             </div>
           )}
         </div>
+      )}
 
-        {/* Buttons */}
-        <div className="flex justify-end gap-3 pt-4">
-          <CircleIconButton
-            type="button"
-            variant="default"
-            onClick={handleClear}
-            title="Clear form"
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            }
-          />
-          <CircleIconButton
-            type="submit"
-            variant="primary"
-            isLoading={isSubmitting}
-            title={isEditing ? 'Update flight' : 'Save flight'}
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            }
-          />
+      {/* Row 2 — outbound departure, outbound arrival, price */}
+      <div className="flex flex-wrap items-end gap-4 mb-4">
+        <div>
+          <div className={label}>{form.flight_type === 'round_trip' ? 'Outbound departure' : 'Departure'}</div>
+          <div className="flex gap-2">
+            <input type="date" className={cn(field, 'w-40')} value={depDate} onChange={(e) => setDepDate(e.target.value)} />
+            <input type="time" className={cn(field, 'w-32')} value={depTime} onChange={(e) => setDepTime(e.target.value)} />
+          </div>
+        </div>
+        <div>
+          <div className={label}>{form.flight_type === 'round_trip' ? 'Outbound arrival' : 'Arrival'}</div>
+          <div className="flex gap-2">
+            <input type="date" className={cn(field, 'w-40')} value={arrDate} onChange={(e) => setArrDate(e.target.value)} />
+            <input type="time" className={cn(field, 'w-32')} value={arrTime} onChange={(e) => setArrTime(e.target.value)} />
+          </div>
+        </div>
+        <div>
+          <div className={label}>Duration</div>
+          <div className="flex items-center gap-1">
+            <input className={cn(field, 'w-14 text-center')} placeholder="h" value={outHours} onChange={(e) => setOutHours(e.target.value.replace(/\D/g, ''))} />
+            <span className="text-white/40 text-sm">h</span>
+            <input className={cn(field, 'w-14 text-center')} placeholder="m" value={outMins} onChange={(e) => setOutMins(e.target.value.replace(/\D/g, ''))} />
+            <span className="text-white/40 text-sm">m</span>
+          </div>
+        </div>
+        <div>
+          <div className={label}>Price</div>
+          <div className="flex gap-2">
+            <select className={cn(field, 'w-24')} value={form.currency_code ?? ''} onChange={(e) => set('currency_code', e.target.value)}>
+              <option value="" className="bg-gray-800">—</option>
+              {currencies.map((c) => (
+                <option key={c.currency_code} value={c.currency_code} className="bg-gray-800">{c.currency_code}</option>
+              ))}
+            </select>
+            <input type="number" className={cn(field, 'w-32')} placeholder="0.00" value={form.price ?? ''} onChange={(e) => set('price', e.target.value ? parseFloat(e.target.value) : null)} />
+          </div>
         </div>
       </div>
-    </form>
+
+      {/* Row 3 — return departure, return arrival (return only) */}
+      {form.flight_type === 'round_trip' && (
+        <div className="flex flex-wrap items-end gap-4 mb-4">
+          <div>
+            <div className={label}>Return departure</div>
+            <div className="flex gap-2">
+              <input type="date" className={cn(field, 'w-40')} value={retDepDate} onChange={(e) => setRetDepDate(e.target.value)} />
+              <input type="time" className={cn(field, 'w-32')} value={retDepTime} onChange={(e) => setRetDepTime(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <div className={label}>Return arrival</div>
+            <div className="flex gap-2">
+              <input type="date" className={cn(field, 'w-40')} value={retArrDate} onChange={(e) => setRetArrDate(e.target.value)} />
+              <input type="time" className={cn(field, 'w-32')} value={retArrTime} onChange={(e) => setRetArrTime(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <div className={label}>Duration</div>
+            <div className="flex items-center gap-1">
+              <input className={cn(field, 'w-14 text-center')} placeholder="h" value={retHours} onChange={(e) => setRetHours(e.target.value.replace(/\D/g, ''))} />
+              <span className="text-white/40 text-sm">h</span>
+              <input className={cn(field, 'w-14 text-center')} placeholder="m" value={retMins} onChange={(e) => setRetMins(e.target.value.replace(/\D/g, ''))} />
+              <span className="text-white/40 text-sm">m</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Row 4 — note */}
+      <div className="mb-4">
+        <div className={label}>Note</div>
+        <NoteField value={form.notes ?? ''} onChange={(v) => set('notes', v)} placeholder="Cheapest with reasonable layover" />
+      </div>
+
+      {error && <div className="mb-3 p-2 bg-red-500/20 border border-red-400/30 rounded-lg text-red-300 text-sm">{error}</div>}
+
+      <div className="flex justify-end gap-2">
+        <CircleIconButton variant="default" onClick={onCancel} title="Cancel"
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>} />
+        <CircleIconButton variant="primary" onClick={save} isLoading={saving} disabled={!canSave} title="Save option"
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>} />
+      </div>
+    </div>
   );
 }

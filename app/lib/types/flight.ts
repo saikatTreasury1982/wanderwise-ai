@@ -1,19 +1,23 @@
 export interface FlightOption {
-  flight_option_id: number;
-  trip_id: number;
-  flight_type: 'one_way' | 'round_trip' | 'multi_city';
-  linked_flight_id: number | null;
-  unit_fare: number | null;
+  flight_option_id?: number;
+  trip_id?: number;
+  flight_type: 'one_way' | 'round_trip';
+  departure_airport: string | null;
+  arrival_airport: string | null;
+  connection_1_airport: string | null;
+  connection_2_airport: string | null;
+  airline: string | null;
+  depart_datetime: string | null;
+  arrive_datetime: string | null;
+  return_depart_datetime: string | null;
+  return_arrive_datetime: string | null;
+  outbound_duration_minutes: number | null;
+  return_duration_minutes: number | null;
+  price: number | null;
   currency_code: string | null;
-  status: 'draft' | 'shortlisted' | 'confirmed' | 'not_selected';
   notes: string | null;
-  created_at: string;
-  updated_at: string;
-  legs?: FlightLeg[];
-  travelers?: FlightOptionTraveler[];
-  // For grouped round-trip display
-  return_legs?: FlightLeg[];
-  return_flight_id?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface FlightLeg {
@@ -29,7 +33,8 @@ export interface FlightLeg {
   airline: string | null;
   flight_number: string | null;
   stops_count: number;
-  duration_minutes: number | null;
+  outbound_duration_minutes: number | null;
+  return_duration_minutes: number | null;
 }
 
 export interface FlightOptionTraveler {
