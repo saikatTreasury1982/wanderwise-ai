@@ -43,7 +43,7 @@ export default function TripHubPage({ params }: PageProps) {
   });
   const [travelersCount, setTravelersCount] = useState(0);
   const [travelers, setTravelers] = useState<Traveler[]>([]);
-  const [flightStats, setFlightStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
+  const [flightStats, setFlightStats] = useState<{ bookings: number; planning: number }>({ bookings: 0, planning: 0 });
   const [accommodationStats, setAccommodationStats] = useState<{ total: number; shortlisted: number; confirmed: number }>({ total: 0, shortlisted: 0, confirmed: 0 });
   const [packingStats, setPackingStats] = useState<{ totalItems: number; packedItems: number; percentage: number }>({ totalItems: 0, packedItems: 0, percentage: 0 });
   const [itineraryStats, setItineraryStats] = useState<{ daysPlanned: number; totalDays: number; activitiesCount: number }>({ daysPlanned: 0, totalDays: 0, activitiesCount: 0 });
@@ -71,6 +71,7 @@ export default function TripHubPage({ params }: PageProps) {
         const [
           tripResponse,
           flightsResponse,
+          bookingsResponse,
           accommodationsResponse,
           itineraryResponse,
           packingResponse,
@@ -83,6 +84,7 @@ export default function TripHubPage({ params }: PageProps) {
         ] = await Promise.all([
           fetch(`/api/trips/${tripId}`),
           fetch(`/api/trips/${tripId}/flights`),
+          fetch(`/api/flights/bookings?trip_id=${tripId}`),
           fetch(`/api/trips/${tripId}/accommodations`),
           fetch(`/api/trips/${tripId}/itinerary`),
           fetch(`/api/trips/${tripId}/packing`),
@@ -108,6 +110,7 @@ export default function TripHubPage({ params }: PageProps) {
         const [
           tripData,
           flightsData,
+          bookingsData,
           accommodationsData,
           itineraryData,
           packingData,
@@ -120,6 +123,7 @@ export default function TripHubPage({ params }: PageProps) {
         ] = await Promise.all([
           tripResponse.ok ? tripResponse.json() : null,
           flightsResponse.ok ? flightsResponse.json() : null,
+          bookingsResponse.ok ? bookingsResponse.json() : null,
           accommodationsResponse.ok ? accommodationsResponse.json() : null,
           itineraryResponse.ok ? itineraryResponse.json() : null,
           packingResponse.ok ? packingResponse.json() : null,
@@ -134,12 +138,12 @@ export default function TripHubPage({ params }: PageProps) {
         // Set all state
         if (tripData?.trip) {
           setTrip(tripData.trip);
-          
+
           // Calculate total days
           const start = new Date(tripData.trip.start_date);
           const end = new Date(tripData.trip.end_date);
           const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-          
+
           // Set itinerary stats with calculated days
           if (itineraryData) {
             const daysPlanned = itineraryData.length;
@@ -150,14 +154,9 @@ export default function TripHubPage({ params }: PageProps) {
           }
         }
 
-        if (flightsData) {
-          const flights = flightsData || [];
-          setFlightStats({
-            total: flights.length,
-            shortlisted: flights.filter((f: any) => f.status === 'shortlisted').length,
-            confirmed: flights.filter((f: any) => f.status === 'confirmed').length,
-          });
-        }
+        const planningCount = (flightsData || []).length;
+        const bookingsCount = bookingsData?.bookings?.length ?? 0;
+        setFlightStats({ planning: planningCount, bookings: bookingsCount });
 
         if (accommodationsData) {
           const accommodations = accommodationsData || [];
@@ -197,16 +196,16 @@ export default function TripHubPage({ params }: PageProps) {
         if (adhocExpensesData) {
           const expenses = adhocExpensesData || [];
           const activeExpenses = expenses.filter((e: any) => e.is_active === 1);
-          
+
           // Calculate total by currency (use first currency found)
           const totals: Record<string, number> = {};
           activeExpenses.forEach((e: any) => {
             totals[e.currency_code] = (totals[e.currency_code] || 0) + e.amount;
           });
-          
+
           const firstCurrency = Object.keys(totals)[0] || '';
           const totalAmount = totals[firstCurrency] || 0;
-          
+
           setAdhocExpensesStats({
             total: expenses.length,
             active: activeExpenses.length,
@@ -263,55 +262,55 @@ export default function TripHubPage({ params }: PageProps) {
   const inactiveTravelers = travelers.filter(t => t.is_active === 0);
 
   const travelerSubtitle = (
-      <div className="space-y-1 text-xs">
-        {primaryTraveler && (
-          <div>
-            <span className="text-white/50">Primary: </span>
-            <span className="text-white/90">{primaryTraveler.traveler_name}</span>
-          </div>
-        )}
-        {costSharers.length > 0 && (
-          <div>
-            <span className="text-green-400">{costSharers.length}</span>
-            <span className="text-white/50"> cost sharer</span>
-          </div>
-        )}
-        {nonCostSharers.length > 0 && (
-          <div>
-            <span className="text-blue-400">{nonCostSharers.length}</span>
-            <span className="text-white/50"> non-cost sharer</span>
-          </div>
-        )}
-        {inactiveTravelers.length > 0 && (
-          <div>
-            <span className="text-yellow-400">{inactiveTravelers.length}</span>
-            <span className="text-white/50"> inactive</span>
-          </div>
-        )}
-      </div>
-    );
-
-    const flightSubtitle = flightStats.total > 0 ? (
     <div className="space-y-1 text-xs">
-      {flightStats.confirmed > 0 && (
+      {primaryTraveler && (
         <div>
-          <span className="text-green-400">{flightStats.confirmed}</span>
-          <span className="text-white/50"> confirmed</span>
+          <span className="text-white/50">Primary: </span>
+          <span className="text-white/90">{primaryTraveler.traveler_name}</span>
         </div>
       )}
-      {flightStats.shortlisted > 0 && (
+      {costSharers.length > 0 && (
         <div>
-          <span className="text-yellow-400">{flightStats.shortlisted}</span>
-          <span className="text-white/50"> shortlisted</span>
+          <span className="text-green-400">{costSharers.length}</span>
+          <span className="text-white/50"> cost sharer</span>
         </div>
       )}
-      {flightStats.confirmed === 0 && flightStats.shortlisted === 0 && (
+      {nonCostSharers.length > 0 && (
         <div>
-          <span className="text-white/50">No selection yet</span>
+          <span className="text-blue-400">{nonCostSharers.length}</span>
+          <span className="text-white/50"> non-cost sharer</span>
+        </div>
+      )}
+      {inactiveTravelers.length > 0 && (
+        <div>
+          <span className="text-yellow-400">{inactiveTravelers.length}</span>
+          <span className="text-white/50"> inactive</span>
         </div>
       )}
     </div>
-  ) : undefined;
+  );
+
+  const flightSubtitle = flightStats.bookings > 0 || flightStats.planning > 0 ? (
+    <div className="flex items-center gap-2 flex-wrap">
+      {flightStats.bookings > 0 && (
+        <span>
+          <span className="text-green-400">{flightStats.bookings}</span>
+          <span className="text-white/50"> booked</span>
+        </span>
+      )}
+      {flightStats.bookings > 0 && flightStats.planning > 0 && (
+        <span className="text-white/30">·</span>
+      )}
+      {flightStats.planning > 0 && (
+        <span>
+          <span className="text-yellow-400">{flightStats.planning}</span>
+          <span className="text-white/50"> planned</span>
+        </span>
+      )}
+    </div>
+  ) : (
+    <span className="text-white/50">No flights yet</span>
+  );
 
   const accommodationSubtitle = accommodationStats.total > 0 ? (
     <div className="space-y-1 text-xs">
@@ -367,55 +366,55 @@ export default function TripHubPage({ params }: PageProps) {
         />
       </div>
     </div>
-    ) : undefined;
+  ) : undefined;
 
-    const costForecastSubtitle = costForecastStats.totalCost > 0 ? (
-      <div className="space-y-1">
-        <div>
-          <span className="text-green-400 text-sm font-bold">{costForecastStats.baseCurrency} {costForecastStats.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-        </div>
-        <div className="text-xs">
-          <span className="text-primary-400">{costForecastStats.itemsCount}</span>
-          <span className="text-white/50"> items</span>
-        </div>
+  const costForecastSubtitle = costForecastStats.totalCost > 0 ? (
+    <div className="space-y-1">
+      <div>
+        <span className="text-green-400 text-sm font-bold">{costForecastStats.baseCurrency} {costForecastStats.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
       </div>
-    ) : undefined;
+      <div className="text-xs">
+        <span className="text-primary-400">{costForecastStats.itemsCount}</span>
+        <span className="text-white/50"> items</span>
+      </div>
+    </div>
+  ) : undefined;
 
-    const adhocExpensesSubtitle = adhocExpensesStats.active > 0 ? (
-      <div className="space-y-1">
-        <div>
-          <span className="text-green-400 text-sm font-bold">
-            {adhocExpensesStats.currency} {adhocExpensesStats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
-        </div>
-        <div className="text-xs">
-          <span className="text-primary-400">{adhocExpensesStats.active}</span>
-          <span className="text-white/50"> active</span>
-        </div>
+  const adhocExpensesSubtitle = adhocExpensesStats.active > 0 ? (
+    <div className="space-y-1">
+      <div>
+        <span className="text-green-400 text-sm font-bold">
+          {adhocExpensesStats.currency} {adhocExpensesStats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
       </div>
-    ) : undefined;
+      <div className="text-xs">
+        <span className="text-primary-400">{adhocExpensesStats.active}</span>
+        <span className="text-white/50"> active</span>
+      </div>
+    </div>
+  ) : undefined;
 
-    const actualsSubtitle = actualsStats.hasActuals ? (
-      <div className="space-y-1">
-        <div>
-          <span className="text-green-400 text-sm font-bold">
-            {actualsStats.currency} {actualsStats.totalActual.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
-        </div>
-        <div className="text-xs">
-          <span className={actualsStats.variance >= 0 ? 'text-red-400' : 'text-green-400'}>
-            {actualsStats.variance >= 0 ? '+' : ''}{actualsStats.variance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
-          <span className="text-white/50"> variance</span>
-        </div>
-        {actualsStats.settlementsCount > 0 && (
-          <div className="text-xs">
-            <span className="text-yellow-400">{actualsStats.settlementsCount}</span>
-            <span className="text-white/50"> settlement{actualsStats.settlementsCount > 1 ? 's' : ''}</span>
-          </div>
-        )}
+  const actualsSubtitle = actualsStats.hasActuals ? (
+    <div className="space-y-1">
+      <div>
+        <span className="text-green-400 text-sm font-bold">
+          {actualsStats.currency} {actualsStats.totalActual.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
       </div>
-    ) : undefined;
+      <div className="text-xs">
+        <span className={actualsStats.variance >= 0 ? 'text-red-400' : 'text-green-400'}>
+          {actualsStats.variance >= 0 ? '+' : ''}{actualsStats.variance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+        <span className="text-white/50"> variance</span>
+      </div>
+      {actualsStats.settlementsCount > 0 && (
+        <div className="text-xs">
+          <span className="text-yellow-400">{actualsStats.settlementsCount}</span>
+          <span className="text-white/50"> settlement{actualsStats.settlementsCount > 1 ? 's' : ''}</span>
+        </div>
+      )}
+    </div>
+  ) : undefined;
 
   return (
     <div className="min-h-screen relative p-6">
@@ -461,7 +460,7 @@ export default function TripHubPage({ params }: PageProps) {
           </button>
 
           <h1 className="text-3xl font-bold text-white mb-3">{trip.trip_name}</h1>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             {destinations.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
@@ -481,14 +480,14 @@ export default function TripHubPage({ params }: PageProps) {
                 ))}
               </div>
             )}
-            
+
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
               <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-sm text-white/90">{formatDateRange(trip.start_date, trip.end_date, preferences.date_format)}</span>
             </div>
-            
+
             {(() => {
               const start = new Date(trip.start_date);
               const end = new Date(trip.end_date);
@@ -523,8 +522,8 @@ export default function TripHubPage({ params }: PageProps) {
           <HubTile
             title="Flights"
             onClick={() => router.push(`/dashboard/trip/${tripId}/flights`)}
-            count={flightStats.total > 0 ? flightStats.total : undefined}
-            countLabel={flightStats.total > 0 ? "Flight Options" : undefined}
+            count={flightStats.bookings > 0 ? flightStats.bookings : undefined}
+            countLabel={flightStats.bookings > 0 ? "Booked" : undefined}
             subtitle={flightSubtitle}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
