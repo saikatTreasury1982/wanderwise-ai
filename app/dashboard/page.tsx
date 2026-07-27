@@ -11,6 +11,7 @@ import TripSummaryModal from '@/app/components/organisms/TripSummaryModal';
 import PackingAlertWidget from '@/app/components/organisms/PackingAlertWidget';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import { MoreVertical, Settings, LogOut } from 'lucide-react';
+import SelectPill from '@/app/components/ui/SelectPill';
 
 interface Trip {
   trip_id: number;
@@ -302,9 +303,10 @@ export default function DashboardPage() {
               <div className="relative">
                 <CircleIconButton
                   variant="default"
+                  size = "small"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   title="Menu"
-                  icon={<MoreVertical className="w-6 h-6" />}
+                  icon={<MoreVertical className="w-4 h-4" />}
                 />
 
                 {/* Dropdown Menu */}
@@ -317,7 +319,7 @@ export default function DashboardPage() {
                     />
 
                     {/* Menu */}
-                    <div className="absolute right-0 top-14 z-50 w-48 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 z-50 w-48 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl overflow-hidden">
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
@@ -359,28 +361,22 @@ export default function DashboardPage() {
               <div className="mb-4">
                 <div className="flex items-center gap-3 mt-4 flex-wrap">
                   {/* Year Filter */}
-                  <select
+                  <SelectPill
                     value={filterYear}
-                    onChange={(e) => setFilterYear(e.target.value)}
-                    className="px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/15 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent [&>option]:bg-gray-800 [&>option]:text-white"
-                  >
-                    <option value="all">All Years</option>
-                    {uniqueYears.map(year => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
+                    onChange={setFilterYear}
+                    ariaLabel="Filter by year"
+                    placeholderOption={{ value: 'all', label: 'All Years' }}
+                    options={uniqueYears.map((y) => ({ value: y, label: y }))}
+                  />
 
                   {/* Destination Filter */}
-                  <select
+                  <SelectPill
                     value={filterDestination}
-                    onChange={(e) => setFilterDestination(e.target.value)}
-                    className="px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/15 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent [&>option]:bg-gray-800 [&>option]:text-white"
-                  >
-                    <option value="all">All Destinations</option>
-                    {uniqueDestinations.map(dest => (
-                      <option key={dest} value={dest}>{dest}</option>
-                    ))}
-                  </select>
+                    onChange={setFilterDestination}
+                    ariaLabel="Filter by destination"
+                    placeholderOption={{ value: 'all', label: 'All Destinations' }}
+                    options={uniqueDestinations.map((d) => ({ value: d, label: d }))}
+                  />
 
                   {/* Clear Filters Button */}
                   {hasActiveFilters && (
