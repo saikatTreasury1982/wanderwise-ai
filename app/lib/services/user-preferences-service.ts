@@ -12,6 +12,20 @@ interface UserPreferences {
   updated_at: string;
 }
 
+export async function updateUserTheme(userId: string, theme: string): Promise<void> {
+  try {
+    await query(
+      `UPDATE user_preferences
+       SET theme = ?, updated_at = datetime('now')
+       WHERE user_id = ?`,
+      [theme, userId]
+    );
+  } catch (error) {
+    console.error('Error updating user theme:', error);
+    throw error;
+  }
+}
+
 export async function getUserPreferences(userId: string): Promise<UserPreferences | null> {
   try {
     const preferences = await query<UserPreferences>(

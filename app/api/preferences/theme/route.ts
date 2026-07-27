@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { getSession } from '@/app/lib/services/session-service';
 import { isValidTheme } from '@/app/lib/config/theme';
-import { query } from '@/app/lib/db';
+import { updateUserTheme } from '@/app/lib/services/user-preferences-service';
 
 export async function PATCH(request: Request) {
   try {
@@ -10,18 +12,18 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Invalid theme' }, { status: 400 });
     }
 
-    // Match how your other preference routes get the user.
-    const userId = await getUserId(request);   // <-- replace with your actual call
-    if (!userId) {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get('session')?.value;
+    if (!sessionToken) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    await query(
-      `UPDATE user_preferences
-       SET theme = ?, updated_at = datetime('now')
-       WHERE user_id = ?`,
-      [theme, userId]
-    );
+    const session = await getSession(sessionToken);
+    if (!session) {
+      return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
+    }
+
+    await updateUserTheme(session.user_id, theme);
 
     return NextResponse.json({ theme });
   } catch (error) {

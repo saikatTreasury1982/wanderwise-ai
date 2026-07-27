@@ -303,9 +303,10 @@ export default function DashboardPage() {
               <div className="relative">
                 <CircleIconButton
                   variant="default"
+                  size = "small"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   title="Menu"
-                  icon={<MoreVertical className="w-6 h-6" />}
+                  icon={<MoreVertical className="w-4 h-4" />}
                 />
 
                 {/* Dropdown Menu */}
@@ -318,7 +319,7 @@ export default function DashboardPage() {
                     />
 
                     {/* Menu */}
-                    <div className="absolute right-0 top-14 z-50 w-48 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 z-50 w-48 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl overflow-hidden">
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
