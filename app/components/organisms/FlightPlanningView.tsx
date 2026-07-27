@@ -99,7 +99,6 @@ export default function FlightPlanningView({ tripId, currencies }: Props) {
             flights={flights}
             onEdit={handleEdit}
             onDelete={handleDelete}
-            onSelect={handleSelect}
           />
         </div>
       </div>
