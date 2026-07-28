@@ -95,7 +95,7 @@ export default function TravelersPage({ params }: PageProps) {
     const loadData = async () => {
       setIsLoading(true);
       await Promise.all([fetchTrip(), fetchTravelers(), fetchRelationships()]);
-      
+
       // Fetch user preferences
       try {
         const prefRes = await fetch('/api/user/preferences');
@@ -106,7 +106,7 @@ export default function TravelersPage({ params }: PageProps) {
       } catch (error) {
         console.error('Error fetching preferences:', error);
       }
-      
+
       setIsLoading(false);
     };
     loadData();
@@ -189,7 +189,7 @@ export default function TravelersPage({ params }: PageProps) {
 
           <h1 className="text-3xl font-bold text-white mb-3">Travelers</h1>
           <p className="text-white/70 text-lg mb-3">{trip.trip_name}</p>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             {(trip.destination_city || trip.destination_country) && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
@@ -200,14 +200,14 @@ export default function TravelersPage({ params }: PageProps) {
                 <span className="text-sm text-white/90">{[trip.destination_city, trip.destination_country].filter(Boolean).join(', ')}</span>
               </div>
             )}
-            
+
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full border border-white/20">
               <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-sm text-white/90">{formatDateRange(trip.start_date, trip.end_date, dateFormat)}</span>
             </div>
-            
+
             {(() => {
               const start = new Date(trip.start_date);
               const end = new Date(trip.end_date);
@@ -223,18 +223,13 @@ export default function TravelersPage({ params }: PageProps) {
         </div>
 
         {/* Main content - Two columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left column - Form */}
-          <div>
-            <TravelerForm
-              tripId={parseInt(tripId)}
-              traveler={selectedTraveler}
-              onSuccess={handleFormSuccess}
-              onClear={handleFormClear}
-            />
-          </div>
-
-          {/* Right column - Travelers list */}
+        <div className="space-y-6">
+          <TravelerForm
+            tripId={parseInt(tripId)}
+            traveler={selectedTraveler}
+            onSuccess={handleFormSuccess}
+            onClear={handleFormClear}
+          />
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">
@@ -254,7 +249,6 @@ export default function TravelersPage({ params }: PageProps) {
                     traveler={traveler}
                     relationships={relationships}
                     onEdit={handleEdit}
-                    onCopy={handleCopy}
                     onDelete={handleDelete}
                   />
                 ))}

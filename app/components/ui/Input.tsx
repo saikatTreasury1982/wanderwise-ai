@@ -28,13 +28,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
 
     const baseStyles =
-      'w-full rounded-lg px-4 py-2.5 text-base font-normal text-neutral-800 placeholder:text-neutral-400 transition-all duration-250 ease-in-out focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed';
+      'w-full rounded-md px-4 py-1 text-base font-normal text-neutral-800 placeholder:text-neutral-400 transition-all duration-250 ease-in-out focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
     const variants = {
       default:
         'bg-white border border-neutral-200 hover:border-neutral-300 focus:border-primary-500 focus:ring-primary-200',
       glass:
-        'bg-white/95 border border-white/40 focus:border-primary-400 focus:ring-primary-300/50 shadow-lg',
+        'bg-white/10 border border-white/20 text-white placeholder:text-white/30 focus:border-primary-400 focus:ring-primary-400/50',
     };
 
     const errorStyles = error
