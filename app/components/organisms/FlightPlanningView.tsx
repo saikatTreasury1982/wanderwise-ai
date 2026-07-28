@@ -96,6 +96,7 @@ export default function FlightPlanningView({ tripId, currencies }: Props) {
             Saved Options ({flights.length})
           </h3>
           <FlightComparisonTable
+            tripId={tripId}
             flights={flights}
             onEdit={handleEdit}
             onDelete={handleDelete}
