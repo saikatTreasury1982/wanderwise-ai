@@ -197,129 +197,102 @@ export default function TravelerForm({
           </div>
         )}
 
-        <Input
-          name="traveler_name"
-          label="Name"
-          placeholder="e.g., John Doe"
-          value={formData.traveler_name}
-          onChange={handleChange}
-          error={errors.traveler_name}
-          variant="glass"
-          required
-        />
-
-        <Input
-          name="traveler_email"
-          type="email"
-          label="Email"
-          placeholder="e.g., john@example.com"
-          value={formData.traveler_email}
-          onChange={handleChange}
-          variant="glass"
-        />
-
-        <div>
-          <label className="block text-sm font-medium text-white/90 mb-1">
-            Relationship
-          </label>
-          <select
-            name="relationship"
-            value={formData.relationship}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
-          >
-            <option value="" className="bg-gray-800 text-white">Select relationship</option>
-            {relationships.map((rel) => (
-              <option key={rel.relationship_code} value={rel.relationship_code} className="bg-gray-800 text-white">
-                {rel.relationship_name}
-              </option>
-            ))}
-          </select>
+        {/* Row 1 — name, email, relationship, currency */}
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[180px]">
+            <Input
+              name="traveler_name"
+              label="Traveler Name"
+              placeholder="e.g., John Doe"
+              value={formData.traveler_name}
+              onChange={handleChange}
+              error={errors.traveler_name}
+              variant="glass"
+              required
+            />
+          </div>
+          <div className="flex-1 min-w-[180px]">
+            <Input
+              name="traveler_email"
+              type="email"
+              label="Email"
+              placeholder="e.g., john@example.com"
+              value={formData.traveler_email}
+              onChange={handleChange}
+              variant="glass"
+            />
+          </div>
+          <div className="flex-1 min-w-[150px]">
+            <label className="block text-sm font-medium text-white/90 mb-1">Relationship</label>
+            <select
+              name="relationship"
+              value={formData.relationship}
+              onChange={handleChange}
+              className="w-full px-4 py-1.5 rounded-md bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+            >
+              <option value="" className="bg-gray-800 text-white">Select relationship</option>
+              {relationships.map((rel) => (
+                <option key={rel.relationship_code} value={rel.relationship_code} className="bg-gray-800 text-white">{rel.relationship_name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1 min-w-[150px]">
+            <label className="block text-sm font-medium text-white/90 mb-1">Currency</label>
+            <select
+              name="traveler_currency"
+              value={formData.traveler_currency}
+              onChange={handleChange}
+              className="w-full px-4 py-1.5 rounded-md bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+            >
+              <option value="" className="bg-gray-800 text-white">Select currency</option>
+              {currencies.map((curr) => (
+                <option key={curr.currency_code} value={curr.currency_code} className="bg-gray-800 text-white">{curr.currency_code} - {curr.currency_name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-white/90 mb-1">
-            Currency
-          </label>
-          <select
-            name="traveler_currency"
-            value={formData.traveler_currency}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+        {/* Row 2 — toggles */}
+        <div className="flex flex-wrap items-center gap-6">
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, is_primary: !prev.is_primary }))}
+            className="flex items-center gap-2 group"
           >
-            <option value="" className="bg-gray-800 text-white">Select currency</option>
-            {currencies.map((curr) => (
-              <option key={curr.currency_code} value={curr.currency_code} className="bg-gray-800 text-white">
-                {curr.currency_code} - {curr.currency_name}
-              </option>
-            ))}
-          </select>
-        </div>
+            <span className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${formData.is_primary ? 'bg-primary-500 border-primary-400 text-white' : 'bg-white/5 border-white/30 text-transparent group-hover:border-primary-400'}`}>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+            </span>
+            <span className="text-white/90 text-sm">Primary Traveler</span>
+          </button>
 
-        {/* Checkboxes */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <button
-              type="button"
-              onClick={() => setFormData(prev => ({ ...prev, is_primary: !prev.is_primary }))}
-              className="flex-shrink-0"
-            >
-              {formData.is_primary ? (
-                <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                </svg>
-              )}
-            </button>
-            <span className="text-white/90">Primary Traveler</span>
-          </label>
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, is_cost_sharer: !prev.is_cost_sharer }))}
+            className="flex items-center gap-2 group"
+          >
+            <span className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${formData.is_cost_sharer ? 'bg-primary-500 border-primary-400 text-white' : 'bg-white/5 border-white/30 text-transparent group-hover:border-primary-400'}`}>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+            </span>
+            <span className="text-white/90 text-sm">Cost Sharer</span>
+          </button>
 
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <button
-              type="button"
-              onClick={() => setFormData(prev => ({ ...prev, is_cost_sharer: !prev.is_cost_sharer }))}
-              className="flex-shrink-0"
-            >
-              {formData.is_cost_sharer ? (
-                <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                </svg>
-              )}
-            </button>
-            <span className="text-white/90">Cost Sharer</span>
-          </label>
-
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <button
-              type="button"
-              onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
-              className="flex-shrink-0"
-            >
-              {formData.is_active ? (
-                <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5 text-white/30 group-hover:text-white/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                </svg>
-              )}
-            </button>
-            <span className="text-white/90">Active</span>
-          </label>
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
+            className="flex items-center gap-2 group"
+          >
+            <span className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${formData.is_active ? 'bg-primary-500 border-primary-400 text-white' : 'bg-white/5 border-white/30 text-transparent group-hover:border-primary-400'}`}>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+            </span>
+            <span className="text-white/90 text-sm">Active</span>
+          </button>
         </div>
 
         {/* Buttons */}
         <div className="flex justify-end gap-3 pt-4">
           <CircleIconButton
             type="button"
+            size="small"
             variant="default"
             onClick={handleClear}
             title="Clear form"
@@ -332,13 +305,14 @@ export default function TravelerForm({
 
           <CircleIconButton
             type="submit"
+            size="small"
             variant="primary"
             disabled={isLoading}
             isLoading={isLoading}
             title={isEditMode ? 'Update traveler' : 'Add traveler'}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M 13l4 4L19 7" />
               </svg>
             }
           />
