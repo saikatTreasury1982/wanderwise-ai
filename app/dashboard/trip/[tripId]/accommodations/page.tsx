@@ -7,8 +7,7 @@ import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import AccommodationEntryForm from '@/app/components/organisms/AccommodationEntryForm';
-import AccommodationOptionCard from '@/app/components/organisms/AccommodationOptionCard';
-import AccommodationViewModal from '@/app/components/organisms/AccommodationViewModal';
+import AccommodationComparisonTable from '@/app/components/organisms/AccommodationComparisonTable';
 import RecommendationSlider from '@/app/components/organisms/RecommendationSlider';
 import { formatDateRange } from '@/app/lib/utils';
 import type { AccommodationOption, AccommodationType } from '@/app/lib/types/accommodation';
@@ -55,7 +54,6 @@ export default function AccommodationsPage({ params }: PageProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingAccommodation, setEditingAccommodation] = useState<AccommodationOption | null>(null);
-  const [viewingAccommodation, setViewingAccommodation] = useState<AccommodationOption | null>(null);
   const [showRecommendationSlider, setShowRecommendationSlider] = useState(false);
 
   const fetchAccommodations = async () => {
@@ -73,46 +71,34 @@ export default function AccommodationsPage({ params }: PageProps) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch trip
         const tripResponse = await fetch(`/api/trips/${tripId}`);
-        if (tripResponse.status === 401) {
-          router.push('/login');
-          return;
-        }
-        if (tripResponse.status === 404) {
-          router.push('/dashboard');
-          return;
-        }
+        if (tripResponse.status === 401) { router.push('/login'); return; }
+        if (tripResponse.status === 404) { router.push('/dashboard'); return; }
         if (tripResponse.ok) {
           const tripData = await tripResponse.json();
           setTrip(tripData.trip);
         }
 
-        // Fetch accommodations
         await fetchAccommodations();
 
-        // Fetch travelers
         const travelersResponse = await fetch(`/api/trips/${tripId}/travelers`);
         if (travelersResponse.ok) {
           const travelersData = await travelersResponse.json();
           setTravelers(travelersData.travelers);
         }
 
-        // Fetch currencies
         const currenciesResponse = await fetch('/api/currencies');
         if (currenciesResponse.ok) {
           const currenciesData = await currenciesResponse.json();
           setCurrencies(currenciesData.currencies || currenciesData || []);
         }
 
-        // Fetch accommodation types
         const typesResponse = await fetch('/api/accommodation-types');
         if (typesResponse.ok) {
           const typesData = await typesResponse.json();
           setAccommodationTypes(typesData);
         }
 
-        // Fetch preferences
         const prefResponse = await fetch('/api/user/preferences');
         if (prefResponse.ok) {
           const prefData = await prefResponse.json();
@@ -128,43 +114,16 @@ export default function AccommodationsPage({ params }: PageProps) {
     fetchData();
   }, [tripId, router]);
 
-  const handleView = (accommodation: AccommodationOption) => {
-    setViewingAccommodation(accommodation);
-  };
-
   const handleEdit = (accommodation: AccommodationOption) => {
     setEditingAccommodation(accommodation);
     setShowForm(true);
   };
 
-  const handleCopy = async (accommodation: AccommodationOption) => {
-    setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/trips/${tripId}/accommodations/${accommodation.accommodation_option_id}`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        await fetchAccommodations();
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to copy accommodation');
-      }
-    } catch (error) {
-      console.error('Error copying accommodation:', error);
-      alert('Failed to copy accommodation');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   const handleDelete = async (accommodationId: number) => {
     if (!confirm('Are you sure you want to delete this accommodation?')) return;
-
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/trips/${tripId}/accommodations/${accommodationId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(`/api/trips/${tripId}/accommodations/${accommodationId}`, { method: 'DELETE' });
       if (response.ok) {
         await fetchAccommodations();
       } else {
@@ -227,47 +186,12 @@ export default function AccommodationsPage({ params }: PageProps) {
 
   const destination = [trip.destination_city, trip.destination_country].filter(Boolean).join(', ');
 
-  // Group accommodations by status
-  const confirmedAccommodations = accommodations.filter(a => a.status === 'confirmed');
-  const shortlistedAccommodations = accommodations.filter(a => a.status === 'shortlisted');
-  const draftAccommodations = accommodations.filter(a => a.status === 'draft');
-  const notSelectedAccommodations = accommodations.filter(a => a.status === 'not_selected');
-
-  const renderAccommodationGroup = (title: string, items: AccommodationOption[]) => {
-    if (items.length === 0) return null;
-
-    const colorClass =
-      title === 'Confirmed' ? 'text-green-400' :
-        title === 'Shortlisted' ? 'text-yellow-400' :
-          title === 'Draft' ? 'text-gray-400' :
-            'text-red-400';
-
-    return (
-      <div>
-        <h4 className={`text-sm font-medium ${colorClass} mb-2`}>{title}</h4>
-        <div className="space-y-3">
-          {items.map(accommodation => (
-            <AccommodationOptionCard
-              key={accommodation.accommodation_option_id}
-              accommodation={accommodation}
-              onView={handleView}
-              onEdit={handleEdit}
-              onCopy={handleCopy}
-              onDelete={handleDelete}
-              onStatusChange={handleStatusChange}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen relative p-4 sm:p-6 pb-24">
       <PageBackground />
       <LoadingOverlay isLoading={isProcessing} />
 
-      <div className="relative z-10 max-w-5xl mx-auto">
+      <div className="relative z-10 max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <button
@@ -316,30 +240,25 @@ export default function AccommodationsPage({ params }: PageProps) {
         </div>
 
         {/* Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Form Column */}
+        <div className="space-y-6">
           {showForm && (
-            <div>
-              <AccommodationEntryForm
-                tripId={Number(tripId)}
-                accommodation={editingAccommodation}
-                travelers={travelers}
-                currencies={currencies}
-                accommodationTypes={accommodationTypes}
-                onSuccess={handleFormSuccess}
-                onClear={handleFormClear}
-              />
-            </div>
+            <AccommodationEntryForm
+              tripId={Number(tripId)}
+              accommodation={editingAccommodation}
+              travelers={travelers}
+              currencies={currencies}
+              accommodationTypes={accommodationTypes}
+              onSuccess={handleFormSuccess}
+              onClear={handleFormClear}
+            />
           )}
 
-          {/* Accommodations List */}
-          <div className={showForm ? '' : 'lg:col-span-2'}>
+          <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">
                 Saved Options ({accommodations.length})
               </h3>
 
-              {/* Smart Suggestions Button */}
               <div className="relative">
                 <div className="absolute inset-0 bg-primary-500/40 rounded-full blur-md animate-pulse" />
                 <CircleIconButton
@@ -354,27 +273,17 @@ export default function AccommodationsPage({ params }: PageProps) {
                 />
               </div>
             </div>
-            {accommodations.length === 0 ? (
-              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-8 text-center">
-                <svg className="w-16 h-16 mx-auto mb-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                <p className="text-white/70 mb-2">No accommodation options yet.</p>
-                <p className="text-white/50 text-sm">Click the + button to add your first accommodation option.</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {renderAccommodationGroup('Confirmed', confirmedAccommodations)}
-                {renderAccommodationGroup('Shortlisted', shortlistedAccommodations)}
-                {renderAccommodationGroup('Draft', draftAccommodations)}
-                {renderAccommodationGroup('Not Selected', notSelectedAccommodations)}
-              </div>
-            )}
+
+            <AccommodationComparisonTable
+              accommodations={accommodations}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onStatusChange={handleStatusChange}
+            />
           </div>
         </div>
       </div>
 
-      {/* FAB */}
       {!showForm && (
         <FloatingActionButton
           onClick={() => {
@@ -385,23 +294,14 @@ export default function AccommodationsPage({ params }: PageProps) {
         />
       )}
 
-      {/* Accommodation View Modal */}
-      <AccommodationViewModal
-        isOpen={viewingAccommodation !== null}
-        onClose={() => setViewingAccommodation(null)}
-        accommodation={viewingAccommodation}
-      />
-
-      {/* Recommendation Slider */}
       <RecommendationSlider
         isOpen={showRecommendationSlider}
         onClose={() => setShowRecommendationSlider(false)}
         type="accommodations"
         tripId={parseInt(tripId)}
         onAddRecommendation={(rec: any) => {
-          // Convert recommendation to AccommodationOption format for pre-filling
           const prefilledAccommodation: AccommodationOption = {
-            accommodation_option_id: 0, // New accommodation, so ID is 0
+            accommodation_option_id: 0,
             trip_id: parseInt(tripId),
             type_name: rec.accommodation_type,
             accommodation_name: rec.property_name,
@@ -423,8 +323,6 @@ export default function AccommodationsPage({ params }: PageProps) {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           };
-
-          // Set the pre-filled accommodation and show the form
           setEditingAccommodation(prefilledAccommodation);
           setShowForm(true);
           setShowRecommendationSlider(false);

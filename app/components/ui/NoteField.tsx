@@ -26,7 +26,7 @@ export default function NoteField({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="w-full px-3 py-2 rounded-lg text-sm bg-white/10 border border-white/20 text-white placeholder:text-white/30 focus:outline-none focus:border-primary-400 transition-colors resize-none"
+        className="w-full px-3 py-2 rounded-lg text-sm bg-white/10 border border-white/20 text-white placeholder:text-white/30 focus:outline-none focus:border-primary-400 transition-colors resize-none custom-scrollbar"
       />
       {lines.length > 0 && (
         <ul className="mt-2 space-y-1">
