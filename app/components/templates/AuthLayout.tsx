@@ -6,12 +6,14 @@ export interface AuthLayoutProps {
   children: ReactNode;
   title: string;
   subtitle?: string;
+  maxWidth?: string;
 }
 
 export default function AuthLayout({
   children,
   title,
   subtitle,
+  maxWidth = 'max-w-md',
 }: AuthLayoutProps) {
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
@@ -19,7 +21,7 @@ export default function AuthLayout({
       <PageBackground />
 
       {/* Auth Card */}
-      <div className="w-full max-w-md relative z-10 animate-scale-in">
+      <div className={`w-full ${maxWidth} relative z-10 animate-scale-in`}>
         {/* Logo */}
         <div className="text-center mb-8">
           <Logo size="lg" showTagline />

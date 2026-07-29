@@ -333,8 +333,9 @@ export default function CostForecastPage({ params }: PageProps) {
                   disabled={collecting}
                   isLoading={collecting}
                   variant="default"
+                  size="small"
                   title="Collect Costs"
-                  icon={<Play className="w-5 h-5" />}
+                  icon={<Play className="w-4 h-4" />}
                 />
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                   Collect Costs
@@ -349,8 +350,9 @@ export default function CostForecastPage({ params }: PageProps) {
                     disabled={refreshing}
                     isLoading={refreshing}
                     variant="default"
+                    size="small"
                     title="Refresh Exchange Rates"
-                    icon={<RefreshCw className="w-5 h-5" />}
+                    icon={<RefreshCw className="w-4 h-4" />}
                   />
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                     Refresh Exchange Rates

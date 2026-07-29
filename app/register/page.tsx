@@ -12,6 +12,7 @@ export default function RegisterPage() {
     <AuthLayout
       title="Create Account"
       subtitle="Start planning your travels with WanderWise"
+      maxWidth="max-w-3xl"
     >
       <RegistrationForm />
     </AuthLayout>

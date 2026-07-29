@@ -226,24 +226,26 @@ export default function ItineraryAddModal({
                     <div className="flex items-center justify-end gap-3 p-6 border-t border-white/10">
                         <CircleIconButton
                             variant="default"
+                            size="small"
                             onClick={onClose}
                             title="Cancel"
                             icon={
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             }
                         />
                         <CircleIconButton
                             variant="primary"
+                            size="small"
                             onClick={handleConfirm}
                             title="Confirm Add"
                             disabled={finalActivitiesCount === 0 || isProcessing}
                             icon={
                                 isProcessing ? (
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                 ) : (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
                                 )

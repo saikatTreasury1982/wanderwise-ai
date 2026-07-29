@@ -235,10 +235,10 @@ export default function FlightEntryForm({ tripId, option, currencies, onSuccess,
       {error && <div className="mb-3 p-2 bg-red-500/20 border border-red-400/30 rounded-lg text-red-300 text-sm">{error}</div>}
 
       <div className="flex justify-end gap-2">
-        <CircleIconButton variant="default" onClick={onCancel} title="Cancel"
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>} />
-        <CircleIconButton variant="primary" onClick={save} isLoading={saving} disabled={!canSave} title="Save option"
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>} />
+        <CircleIconButton variant="default" size="small" onClick={onCancel} title="Cancel"
+          icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>} />
+        <CircleIconButton variant="primary" size="small" onClick={save} isLoading={saving} disabled={!canSave} title="Save option"
+          icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>} />
       </div>
     </div>
   );
