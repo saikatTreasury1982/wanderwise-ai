@@ -8,8 +8,6 @@ import AdhocExpenseCard from '@/app/components/organisms/AdhocExpenseCard';
 import AdhocExpenseViewModal from '@/app/components/organisms/AdhocExpenseViewModal';
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import AdhocExpenseEntryForm from '@/app/components/organisms/AdhocExpenseEntryForm';
-import CircleIconButton from '@/app/components/ui/CircleIconButton';
-import { cn } from '@/app/lib/utils';
 import type { AdhocExpense, CreateAdhocExpenseInput } from '@/app/lib/types/adhoc-expense';
 import { formatDateRange } from '@/app/lib/utils';
 

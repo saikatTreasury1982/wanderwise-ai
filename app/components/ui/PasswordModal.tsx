@@ -63,7 +63,7 @@ export default function PasswordModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={handleClose}
       />
@@ -113,66 +113,45 @@ export default function PasswordModal({
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                name="password"
-                type="password"
-                label={mode === 'create' ? 'New Password' : 'Password'}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                variant="glass"
-                autoComplete={mode === 'create' ? 'new-password' : 'current-password'}
-                required
-                leftIcon={
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                }
-              />
-
-              {mode === 'create' && (
-                <Input
-                  name="confirmPassword"
-                  type="password"
-                  label="Confirm Password"
-                  placeholder="Re-enter your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  variant="glass"
-                  autoComplete="new-password"
-                  required
-                  leftIcon={
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  }
-                />
+              {mode === 'create' ? (
+                <>
+                  <Input
+                    name="password" type="password" label="New Password" placeholder="Enter your password"
+                    value={password} onChange={(e) => setPassword(e.target.value)} variant="glass"
+                    autoComplete="new-password" required
+                    leftIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>}
+                  />
+                  <Input
+                    name="confirmPassword" type="password" label="Confirm Password" placeholder="Re-enter your password"
+                    value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} variant="glass"
+                    autoComplete="new-password" required
+                    leftIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                  />
+                  <div className="flex justify-center gap-4">
+                    <CircleIconButton type="button" onClick={handleClose} variant="default" size="small" title="Cancel"
+                      icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>} />
+                    <CircleIconButton type="submit" variant="primary" size="small" isLoading={isLoading} title="Create"
+                      icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>} />
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <Input
+                      name="password" type="password" label="Password" placeholder="Enter your password"
+                      value={password} onChange={(e) => setPassword(e.target.value)} variant="glass"
+                      autoComplete="current-password" required
+                      leftIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>}
+                    />
+                  </div>
+                  <div className="flex gap-2 pb-1">
+                    <CircleIconButton type="button" onClick={handleClose} variant="default" size="small" title="Cancel"
+                      icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>} />
+                    <CircleIconButton type="submit" variant="primary" size="small" isLoading={isLoading} title="Continue"
+                      icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>} />
+                  </div>
+                </div>
               )}
-
-              <div className="flex justify-center gap-4">
-                <CircleIconButton
-                  type="button"
-                  onClick={handleClose}
-                  variant="default"
-                  title="Cancel"
-                  icon={
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  }
-                />
-                <CircleIconButton
-                  type="submit"
-                  variant="primary"
-                  isLoading={isLoading}
-                  title={mode === 'create' ? 'Create' : 'Continue'}
-                  icon={
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  }
-                />
-              </div>
             </form>
           </>
         )}

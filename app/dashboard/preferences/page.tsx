@@ -405,6 +405,7 @@ export default function PreferencesPage() {
               {!isAddingAlert && !editingAlertCode && (
                 <CircleIconButton
                   variant="primary"
+                  size="small"
                   onClick={() => setIsAddingAlert(true)}
                   title="Add alert type"
                   className="w-10 h-10 sm:w-12 sm:h-12"
@@ -459,6 +460,7 @@ export default function PreferencesPage() {
                 <div className="flex justify-end gap-2 pt-2">
                   <CircleIconButton
                     variant="default"
+                    size="small"
                     onClick={resetAlertForm}
                     title="Cancel"
                     className="w-9 h-9 sm:w-10 sm:h-10"
@@ -470,6 +472,7 @@ export default function PreferencesPage() {
                   />
                   <CircleIconButton
                     variant="primary"
+                    size="small"
                     onClick={editingAlertCode ? handleUpdateAlert : handleAddAlert}
                     isLoading={isSavingAlert}
                     disabled={!alertFormData.alert_description.trim() || (isAddingAlert && !alertFormData.alert_code.trim())}
@@ -541,6 +544,7 @@ export default function PreferencesPage() {
               {!isAddingPayment && !editingPaymentId && (
                 <CircleIconButton
                   variant="primary"
+                  size="small"
                   onClick={() => setIsAddingPayment(true)}
                   title="Add payment method"
                   className="w-10 h-10 sm:w-12 sm:h-12"
@@ -631,6 +635,7 @@ export default function PreferencesPage() {
                 <div className="flex justify-end gap-2 pt-2">
                   <CircleIconButton
                     variant="default"
+                    size="small"
                     onClick={resetPaymentForm}
                     title="Cancel"
                     className="w-9 h-9 sm:w-10 sm:h-10"
@@ -642,6 +647,7 @@ export default function PreferencesPage() {
                   />
                   <CircleIconButton
                     variant="primary"
+                    size="small"
                     onClick={editingPaymentId ? handleUpdatePayment : handleAddPayment}
                     isLoading={isSavingPayment}
                     disabled={!paymentFormData.payment_method_key.trim()}

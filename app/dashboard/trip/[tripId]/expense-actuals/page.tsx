@@ -383,10 +383,11 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                   disabled={isTransferring}
                   isLoading={isTransferring}
                   variant="primary"
+                  size="small"
                   className="w-14 h-14 sm:w-16 sm:h-16"
                   title="Transfer Forecast to Actuals"
                   icon={
-                    <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
                   }
@@ -411,10 +412,11 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                       disabled={isResetting}
                       isLoading={isResetting}
                       variant="default"
+                      size="small"
                       className="w-10 h-10 sm:w-12 sm:h-12"
                       title="Reset Actuals"
                       icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                       }
@@ -683,22 +685,24 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                 <div className="flex justify-end gap-3 pt-4">
                   <CircleIconButton
                     variant="default"
+                    size="small"
                     onClick={closeEditModal}
                     title="Cancel"
                     icon={
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     }
                   />
                   <CircleIconButton
                     variant="primary"
+                    size="small"
                     onClick={handleSaveEdit}
                     isLoading={isSaving}
                     disabled={!editForm.actual_amount}
                     title="Save changes"
                     icon={
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     }

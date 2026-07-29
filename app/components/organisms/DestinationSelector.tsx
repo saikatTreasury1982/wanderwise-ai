@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { MapPin, Plus, X, Search } from 'lucide-react';
-import CircleIconButton from '@/app/components/ui/CircleIconButton';
-
 
 interface Destination {
   country: string;
