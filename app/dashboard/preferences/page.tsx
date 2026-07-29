@@ -408,9 +408,8 @@ export default function PreferencesPage() {
                   size="small"
                   onClick={() => setIsAddingAlert(true)}
                   title="Add alert type"
-                  className="w-10 h-10 sm:w-12 sm:h-12"
                   icon={
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   }
@@ -547,9 +546,8 @@ export default function PreferencesPage() {
                   size="small"
                   onClick={() => setIsAddingPayment(true)}
                   title="Add payment method"
-                  className="w-10 h-10 sm:w-12 sm:h-12"
                   icon={
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   }
