@@ -408,3 +408,5 @@ input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+textarea { scrollbar-width: thin; }

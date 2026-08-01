@@ -194,12 +194,35 @@ export default function ItineraryPage({ params }: PageProps) {
 
   const detail = (
     selectedDayNumber && selectedDay ? (
-      <ItineraryDayCard
-        tripId={Number(tripId)}
-        day={selectedDay}
-        dayDate={selectedDayInfo?.date || selectedDay.day_date}
-        onUpdate={handleDayUpdate}
-      />
+      <div>
+        {/* Prev / Next day */}
+        <div className="flex gap-2 mb-3">
+          <CircleIconButton
+            variant="default"
+            size="small"
+            onClick={() => selectedDayNumber > 1 && handleSelectDay(selectedDayNumber - 1)}
+            disabled={selectedDayNumber <= 1}
+            title="Previous day"
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>}
+          />
+          <CircleIconButton
+            variant="default"
+            size="small"
+            onClick={() => selectedDayNumber < tripDays.length && handleSelectDay(selectedDayNumber + 1)}
+            disabled={selectedDayNumber >= tripDays.length}
+            title="Next day"
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>}
+          />
+        </div>
+
+        <ItineraryDayCard
+          tripId={Number(tripId)}
+          day={selectedDay}
+          dayDate={selectedDayInfo?.date || selectedDay.day_date}
+          dateFormat={dateFormat}
+          onUpdate={handleDayUpdate}
+        />
+      </div>
     ) : selectedDayNumber ? (
       <div className="text-center py-12">
         {isCreatingDay ? (
@@ -290,7 +313,13 @@ export default function ItineraryPage({ params }: PageProps) {
         </div>
       </div>
 
-      <TripReferencePanel isOpen={isReferencePanelOpen} onClose={() => setIsReferencePanelOpen(false)} flights={flights} accommodations={accommodations} dateFormat={dateFormat} />
+      <TripReferencePanel
+        isOpen={isReferencePanelOpen}
+        onClose={() => setIsReferencePanelOpen(false)}
+        tripId={Number(tripId)}
+        accommodations={accommodations}
+        dateFormat={dateFormat}
+      />
 
       <RecommendationSlider
         isOpen={showRecommendationSlider}
