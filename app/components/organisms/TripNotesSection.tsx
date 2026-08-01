@@ -206,7 +206,7 @@ export default function TripNotesSection({ tripId }: TripNotesSectionProps) {
                     onChange={e => setNewNoteContent(e.target.value)}
                     placeholder="Enter notes...&#10;Each line becomes a bullet point"
                     rows={4}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400 resize-none"
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400 resize-none custom-scrollbar"
                 />
             </div>
             <div className="flex justify-end gap-2">
@@ -274,7 +274,7 @@ export default function TripNotesSection({ tripId }: TripNotesSectionProps) {
                             <textarea
                             value={editContent}
                             onChange={e => setEditContent(e.target.value)}
-                            className="w-full px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm focus:outline-none focus:border-primary-400 resize-none"
+                            className="w-full px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm focus:outline-none focus:border-primary-400 resize-none custom-scrollbar"
                             rows={3}
                             autoFocus
                             onKeyDown={e => {
