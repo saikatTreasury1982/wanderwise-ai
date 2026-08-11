@@ -26,6 +26,7 @@ interface Props {
 export default function AccommodationEntryForm({
   tripId, accommodation, travelers, currencies, accommodationTypes, onSuccess, onClear,
 }: Props) {
+  const [copying, setCopying] = useState(false);
   const [typeName, setTypeName] = useState('');
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
@@ -100,21 +101,21 @@ export default function AccommodationEntryForm({
     setSubmitting(true);
     try {
       const payload = {
-        type_name: typeName || undefined,
-        accommodation_name: name || undefined,
-        address: address || undefined,
-        location: location || undefined,
-        check_in_date: ciDate || undefined,
-        check_in_time: ciTime || undefined,
-        check_out_date: coDate || undefined,
-        check_out_time: coTime || undefined,
+        type_name: typeName.trim() || null,
+        accommodation_name: name.trim() || null,
+        address: address.trim() || null,
+        location: location.trim() || null,
+        check_in_date: ciDate.trim() || null,
+        check_in_time: ciTime.trim() || null,
+        check_out_date: coDate.trim() || null,
+        check_out_time: coTime.trim() || null,
         num_rooms: numRooms,
         price_per_night: pricePerNight ? parseFloat(pricePerNight) : undefined,
         total_price: totalPrice ? parseFloat(totalPrice) : undefined,
-        currency_code: currency || undefined,
-        booking_reference: bookingRef || undefined,
-        booking_source: bookingSource || undefined,
-        notes: notes || undefined,
+        currency_code: currency.trim() || null,
+        booking_reference: bookingRef.trim() || null,
+        booking_source: bookingSource.trim() || null,
+        notes: notes.trim() || null,
         traveler_ids: selectedTravelers,
       };
       const res = await fetch(
@@ -130,6 +131,44 @@ export default function AccommodationEntryForm({
       setError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSaveAsCopy = async () => {
+    setError(null);
+    setCopying(true);
+    try {
+      const payload = {
+        type_name: typeName.trim() || null,
+        accommodation_name: name.trim() || null,
+        address: address.trim() || null,
+        location: location.trim() || null,
+        check_in_date: ciDate.trim() || null,
+        check_in_time: ciTime.trim() || null,
+        check_out_date: coDate.trim() || null,
+        check_out_time: coTime.trim() || null,
+        num_rooms: numRooms,
+        price_per_night: pricePerNight ? parseFloat(pricePerNight) : undefined,
+        total_price: totalPrice ? parseFloat(totalPrice) : undefined,
+        currency_code: currency.trim() || null,
+        booking_reference: bookingRef.trim() || null,
+        booking_source: bookingSource.trim() || null,
+        notes: notes.trim() || null,
+        traveler_ids: selectedTravelers,
+      };
+      // always POST — creates a new record even when editing
+      const res = await fetch(`/api/trips/${tripId}/accommodations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to save copy');
+      reset();
+      onSuccess();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to save copy');
+    } finally {
+      setCopying(false);
     }
   };
 
@@ -248,6 +287,12 @@ export default function AccommodationEntryForm({
       <div className="flex justify-end gap-2">
         <CircleIconButton type="button" variant="default" size="small" onClick={handleClear} title="Clear"
           icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>} />
+
+        {isEditing && (
+          <CircleIconButton type="button" variant="default" size="small" onClick={handleSaveAsCopy} isLoading={copying} title="Save as copy"
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>} />
+        )}
+
         <CircleIconButton type="button" variant="primary" size="small" onClick={handleSubmit} isLoading={submitting} title={isEditing ? 'Update' : 'Save'}
           icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>} />
       </div>

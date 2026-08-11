@@ -300,7 +300,6 @@ export default function AdhocExpensesPage({ params }: PageProps) {
           {showForm && (
             <div>
               <AdhocExpenseEntryForm
-                isOpen={showForm}
                 onClose={handleFormClear}
                 tripId={parseInt(tripId)}
                 expense={selectedExpense}
