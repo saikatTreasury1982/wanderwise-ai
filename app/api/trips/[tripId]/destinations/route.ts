@@ -61,6 +61,8 @@ export async function POST(
       trip_id: parseInt(tripId),
       country: body.country,
       city: body.city || null,
+      latitude: body.latitude ?? null,
+      longitude: body.longitude ?? null,
     });
 
     return NextResponse.json({ destination }, { status: 201 });

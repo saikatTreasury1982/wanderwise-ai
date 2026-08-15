@@ -1,4 +1,5 @@
 import { query } from '@/app/lib/db';
+import { replaceTripDestinations } from '@/app/lib/services/destination-service';
 
 interface Trip {
   trip_id: number;
@@ -23,7 +24,7 @@ interface CreateTripInput {
   start_date: string;
   end_date: string;
   status_code?: number;
-  destinations?: Array<{ country: string; city?: string | null; country_code?: string | null }>;
+  destinations?: Array<{ country: string; city?: string | null; latitude?: number | null; longitude?: number | null }>;
 }
 
 interface UpdateTripInput {
@@ -32,6 +33,7 @@ interface UpdateTripInput {
   start_date?: string;
   end_date?: string;
   status_code?: number;
+  destinations?: Array<{ country: string; city?: string | null; latitude?: number | null; longitude?: number | null }>;
 }
 
 export async function createTrip(input: CreateTripInput): Promise<Trip> {
@@ -61,15 +63,8 @@ export async function createTrip(input: CreateTripInput): Promise<Trip> {
 
     const trip = trips[0];
 
-    // Save destinations to trip_destinations table
     if (input.destinations && input.destinations.length > 0) {
-      for (let i = 0; i < input.destinations.length; i++) {
-        const dest = input.destinations[i];
-        await query(
-          `INSERT INTO trip_destinations (trip_id, country, city, country_code, display_order) VALUES (?, ?, ?, ?, ?)`,
-          [trip.trip_id, dest.country, dest.city || null, (dest as any).country_code || null, i]
-        );
-      }
+      await replaceTripDestinations(trip.trip_id, input.destinations);
     }
 
     return trip;
@@ -137,17 +132,30 @@ export async function updateTrip(
       values.push(input.status_code);
     }
 
-    if (updates.length === 0) {
+    if (updates.length === 0 && !input.destinations) {
       return await getTripById(tripId, userId);
     }
 
-    updates.push("updated_at = datetime('now')");
-    values.push(tripId, userId);
+    if (updates.length > 0) {
+      updates.push("updated_at = datetime('now')");
+      values.push(tripId, userId);
+      await query(
+        `UPDATE trips SET ${updates.join(', ')} WHERE trip_id = ? AND user_id = ?`,
+        values
+      );
+    }
 
-    await query(
-      `UPDATE trips SET ${updates.join(', ')} WHERE trip_id = ? AND user_id = ?`,
-      values
-    );
+    if (input.destinations) {
+      await query(`DELETE FROM trip_destinations WHERE trip_id = ?`, [tripId]);
+      for (let i = 0; i < input.destinations.length; i++) {
+        const dest = input.destinations[i];
+        await query(
+          `INSERT INTO trip_destinations (trip_id, country, city, latitude, longitude, display_order)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [tripId, dest.country, dest.city || null, dest.latitude ?? null, dest.longitude ?? null, i]
+        );
+      }
+    }
 
     return await getTripById(tripId, userId);
   } catch (error) {
@@ -160,11 +168,11 @@ export async function deleteTrip(tripId: number, userId: string): Promise<boolea
   try {
     // Verify trip exists and user owns it
     const trip = await getTripById(tripId, userId);
-    
+
     if (!trip) {
       throw new Error('Trip not found');
     }
-    
+
     // Only allow deletion of draft (1) or suspended (4) trips
     if (trip.status_code !== 1 && trip.status_code !== 4) {
       throw new Error('Only draft or suspended trips can be deleted');

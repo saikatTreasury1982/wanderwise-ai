@@ -60,7 +60,7 @@ export default function Modal({
           'relative z-10 w-full max-w-lg',
           'bg-white/10 backdrop-blur-xl',
           'border border-white/20',
-          'rounded-2xl shadow-2xl',
+          'rounded-xl shadow-xl',
           'overflow-hidden',
           className
         )}
@@ -68,17 +68,6 @@ export default function Modal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <h2 className="text-xl font-semibold text-white">{title}</h2>
-          <CircleIconButton
-            variant="default"
-            onClick={onClose}
-            title="Close"
-            className="w-9 h-9 sm:w-10 sm:h-10"
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            }
-          />
         </div>
 
         {/* Content */}

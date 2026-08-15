@@ -16,28 +16,30 @@ export async function getDestinationsByTrip(tripId: number): Promise<TripDestina
 
 export async function createDestination(input: CreateDestinationInput): Promise<TripDestination> {
   try {
-    // Get the next display_order
     const maxOrder = await query<{ max_order: number | null }>(
       `SELECT MAX(display_order) as max_order FROM trip_destinations WHERE trip_id = ?`,
       [input.trip_id]
     );
-    
     const nextOrder = (maxOrder[0]?.max_order ?? -1) + 1;
 
     await query(
-      `INSERT INTO trip_destinations (trip_id, country, city, display_order) VALUES (?, ?, ?, ?)`,
-      [input.trip_id, input.country, input.city || null, input.display_order ?? nextOrder]
+      `INSERT INTO trip_destinations (trip_id, country, city, latitude, longitude, display_order)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        input.trip_id,
+        input.country,
+        input.city || null,
+        input.latitude ?? null,
+        input.longitude ?? null,
+        input.display_order ?? nextOrder,
+      ]
     );
 
     const destinations = await query<TripDestination>(
       `SELECT * FROM trip_destinations WHERE trip_id = ? ORDER BY destination_id DESC LIMIT 1`,
       [input.trip_id]
     );
-
-    if (destinations.length === 0) {
-      throw new Error('Destination creation failed');
-    }
-
+    if (destinations.length === 0) throw new Error('Destination creation failed');
     return destinations[0];
   } catch (error) {
     console.error('Error creating destination:', error);
@@ -71,5 +73,20 @@ export async function reorderDestinations(
   } catch (error) {
     console.error('Error reordering destinations:', error);
     throw error;
+  }
+}
+
+export async function replaceTripDestinations(
+  tripId: number,
+  destinations: Array<{ country: string; city?: string | null; latitude?: number | null; longitude?: number | null }>
+): Promise<void> {
+  await query(`DELETE FROM trip_destinations WHERE trip_id = ?`, [tripId]);
+  for (let i = 0; i < destinations.length; i++) {
+    const d = destinations[i];
+    await query(
+      `INSERT INTO trip_destinations (trip_id, country, city, latitude, longitude, display_order)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [tripId, d.country, d.city || null, d.latitude ?? null, d.longitude ?? null, i]
+    );
   }
 }

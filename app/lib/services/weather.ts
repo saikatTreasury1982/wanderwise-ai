@@ -136,10 +136,15 @@ function getWeatherDescription(minTemp: number, maxTemp: number, precipChance: n
 export async function getTripWeather(
   city: string,
   startDate: string,
-  endDate: string
+  endDate: string,
+  coords?: { latitude: number; longitude: number } | null
 ): Promise<WeatherData | null> {
-  const geo = await geocodeCity(city);
-  if (!geo) return null;
-
-  return getHistoricalWeather(geo.latitude, geo.longitude, startDate, endDate);
+  let lat = coords?.latitude;
+  let lon = coords?.longitude;
+  if (lat == null || lon == null) {
+    const geo = await geocodeCity(city);   // fallback for old destinations without coords
+    if (!geo) return null;
+    lat = geo.latitude; lon = geo.longitude;
+  }
+  return getHistoricalWeather(lat, lon, startDate, endDate);
 }

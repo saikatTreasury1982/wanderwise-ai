@@ -1,319 +1,156 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { MapPin, Plus, X, Search } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { MapPin, X } from 'lucide-react';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
+import { cn } from '@/app/lib/utils';
 
 interface Destination {
   country: string;
   city: string | null;
-  country_code?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
-interface DestinationSelectorProps {
-  tripId?: number; // If provided, saves to database
+interface GeoResult {
+  name: string;
+  country: string;
+  admin1?: string;
+  latitude: number;
+  longitude: number;
+}
+
+interface Props {
   initialDestinations?: Destination[];
   onChange?: (destinations: Destination[]) => void;
   readOnly?: boolean;
 }
 
-export default function DestinationSelector({
-  tripId,
-  initialDestinations = [],
-  onChange,
-  readOnly = false,
-}: DestinationSelectorProps) {
+export default function DestinationSelector({ initialDestinations = [], onChange, readOnly = false }: Props) {
   const [destinations, setDestinations] = useState<Destination[]>(initialDestinations);
-  const [isAdding, setIsAdding] = useState(false);
-  const [country, setCountry] = useState('');
-  const [countryCode, setCountryCode] = useState('');
-  const [city, setCity] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLookingUp, setIsLookingUp] = useState(false);
-  const [lookupError, setLookupError] = useState('');
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<GeoResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [active, setActive] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => { setDestinations(initialDestinations); }, [initialDestinations]);
 
   useEffect(() => {
-    setDestinations(initialDestinations);
-  }, [initialDestinations]);
-
-  const handleCountryLookup = async () => {
-    if (!country.trim()) {
-      setLookupError('Please enter a country name');
-      return;
-    }
-
-    // Validate English alphabets only
-    if (!/^[a-zA-Z\s]+$/.test(country)) {
-      setLookupError('Country name must contain only English letters');
-      return;
-    }
-
-    setIsLookingUp(true);
-    setLookupError('');
-
-    try {
-      const response = await fetch(`/api/country-lookup?country=${encodeURIComponent(country.trim())}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setCountryCode(data.code);
-        setCountry(data.name); // Use standardized name from API
-        setLookupError('');
-      } else {
-        setLookupError(data.error || 'Country not found. Please check spelling.');
-        setCountryCode('');
-      }
-    } catch (error) {
-      console.error('Country lookup error:', error);
-      setLookupError('Failed to lookup country. Please try again.');
-      setCountryCode('');
-    } finally {
-      setIsLookingUp(false);
-    }
-  };
-
-  const handleAdd = async () => {
-    if (!country.trim() || !countryCode) {
-      alert('Please lookup the country first');
-      return;
-    }
-
-    const newDestination: Destination = {
-      country: country.trim(),
-      city: city.trim() || null,
-      country_code: countryCode,
+    const onDown = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
     };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
 
-    // If tripId is provided, save to database
-    if (tripId) {
-      setIsSaving(true);
+  // debounced geocoding search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const q = query.trim();
+    if (q.length < 2) { setResults([]); setOpen(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`/api/trips/${tripId}/destinations`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newDestination),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to add destination');
-        }
-
-        // Refresh destinations from server
-        const refreshResponse = await fetch(`/api/trips/${tripId}/destinations`);
-        if (refreshResponse.ok) {
-          const data = await refreshResponse.json();
-          const updatedDests = data.destinations.map((d: any) => ({
-            country: d.country,
-            city: d.city,
-            country_code: d.country_code,
-          }));
-          setDestinations(updatedDests);
-          onChange?.(updatedDests);
-        }
-      } catch (error) {
-        console.error('Error adding destination:', error);
-        alert('Failed to add destination');
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`);
+        const data = await res.json();
+        setResults(data.results || []);
+        setOpen(true);
+        setActive(0);
+      } catch {
+        setResults([]);
       } finally {
-        setIsSaving(false);
+        setLoading(false);
       }
-    } else {
-      // Local mode (no tripId) - just update state
-      const updatedDests = [...destinations, newDestination];
-      setDestinations(updatedDests);
-      onChange?.(updatedDests);
-    }
+    }, 300);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [query]);
 
-    // Reset form
-    setCountry('');
-    setCountryCode('');
-    setCity('');
-    setLookupError('');
-    setIsAdding(false);
+  const commit = (list: Destination[]) => { setDestinations(list); onChange?.(list); };
+
+  const addResult = (r: GeoResult) => {
+    const dest: Destination = {
+      country: r.country,
+      city: r.name,
+      latitude: r.latitude,
+      longitude: r.longitude,
+    };
+    commit([...destinations, dest]);
+    setQuery(''); setResults([]); setOpen(false);
   };
 
-  const handleRemove = async (index: number) => {
-    if (tripId) {
-      // If we have a tripId, we need to delete from database
-      // First fetch the destination_id
-      try {
-        const response = await fetch(`/api/trips/${tripId}/destinations`);
-        if (response.ok) {
-          const data = await response.json();
-          const destinationToDelete = data.destinations[index];
+  const removeAt = (i: number) => commit(destinations.filter((_, idx) => idx !== i));
 
-          if (destinationToDelete) {
-            const deleteResponse = await fetch(
-              `/api/trips/${tripId}/destinations/${destinationToDelete.destination_id}`,
-              { method: 'DELETE' }
-            );
-
-            if (!deleteResponse.ok) {
-              throw new Error('Failed to delete destination');
-            }
-
-            // Refresh destinations
-            const refreshResponse = await fetch(`/api/trips/${tripId}/destinations`);
-            if (refreshResponse.ok) {
-              const refreshData = await refreshResponse.json();
-              const updatedDests = refreshData.destinations.map((d: any) => ({
-                country: d.country,
-                city: d.city,
-                country_code: d.country_code,
-              }));
-              setDestinations(updatedDests);
-              onChange?.(updatedDests);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error removing destination:', error);
-        alert('Failed to remove destination');
-      }
-    } else {
-      // Local mode - just update state
-      const updatedDests = destinations.filter((_, i) => i !== index);
-      setDestinations(updatedDests);
-      onChange?.(updatedDests);
-    }
+  const onKey = (e: React.KeyboardEvent) => {
+    if (!open || results.length === 0) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActive(i => Math.min(i + 1, results.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(i => Math.max(i - 1, 0)); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (results[active]) addResult(results[active]); }
+    else if (e.key === 'Escape') setOpen(false);
   };
 
-  const handleCancelAdd = () => {
-    setIsAdding(false);
-    setCountry('');
-    setCountryCode('');
-    setCity('');
-    setLookupError('');
-  };
+  const resultLabel = (r: GeoResult) => [r.name, r.admin1, r.country].filter(Boolean).join(', ');
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" ref={rootRef}>
       <label className="block text-sm font-medium text-white/90">
         Destinations {destinations.length === 0 && <span className="text-red-400">*</span>}
       </label>
 
-      {/* Display existing destinations */}
-      <div className="flex flex-wrap gap-2">
-        {destinations.map((dest, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-2 px-3 py-1.5 bg-primary-500/20 rounded-full border border-primary-400/30"
-          >
-            <MapPin className="w-3.5 h-3.5 text-primary-300" />
-            <span className="text-sm text-white/90">
-              {dest.city ? `${dest.city}, ${dest.country}` : dest.country}
-              {dest.country_code && (
-                <span className="ml-1.5 text-xs text-primary-300">({dest.country_code})</span>
-              )}
-            </span>
-            {!readOnly && (
-              <button
-                type="button"
-                onClick={() => handleRemove(index)}
-                className="text-white/50 hover:text-white transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        ))}
-
-        {/* Add button */}
-        {!readOnly && !isAdding && (
-          <button
-            type="button"
-            onClick={() => setIsAdding(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-full border border-white/20 text-white/70 hover:text-white hover:bg-white/20 transition-colors text-sm"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add destination
-          </button>
-        )}
-      </div>
-
-      {/* Add form */}
-      {isAdding && (
-        <div className="flex flex-col gap-3 p-4 bg-white/5 rounded-lg border border-white/10">
-          {/* Country, Lookup, City - All in one row */}
-          <div className="flex gap-2 items-start">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Country (required)"
-                value={country}
-                onChange={(e) => {
-                  setCountry(e.target.value);
-                  setLookupError('');
-                  setCountryCode(''); // Reset code when user types
-                }}
-                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
-                autoFocus
-                disabled={isLookingUp}
-              />
-              {/* ISO code result below country input */}
-              {countryCode && (
-                <div className="mt-1 text-xs text-green-400">
-                  ISO Country code: {countryCode}
-                </div>
+      {/* existing destinations */}
+      {destinations.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {destinations.map((d, i) => (
+            <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-primary-500/20 rounded-full border border-primary-400/30">
+              <MapPin className="w-3.5 h-3.5 text-primary-300" />
+              <span className="text-sm text-white/90">{d.city ? `${d.city}, ${d.country}` : d.country}</span>
+              {!readOnly && (
+                <button type="button" onClick={() => removeAt(i)} className="text-white/50 hover:text-white transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                </button>
               )}
             </div>
-            <button
-              type="button"
-              onClick={handleCountryLookup}
-              disabled={isLookingUp || !country.trim()}
-              className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-0.5"
-              title={isLookingUp ? 'Looking up...' : 'Lookup country code'}
-            >
-              {isLookingUp ? (
-                <div className="w-5 h-5 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
+          ))}
+        </div>
+      )}
+
+      {/* search input */}
+      {!readOnly && (
+        <div className="relative">
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={onKey}
+            onFocus={() => { if (results.length) setOpen(true); }}
+            placeholder="Search a city or place…"
+            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+          />
+          {open && (
+            <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto custom-scrollbar bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-lg shadow-2xl">
+              {loading ? (
+                <div className="px-3 py-2 text-sm text-white/50">Searching…</div>
+              ) : results.length === 0 ? (
+                <div className="px-3 py-2 text-sm text-white/50">No matches</div>
               ) : (
-                <Search className="w-5 h-5" />
+                results.map((r, i) => (
+                  <button
+                    key={`${r.latitude},${r.longitude},${i}`}
+                    type="button"
+                    onMouseEnter={() => setActive(i)}
+                    onClick={() => addResult(r)}
+                    className={cn('w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors',
+                      i === active ? 'bg-primary-500/20 text-white' : 'text-white/80 hover:bg-white/5')}
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-primary-300 shrink-0" />
+                    <span className="truncate">{resultLabel(r)}</span>
+                  </button>
+                ))
               )}
-            </button>
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder={countryCode ? "City (optional)" : "Lookup country first..."}
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                disabled={!countryCode}
-                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-
-          {/* Error message */}
-          {lookupError && (
-            <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/30 rounded-lg px-3 py-2">
-              {lookupError}
             </div>
           )}
-
-          {/* Action buttons */}
-          <div className="flex gap-2 justify-end">
-            <button
-              type="button"
-              onClick={handleCancelAdd}
-              disabled={isSaving}
-              className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
-              title="Cancel"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleAdd}
-              disabled={!countryCode || isSaving}
-              className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title={isSaving ? 'Adding...' : 'Add destination'}
-            >
-              {isSaving ? (
-                <div className="w-5 h-5 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </button>
-          </div>
         </div>
       )}
     </div>

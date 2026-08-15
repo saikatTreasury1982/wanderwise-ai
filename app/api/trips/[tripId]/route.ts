@@ -4,6 +4,7 @@ import { getSession } from '@/app/lib/services/session-service';
 import { getTripById, updateTrip, deleteTrip } from '@/app/lib/services/trip-service';
 import { getUserById } from '@/app/lib/services/user-service';
 import { getTravelersByTripId, createTraveler } from '@/app/lib/services/traveler-service';
+import { replaceTripDestinations } from '@/app/lib/services/destination-service';
 
 interface RouteParams {
   params: Promise<{ tripId: string }>;
@@ -94,29 +95,29 @@ export async function PUT(request: Request, { params }: RouteParams) {
     // Auto-create primary traveler when transitioning to Active status
     console.log('Current trip status:', currentTrip.status_code);
     console.log('Update data status:', updateData.status_code);
-    
-    const isTransitioningToActive = 
-      updateData.status_code === 2 && 
+
+    const isTransitioningToActive =
+      updateData.status_code === 2 &&
       currentTrip.status_code !== 2;
-    
+
     console.log('Is transitioning to active?', isTransitioningToActive);
 
     if (isTransitioningToActive) {
       console.log('Checking for primary traveler...');
-      
+
       // Check if primary traveler already exists
       const travelers = await getTravelersByTripId(parseInt(tripId));
       console.log('Existing travelers:', travelers);
-      
+
       const hasPrimaryTraveler = travelers.some(t => t.is_primary === 1);
       console.log('Has primary traveler?', hasPrimaryTraveler);
 
       if (!hasPrimaryTraveler) {
         console.log('Fetching user details for:', session.user_id);
-        
+
         // Fetch user details
         const user = await getUserById(session.user_id);
-        
+
         if (user) {
           // Create primary traveler record for the logged-in user
           const travelerName = [user.first_name, user.middle_name, user.last_name]
@@ -133,7 +134,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
             traveler_currency: user.home_currency,
             is_active: true,
           });
-          
+
           console.log('Primary traveler created successfully');
         } else {
           console.error('User not found!');
@@ -143,24 +144,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     // Handle destinations update if provided
     if (destinations !== undefined) {
-      const { query } = await import('@/app/lib/db');
-
-      // Delete existing destinations
-      await query(
-        `DELETE FROM trip_destinations WHERE trip_id = ?`,
-        [parseInt(tripId)]
-      );
-
-      // Insert new destinations
-      if (destinations.length > 0) {
-        for (let i = 0; i < destinations.length; i++) {
-          const dest = destinations[i];
-          await query(
-            `INSERT INTO trip_destinations (trip_id, country, city, display_order) VALUES (?, ?, ?, ?)`,
-            [parseInt(tripId), dest.country, dest.city || null, i]
-          );
-        }
-      }
+      await replaceTripDestinations(parseInt(tripId), destinations);
     }
 
     return NextResponse.json({ trip });
