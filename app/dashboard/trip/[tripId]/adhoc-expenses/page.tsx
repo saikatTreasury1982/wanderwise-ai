@@ -4,12 +4,11 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import PageBackground from '@/app/components/ui/PageBackground';
 import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
-import AdhocExpenseCard from '@/app/components/organisms/AdhocExpenseCard';
-import AdhocExpenseViewModal from '@/app/components/organisms/AdhocExpenseViewModal';
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import AdhocExpenseEntryForm from '@/app/components/organisms/AdhocExpenseEntryForm';
 import type { AdhocExpense, CreateAdhocExpenseInput } from '@/app/lib/types/adhoc-expense';
 import { formatDateRange } from '@/app/lib/utils';
+import AdhocExpenseComparisonTable from '@/app/components/organisms/AdhocExpenseComparisonTable';
 
 interface Trip {
   trip_id: number;
@@ -45,7 +44,6 @@ export default function AdhocExpensesPage({ params }: PageProps) {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedExpense, setSelectedExpense] = useState<AdhocExpense | null>(null);
-  const [viewingExpense, setViewingExpense] = useState<AdhocExpense | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [preferences, setPreferences] = useState<{ date_format: 'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY' }>({
@@ -129,10 +127,6 @@ export default function AdhocExpensesPage({ params }: PageProps) {
     loadData();
   }, [tripId]);
 
-  const handleView = (expense: AdhocExpense) => {
-    setViewingExpense(expense);
-  };
-
   const handleEdit = (expense: AdhocExpense) => {
     setSelectedExpense(expense);
     setShowForm(true);
@@ -181,24 +175,15 @@ export default function AdhocExpensesPage({ params }: PageProps) {
   };
 
   const handleStatusChange = async (expenseId: number, isActive: number) => {
-    setIsProcessing(true);
+    setExpenses(prev => prev.map(e => e.adhoc_expense_id === expenseId ? { ...e, is_active: isActive } : e));
     try {
-      const response = await fetch(`/api/trips/${tripId}/adhoc-expenses/${expenseId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: isActive }),
+      const res = await fetch(`/api/trips/${tripId}/adhoc-expenses/${expenseId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: isActive }),
       });
-      if (response.ok) {
-        await fetchExpenses();
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to update status');
-      }
-    } catch (error) {
-      console.error('Error updating status:', error);
-      alert('Failed to update status');
-    } finally {
-      setIsProcessing(false);
+      if (!res.ok) throw new Error();
+    } catch {
+      await fetchExpenses();
+      alert('Could not save the status change. Please try again.');
     }
   };
 
@@ -295,24 +280,19 @@ export default function AdhocExpensesPage({ params }: PageProps) {
         </div>
 
         {/* Main content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left column - Form (conditional) */}
+        <div className="space-y-6">
           {showForm && (
-            <div>
-              <AdhocExpenseEntryForm
-                isOpen={showForm}
-                onClose={handleFormClear}
-                tripId={parseInt(tripId)}
-                expense={selectedExpense}
-                travelers={travelers}
-                currencies={currencies}
-                onSuccess={handleFormSuccess}
-              />
-            </div>
+            <AdhocExpenseEntryForm
+              onClose={handleFormClear}
+              tripId={parseInt(tripId)}
+              expense={selectedExpense}
+              travelers={travelers}
+              currencies={currencies}
+              onSuccess={handleFormSuccess}
+            />
           )}
 
-          {/* Right column - Expenses list */}
-          <div className={showForm ? '' : 'lg:col-span-2'}>
+          <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base sm:text-lg font-semibold text-white">
                 Saved Expenses ({expenses.length})
@@ -321,56 +301,18 @@ export default function AdhocExpensesPage({ params }: PageProps) {
 
             {expenses.length === 0 ? (
               <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-8 text-center">
-                <svg className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
                 <p className="text-white/70 mb-2">No expenses yet.</p>
                 <p className="text-white/50 text-sm">Click the + button to add your first expense.</p>
               </div>
             ) : (
-              <div className="space-y-6">
-                {/* Active */}
-                {activeExpenses.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-green-400 mb-2">Active</h4>
-                    <div className="space-y-3">
-                      {activeExpenses.map(expense => (
-                        <AdhocExpenseCard
-                          key={expense.adhoc_expense_id}
-                          expense={expense}
-                          dateFormat={preferences.date_format}
-                          onView={handleView}
-                          onEdit={handleEdit}
-                          onCopy={handleCopy}
-                          onDelete={handleDelete}
-                          onStatusChange={handleStatusChange}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Inactive */}
-                {inactiveExpenses.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-red-400 mb-2">Inactive</h4>
-                    <div className="space-y-3">
-                      {inactiveExpenses.map(expense => (
-                        <AdhocExpenseCard
-                          key={expense.adhoc_expense_id}
-                          expense={expense}
-                          dateFormat={preferences.date_format}
-                          onView={handleView}
-                          onEdit={handleEdit}
-                          onCopy={handleCopy}
-                          onDelete={handleDelete}
-                          onStatusChange={handleStatusChange}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <AdhocExpenseComparisonTable
+                expenses={expenses}
+                dateFormat={preferences.date_format}
+                onEdit={handleEdit}
+                onCopy={handleCopy}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+              />
             )}
           </div>
         </div>
@@ -383,13 +325,6 @@ export default function AdhocExpensesPage({ params }: PageProps) {
           ariaLabel="Add expense"
         />
       )}
-
-      {/* View Modal */}
-      <AdhocExpenseViewModal
-        isOpen={viewingExpense !== null}
-        onClose={() => setViewingExpense(null)}
-        expense={viewingExpense}
-      />
     </div>
   );
 }

@@ -13,6 +13,8 @@ interface TogglePillProps<T extends string> {
   options: TogglePillOption<T>[];
   onChange: (value: T) => void;
   className?: string;
+  /** Optional per-value colour for the sliding indicator. Falls back to primary. */
+  activeColors?: Partial<Record<T, string>>;
 }
 
 export default function TogglePill<T extends string>({
@@ -20,6 +22,7 @@ export default function TogglePill<T extends string>({
   options,
   onChange,
   className,
+  activeColors,
 }: TogglePillProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -37,14 +40,17 @@ export default function TogglePill<T extends string>({
     }
   }, [activeIndex, options.length]);
 
+  const indicatorColor =
+    (activeColors && activeColors[value]) || 'bg-primary-500/30 border-primary-400';
+
   return (
     <div
       ref={containerRef}
       className={cn('relative inline-flex gap-1 p-1 rounded-full bg-white/5 border border-white/15', className)}
     >
-      {/* sliding indicator */}
+      {/* sliding indicator — colour animates with position */}
       <div
-        className="absolute top-1 bottom-1 rounded-full bg-primary-500/30 border border-primary-400 transition-all duration-300 ease-out"
+        className={cn('absolute top-1 bottom-1 rounded-full border transition-all duration-300 ease-out', indicatorColor)}
         style={{ left: indicator.left, width: indicator.width }}
       />
       {options.map((opt, i) => {
@@ -56,7 +62,7 @@ export default function TogglePill<T extends string>({
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              'relative z-10 px-4 py-1.5 rounded-full text-sm transition-colors whitespace-nowrap',
+              'relative z-10 px-4 py-1 rounded-full text-sm transition-colors whitespace-nowrap',
               active ? 'text-white' : 'text-white/60 hover:text-white'
             )}
           >

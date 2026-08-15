@@ -139,24 +139,19 @@ export default function AccommodationsPage({ params }: PageProps) {
   };
 
   const handleStatusChange = async (accommodationId: number, status: AccommodationOption['status']) => {
-    setIsProcessing(true);
+    setAccommodations(prev => prev.map(a =>
+      a.accommodation_option_id === accommodationId ? { ...a, status } : a
+    ));
     try {
       const response = await fetch(`/api/trips/${tripId}/accommodations/${accommodationId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
-      if (response.ok) {
-        await fetchAccommodations();
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to update status');
-      }
+      if (!response.ok) throw new Error('Failed');
     } catch (error) {
-      console.error('Error updating status:', error);
-      alert('Failed to update status');
-    } finally {
-      setIsProcessing(false);
+      await fetchAccommodations(); // rollback to saved state
+      alert('Could not save the status change. Please try again.');
     }
   };
 
@@ -280,6 +275,7 @@ export default function AccommodationsPage({ params }: PageProps) {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onStatusChange={handleStatusChange}
+              dateFormat={preferences.date_format}
             />
           </div>
         </div>

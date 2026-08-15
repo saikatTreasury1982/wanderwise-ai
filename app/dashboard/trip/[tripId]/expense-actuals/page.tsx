@@ -7,6 +7,8 @@ import LoadingOverlay from '@/app/components/ui/LoadingOverlay';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import { formatDateRange, formatDate } from '@/app/lib/utils';
 import type { ExpenseActual, SettlementSummary } from '@/app/lib/types/expense-actual';
+import PaymentMethodCombobox from '@/app/components/ui/PaymentMethodCombobox';
+import ExpenseActualEditModal from '@/app/components/organisms/ExpenseActualEditModal';
 
 interface Trip {
   trip_id: number;
@@ -38,7 +40,7 @@ interface PageProps {
 export default function ExpenseActualsPage({ params }: PageProps) {
   const { tripId } = use(params);
   const router = useRouter();
-  
+
   const [trip, setTrip] = useState<Trip | null>(null);
   const [actuals, setActuals] = useState<ExpenseActual[]>([]);
   const [travelers, setTravelers] = useState<Traveler[]>([]);
@@ -48,19 +50,10 @@ export default function ExpenseActualsPage({ params }: PageProps) {
   const [isTransferring, setIsTransferring] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  
-  // Edit modal state
+  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
+  const [overBudgetOnly, setOverBudgetOnly] = useState(false);
+  const [notesPopup, setNotesPopup] = useState<string | null>(null);
   const [editingActual, setEditingActual] = useState<ExpenseActual | null>(null);
-  const [editForm, setEditForm] = useState({
-    actual_amount: '',
-    actual_date: '',
-    paid_by_traveler_id: '',
-    payment_method_key: '',
-    receipt_url: '',
-    actual_notes: '',
-  });
-  const [isSaving, setIsSaving] = useState(false);
-
   const [dateFormat, setDateFormat] = useState<'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY'>('DD Mmm YYYY');
 
   const fetchTrip = async () => {
@@ -194,7 +187,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
       if (response.ok) {
         const data = await response.json();
         alert(data.message);
-        
+
         // Reload all data
         await Promise.all([
           fetchActuals(),
@@ -213,63 +206,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
     }
   };
 
-  const openEditModal = (actual: ExpenseActual) => {
-    setEditingActual(actual);
-    setEditForm({
-      actual_amount: actual.actual_amount.toString(),
-      actual_date: actual.actual_date || '',
-      paid_by_traveler_id: actual.paid_by_traveler_id?.toString() || actual.traveler_id.toString(), // Default to the traveler
-      payment_method_key: actual.payment_method_key || '',
-      receipt_url: actual.receipt_url || '',
-      actual_notes: actual.actual_notes || '',
-    });
-  };
-
-  const closeEditModal = () => {
-    setEditingActual(null);
-    setEditForm({
-      actual_amount: '',
-      actual_date: '',
-      paid_by_traveler_id: '',
-      payment_method_key: '',
-      receipt_url: '',
-      actual_notes: '',
-    });
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingActual) return;
-
-    setIsSaving(true);
-    try {
-      const response = await fetch(`/api/trips/${tripId}/expense-actuals/${editingActual.actual_id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          actual_amount: parseFloat(editForm.actual_amount),
-          actual_date: editForm.actual_date || null,
-          paid_by_traveler_id: editForm.paid_by_traveler_id ? parseInt(editForm.paid_by_traveler_id) : null,
-          payment_method_key: editForm.payment_method_key || null,
-          receipt_url: editForm.receipt_url || null,
-          actual_notes: editForm.actual_notes || null,
-        }),
-      });
-
-      if (response.ok) {
-        await fetchActuals();
-        await fetchSettlement();
-        closeEditModal();
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to update actual');
-      }
-    } catch (error) {
-      console.error('Error updating actual:', error);
-      alert('Failed to update actual');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const openEditModal = (actual: ExpenseActual) => setEditingActual(actual);
 
   // Group actuals by expense
   const groupedByExpense = actuals.reduce((acc, actual) => {
@@ -294,6 +231,31 @@ export default function ExpenseActualsPage({ params }: PageProps) {
   }>);
 
   const expenses = Object.values(groupedByExpense);
+
+  // per-group actual + variance
+  const expenseStats = expenses.map(exp => {
+    const actualSum = exp.actuals.reduce((s, a) => s + (a.actual_amount ?? 0), 0);
+    const variance = actualSum - exp.estimated_amount;
+    return { ...exp, actualSum, variance };
+  });
+
+  // auto-expand over-budget groups on first load
+  useEffect(() => {
+    const over = new Set(expenseStats.filter(e => e.variance > 0.001).map(e => e.expense_id));
+    setExpandedGroups(over);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actuals]);
+
+  const visibleExpenses = overBudgetOnly
+    ? expenseStats.filter(e => e.variance > 0.001)
+    : expenseStats;
+
+  const toggleGroup = (id: number) =>
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
 
   if (isLoading) {
     return (
@@ -383,8 +345,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                   disabled={isTransferring}
                   isLoading={isTransferring}
                   variant="primary"
-                  size="small"
-                  className="w-14 h-14 sm:w-16 sm:h-16"
+                  size="medium"
                   title="Transfer Forecast to Actuals"
                   icon={
                     <svg className="w-4 h-4 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -413,7 +374,6 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                       isLoading={isResetting}
                       variant="default"
                       size="small"
-                      className="w-10 h-10 sm:w-12 sm:h-12"
                       title="Reset Actuals"
                       icon={
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -452,57 +412,75 @@ export default function ExpenseActualsPage({ params }: PageProps) {
 
             {/* Expenses List */}
             <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden mb-6">
-              <div className="px-4 sm:px-6 py-4 border-b border-white/10">
+              <div className="px-4 sm:px-6 py-4 border-b border-white/10 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-semibold text-white">Expense Actuals ({actuals.length})</h3>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setOverBudgetOnly(false)}
+                    className={`px-3 h-8 rounded-lg text-sm border transition-colors ${!overBudgetOnly ? 'bg-primary-500/30 border-primary-400 text-white' : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'}`}
+                  >All</button>
+                  <button
+                    onClick={() => setOverBudgetOnly(true)}
+                    className={`px-3 h-8 rounded-lg text-sm border transition-colors ${overBudgetOnly ? 'bg-red-500/30 border-red-400 text-white' : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'}`}
+                  >Over budget</button>
+                </div>
               </div>
+
               <div className="divide-y divide-white/10">
-                {expenses.map(expense => (
-                  <div key={expense.expense_id} className="p-4 sm:p-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h4 className="text-white font-medium mb-1">{expense.expense_description}</h4>
-                        <p className="text-white/50 text-sm">
-                          Estimated: {expense.expense_currency} {expense.estimated_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {expense.actuals.map(actual => (
-                        <div
-                          key={actual.actual_id}
-                          className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white text-sm font-medium">{actual.traveler_name}</p>
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/60 mt-1">
-                              {actual.actual_amount != null && (
-                                <span>Amount: {expense.expense_currency} {actual.actual_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                              )}
-                              {actual.paid_by_name && <span>Paid by: {actual.paid_by_name}</span>}
-                              {actual.actual_date && <span>Date: {formatDate(actual.actual_date, dateFormat)}</span>}
-                              {actual.payment_method_key && <span>Method: {actual.payment_method_key}</span>}
+                {visibleExpenses.length === 0 ? (
+                  <div className="p-6 text-center text-white/50 text-sm">No over-budget expenses.</div>
+                ) : visibleExpenses.map(expense => {
+                  const open = expandedGroups.has(expense.expense_id);
+                  const over = expense.variance > 0.001;
+                  const under = expense.variance < -0.001;
+                  const badge = over
+                    ? { text: `+${expense.expense_currency} ${expense.variance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} over`, cls: 'bg-red-500/15 text-red-300 border-red-400/40' }
+                    : under
+                      ? { text: `${expense.expense_currency} ${expense.variance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} under`, cls: 'bg-green-500/15 text-green-300 border-green-400/40' }
+                      : { text: 'on budget', cls: 'bg-primary-500/15 text-primary-300 border-primary-400/40' };
+                  return (
+                    <div key={expense.expense_id}>
+                      {/* group header */}
+                      <button onClick={() => toggleGroup(expense.expense_id)} className="w-full flex items-center justify-between gap-3 p-4 sm:px-6 hover:bg-white/5 transition-colors text-left">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <svg className={`w-4 h-4 text-white/50 shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                          <div className="min-w-0">
+                            <div className="text-white font-medium truncate">{expense.expense_description}</div>
+                            <div className="text-white/50 text-xs mt-0.5">
+                              Est {expense.expense_currency} {expense.estimated_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · Act {expense.expense_currency} {expense.actualSum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
-                            {actual.actual_notes && (
-                              <div className="text-xs text-white/50 mt-2 italic">
-                                {actual.actual_notes}
-                              </div>
-                            )}
                           </div>
-                          <button
-                            onClick={() => openEditModal(actual)}
-                            className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded transition-colors flex-shrink-0"
-                            title="Edit"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
                         </div>
-                      ))}
+                        <span className={`text-xs px-2.5 py-1 rounded-full border whitespace-nowrap ${badge.cls}`}>{badge.text}</span>
+                      </button>
+
+                      {/* payments (compact rows) */}
+                      {open && (
+                        <div className="px-4 sm:px-6 pb-3">
+                          {expense.actuals.map(actual => (
+                            <div key={actual.actual_id} className="flex items-center justify-between gap-3 py-2 px-1 border-b border-white/5 last:border-0">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm min-w-0">
+                                <span className="text-white font-medium w-24 truncate">{actual.traveler_name}</span>
+                                {actual.actual_amount != null && <span className="text-primary-300 font-medium whitespace-nowrap">{expense.expense_currency} {actual.actual_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+                                {actual.paid_by_name && <span className="text-white/50 text-xs whitespace-nowrap">by {actual.paid_by_name}</span>}
+                                {actual.actual_date && <span className="text-white/50 text-xs whitespace-nowrap">{formatDate(actual.actual_date, dateFormat)}</span>}
+                                {actual.payment_method_key && <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60 border border-white/15 whitespace-nowrap">{actual.payment_method_key}</span>}
+                                {actual.actual_notes && (
+                                  <button onClick={() => setNotesPopup(actual.actual_notes!)} className="text-primary-300/70 hover:text-primary-300 transition-colors" title="View note">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                  </button>
+                                )}
+                              </div>
+                              <button onClick={() => openEditModal(actual)} className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded transition-colors shrink-0" title="Edit">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -541,178 +519,30 @@ export default function ExpenseActualsPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Edit Modal */}
-      {editingActual && (
-        <>
-          <style jsx>{`
-            .modal-scroll::-webkit-scrollbar {
-              width: 6px;
-            }
-            .modal-scroll::-webkit-scrollbar-track {
-              background: transparent;
-              margin: 12px 0;
-            }
-            .modal-scroll::-webkit-scrollbar-thumb {
-              background: rgba(255, 255, 255, 0.2);
-              border-radius: 10px;
-            }
-            .modal-scroll::-webkit-scrollbar-thumb:hover {
-              background: rgba(255, 255, 255, 0.3);
-            }
-            .modal-scroll::-webkit-scrollbar-button {
-              display: none !important;
-              height: 0 !important;
-              width: 0 !important;
-            }
-            @media (max-width: 640px) {
-              .modal-scroll::-webkit-scrollbar {
-                display: none;
-              }
-            }
-          `}</style>
-
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            onClick={closeEditModal}
-          >
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
-            {/* Modal */}
-            <div
-              className="modal-scroll relative z-10 w-full max-w-lg max-h-[90vh] sm:max-h-[85vh] overflow-y-auto bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-lg shadow-2xl"
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-xl border-b border-white/10 p-4 sm:p-5">
-                <h2 className="text-lg sm:text-xl font-semibold text-white">Edit Actual Payment</h2>
-                <p className="text-white/60 text-sm mt-1">{editingActual.expense_description}</p>
-              </div>
-
-              {/* Content */}
-              <div className="p-4 sm:p-5 space-y-5">
-                {/* Amount */}
-                <div>
-                  <label className="block text-sm text-white/60 mb-1.5">
-                    Actual Amount <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    value={editForm.actual_amount}
-                    onChange={e => setEditForm({ ...editForm, actual_amount: e.target.value })}
-                    step="0.01"
-                    placeholder="0.00"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-                    required
-                  />
-                  <p className="text-xs text-white/50 mt-1.5">
-                    Estimated: {editingActual.expense_currency} {editingActual.estimated_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                </div>
-
-                {/* Paid By */}
-                <div>
-                  <label className="block text-sm text-white/60 mb-1.5">Paid By</label>
-                  <select
-                    value={editForm.paid_by_traveler_id}
-                    onChange={e => setEditForm({ ...editForm, paid_by_traveler_id: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
-                  >
-                    <option value="" className="bg-gray-800">Not set</option>
-                    {travelers.map(t => (
-                      <option key={t.traveler_id} value={t.traveler_id} className="bg-gray-800">
-                        {t.traveler_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Payment Date */}
-                <div>
-                  <label className="block text-sm text-white/60 mb-1.5">Payment Date</label>
-                  <input
-                    type="date"
-                    value={editForm.actual_date}
-                    onChange={e => setEditForm({ ...editForm, actual_date: e.target.value })}
-                    className="w-full px-0.3 py-3 sm:px-3 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm sm:text-base focus:outline-none focus:border-primary-400"
-                  />
-                </div>
-
-                {/* Payment Method */}
-                <div>
-                  <label className="block text-sm text-white/60 mb-1.5">Payment Method</label>
-                  <select
-                    value={editForm.payment_method_key}
-                    onChange={e => setEditForm({ ...editForm, payment_method_key: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base focus:outline-none focus:border-primary-400"
-                  >
-                    <option value="" className="bg-gray-800">Not set</option>
-                    {paymentMethods.map(pm => (
-                      <option key={pm.payment_method_key} value={pm.payment_method_key} className="bg-gray-800">
-                        {pm.payment_method_key}
-                        {pm.issuer && ` (${pm.issuer}`}
-                        {pm.payment_type && `${pm.issuer ? ' • ' : ' ('}${pm.payment_type})`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Receipt URL */}
-                <div>
-                  <label className="block text-sm text-white/60 mb-1.5">Receipt URL</label>
-                  <input
-                    type="url"
-                    value={editForm.receipt_url}
-                    onChange={e => setEditForm({ ...editForm, receipt_url: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-                  />
-                </div>
-
-                {/* Notes */}
-                <div>
-                  <label className="block text-sm text-white/60 mb-1.5">Notes</label>
-                  <textarea
-                    value={editForm.actual_notes}
-                    onChange={e => setEditForm({ ...editForm, actual_notes: e.target.value })}
-                    rows={3}
-                    placeholder="Add any notes about this payment..."
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-base placeholder:text-white/30 focus:outline-none focus:border-primary-400 resize-none"
-                  />
-                </div>
-
-                {/* Buttons */}
-                <div className="flex justify-end gap-3 pt-4">
-                  <CircleIconButton
-                    variant="default"
-                    size="small"
-                    onClick={closeEditModal}
-                    title="Cancel"
-                    icon={
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    }
-                  />
-                  <CircleIconButton
-                    variant="primary"
-                    size="small"
-                    onClick={handleSaveEdit}
-                    isLoading={isSaving}
-                    disabled={!editForm.actual_amount}
-                    title="Save changes"
-                    icon={
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    }
-                  />
-                </div>
-              </div>
+      {notesPopup !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setNotesPopup(null)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative w-full max-w-sm bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-semibold text-white">Note</h4>
+              <button onClick={() => setNotesPopup(null)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
             </div>
+            <p className="text-sm text-white/80 whitespace-pre-line">{notesPopup}</p>
           </div>
-        </>
+        </div>
       )}
+
+      <ExpenseActualEditModal
+        actual={editingActual}
+        tripId={Number(tripId)}
+        travelers={travelers}
+        paymentMethods={paymentMethods}
+        dateFormat={dateFormat}
+        onClose={() => setEditingActual(null)}
+        onSaved={() => { fetchActuals(); fetchSettlement(); }}
+      />
     </div>
   );
 }
