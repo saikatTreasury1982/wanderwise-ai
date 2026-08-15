@@ -38,16 +38,16 @@ export function ThemePicker({ onClose }: { onClose?: () => void }) {
             disabled={saving}
             onClick={() => handleSelect(t.key)}
             aria-pressed={active}
-            className={`glass-card glass-hover w-full rounded-xl p-4 text-left transition ${
+            className={`glass-card glass-hover w-full rounded-lg p-4 text-left transition ${
               active ? 'ring-2 ring-primary-400' : ''
             }`}
           >
             <div className="flex items-center gap-4">
-              <div className="flex shrink-0 gap-1.5">
+              <div className="flex shrink-0 gap-1">
                 {t.swatch.map((c) => (
                   <span
                     key={c}
-                    className="h-8 w-8 rounded-lg border border-white/20"
+                    className="h-4 w-4 rounded-lg border border-white/20"
                     style={{ background: c }}
                   />
                 ))}
