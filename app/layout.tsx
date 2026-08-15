@@ -29,7 +29,7 @@ export default function RootLayout({
 (function(){
   try {
     var t = localStorage.getItem('wl-theme');
-    var valid = ['aurora-dreams','midnight-ocean','warm-sunset','forest-expedition','coastal-depths'];
+    var valid = ['aurora-dreams','midnight-ocean','warm-sunset','forest-expedition','coastal-depths','classic-light'];
     if (t && valid.indexOf(t) !== -1) {
       document.documentElement.setAttribute('data-theme', t);
     }

@@ -1,21 +1,7 @@
 'use client';
 
 import { cn, formatDate } from '@/app/lib/utils';
-
-interface TripListItem {
-  trip_id: number;
-  trip_name: string;
-  start_date: string;
-  end_date: string;
-  status_code: number;
-  first_city: string | null;
-  first_country: string | null;
-}
-
-interface TripStatus {
-  status_code: number;
-  status_name: string;
-}
+import type { TripListItem, TripStatus } from '@/app/lib/types/trip';
 
 interface Props {
   trip: TripListItem;

@@ -36,6 +36,16 @@ interface UpdateTripInput {
   destinations?: Array<{ country: string; city?: string | null; latitude?: number | null; longitude?: number | null }>;
 }
 
+interface TripListItem extends Trip {
+  first_city: string | null;
+  first_country: string | null;
+  first_latitude: number | null;
+  first_longitude: number | null;
+  all_destinations: string | null;   // "Tokyo, Japan||Kyoto, Japan||Osaka, Japan" — for filtering
+  active_travelers: number;
+  cost_sharers: number;
+}
+
 export async function createTrip(input: CreateTripInput): Promise<Trip> {
   try {
     await query(
@@ -74,12 +84,36 @@ export async function createTrip(input: CreateTripInput): Promise<Trip> {
   }
 }
 
-export async function getTripsByUserId(userId: string): Promise<Trip[]> {
+export async function getTripsByUserId(userId: string): Promise<TripListItem[]> {
   try {
-    return await query<Trip>(
-      `SELECT * FROM trips 
-       WHERE user_id = ? 
-       ORDER BY start_date DESC, created_at DESC`,
+    return await query<TripListItem>(
+      `SELECT
+         t.*,
+         d.city      AS first_city,
+         d.country   AS first_country,
+         d.latitude  AS first_latitude,
+         d.longitude AS first_longitude,
+         (SELECT group_concat(
+                   CASE WHEN td.city IS NOT NULL AND td.city <> ''
+                        THEN td.city || ', ' || td.country
+                        ELSE td.country END,
+                   '||')
+            FROM trip_destinations td
+            WHERE td.trip_id = t.trip_id) AS all_destinations,
+         (SELECT COUNT(*) FROM trip_travelers tt
+            WHERE tt.trip_id = t.trip_id AND tt.is_active = 1) AS active_travelers,
+         (SELECT COUNT(*) FROM trip_travelers tt
+            WHERE tt.trip_id = t.trip_id AND tt.is_active = 1 AND tt.is_cost_sharer = 1) AS cost_sharers
+       FROM trips t
+       LEFT JOIN trip_destinations d
+         ON d.destination_id = (
+           SELECT destination_id FROM trip_destinations
+           WHERE trip_id = t.trip_id
+           ORDER BY display_order ASC, destination_id ASC
+           LIMIT 1
+         )
+       WHERE t.user_id = ?
+       ORDER BY t.start_date DESC, t.created_at DESC`,
       [userId]
     );
   } catch (error) {
