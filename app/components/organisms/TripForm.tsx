@@ -143,7 +143,6 @@ export default function TripForm({ isOpen, onClose, onSuccess, trip }: TripFormP
 
         {/* Row 3 — destinations */}
         <DestinationSelector
-          tripId={trip?.trip_id}
           initialDestinations={destinations}
           onChange={(dests) => setDestinations(dests)}
         />

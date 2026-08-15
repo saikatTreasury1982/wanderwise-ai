@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, X } from 'lucide-react';
-import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import { cn } from '@/app/lib/utils';
 
 interface Destination {
