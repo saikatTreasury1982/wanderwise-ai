@@ -1,15 +1,20 @@
+export interface CreateDestinationInput {
+  trip_id: number;
+  country: string;
+  city?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  display_order?: number;
+}
+
 export interface TripDestination {
   destination_id: number;
   trip_id: number;
   country: string;
   city: string | null;
+  latitude: number | null;
+  longitude: number | null;
   display_order: number;
   created_at: string;
-}
-
-export interface CreateDestinationInput {
-  trip_id: number;
-  country: string;
-  city?: string | null;
-  display_order?: number;
+  country_code?: string | null; // legacy column, still present
 }
