@@ -5,7 +5,7 @@ import { cn } from '@/app/lib/utils';
 import Input from '@/app/components/ui/Input';
 import CurrencyCombobox from '@/app/components/ui/CurrencyCombobox';
 import NoteField from '@/app/components/ui/NoteField';
-import ToggleSlider from '@/app/components/ui/ToggleSlider';
+import TogglePill from '@/app/components/ui/TogglePill';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import type { AdhocExpense } from '@/app/lib/types/adhoc-expense';
 
@@ -158,7 +158,18 @@ export default function AdhocExpenseEntryForm({
         </div>
         <div>
           <div className={label}>Status</div>
-          <ToggleSlider checked={isActive} onChange={setIsActive} leftLabel="Inactive" rightLabel="Active" />
+          <TogglePill
+            value={isActive ? 'active' : 'inactive'}
+            onChange={(v) => setIsActive(v === 'active')}
+            options={[
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' },
+            ]}
+            activeColors={{
+              active: 'bg-primary-500/30 border-primary-400',
+              inactive: 'bg-white/15 border-white/40',
+            }}
+          />
         </div>
       </div>
 
@@ -178,6 +189,7 @@ export default function AdhocExpenseEntryForm({
                   </span>
                   <span className="text-sm text-white/85 whitespace-nowrap">{t.traveler_name}</span>
                   {t.is_active === 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-400/30">inactive</span>}
+                  {t.is_cost_sharer === 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/50 border border-white/20">not sharing</span>}
                 </button>
               );
             })}

@@ -4,6 +4,7 @@ export interface ExpenseActual {
   traveler_id: number;
   installment_number: number;
   actual_amount: number;
+  actual_currency: string | null;
   actual_date: string | null;
   paid_by_traveler_id: number | null;
   payment_method_key: string | null;

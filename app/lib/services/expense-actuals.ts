@@ -6,13 +6,14 @@ export interface ExpenseActual {
   traveler_id: number;
   installment_number: number;
   actual_amount: number;
+  actual_currency: string | null;
   actual_date: string | null;
   paid_by_traveler_id: number | null;
   payment_method_key: string | null;
   receipt_url: string | null;
   actual_notes: string | null;
   created_at: string;
-  
+
   // Joined data
   expense_description?: string;
   expense_currency?: string;
@@ -29,6 +30,7 @@ export interface TransferForecastInput {
 
 export interface UpdateActualInput {
   actual_amount?: number;
+  actual_currency?: string | null;
   actual_date?: string | null;
   paid_by_traveler_id?: number | null;
   payment_method_key?: string | null;
@@ -45,11 +47,12 @@ export async function transferForecastToActuals(tripId: number): Promise<number>
     expense_id: number;
     traveler_id: number;
     estimated_split_amount: number;
+    expense_currency: string | null;
   }>(
-    `SELECT es.expense_id, es.traveler_id, es.estimated_split_amount
-     FROM expense_splits es
-     JOIN expenses e ON es.expense_id = e.expense_id
-     WHERE e.trip_id = ?`,
+    `SELECT es.expense_id, es.traveler_id, es.estimated_split_amount, e.expense_currency
+   FROM expense_splits es
+   JOIN expenses e ON es.expense_id = e.expense_id
+   WHERE e.trip_id = ?`,
     [tripId]
   );
 
@@ -67,9 +70,9 @@ export async function transferForecastToActuals(tripId: number): Promise<number>
       // Create actual record
       await query(
         `INSERT INTO expense_actuals (
-          expense_id, traveler_id, installment_number, actual_amount
-        ) VALUES (?, ?, 1, ?)`,
-        [split.expense_id, split.traveler_id, split.estimated_split_amount]
+          expense_id, traveler_id, installment_number, actual_amount, actual_currency
+        ) VALUES (?, ?, 1, ?, ?)`,
+        [split.expense_id, split.traveler_id, split.estimated_split_amount, split.expense_currency ?? null]
       );
       transferredCount++;
     }
@@ -215,6 +218,10 @@ export async function updateActual(actualId: number, input: UpdateActualInput): 
     updates.push('actual_amount = ?');
     args.push(input.actual_amount);
   }
+  if (input.actual_currency !== undefined) {
+    updates.push('actual_currency = ?');
+    args.push(input.actual_currency);
+  }
   if (input.actual_date !== undefined) {
     updates.push('actual_date = ?');
     args.push(input.actual_date);
@@ -336,13 +343,13 @@ export async function getSettlementSummary(tripId: number): Promise<{
 
   for (const debtor of debtors) {
     let remaining = Math.abs(debtor.balance);
-    
+
     for (const creditor of creditors) {
       if (remaining <= 0.01) break;
       if (creditor.balance <= 0.01) continue;
 
       const settleAmount = Math.min(remaining, creditor.balance);
-      
+
       settlements.push({
         from_traveler_id: debtor.traveler_id,
         from_name: debtor.traveler_name,

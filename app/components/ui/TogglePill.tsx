@@ -62,7 +62,7 @@ export default function TogglePill<T extends string>({
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              'relative z-10 px-4 py-1.5 rounded-full text-sm transition-colors whitespace-nowrap',
+              'relative z-10 px-4 py-1 rounded-full text-sm transition-colors whitespace-nowrap',
               active ? 'text-white' : 'text-white/60 hover:text-white'
             )}
           >
