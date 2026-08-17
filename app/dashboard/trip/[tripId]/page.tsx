@@ -74,6 +74,7 @@ export default function TripHubPage({ params }: PageProps) {
           bookingsResponse,
           accommodationsResponse,
           itineraryResponse,
+          itineraryRangesResponse,   // ADD (right after itineraryResponse)
           packingResponse,
           prefResponse,
           travelersResponse,
@@ -87,6 +88,7 @@ export default function TripHubPage({ params }: PageProps) {
           fetch(`/api/flights/bookings?trip_id=${tripId}`),
           fetch(`/api/trips/${tripId}/accommodations`),
           fetch(`/api/trips/${tripId}/itinerary`),
+          fetch(`/api/trips/${tripId}/itinerary-ranges`),
           fetch(`/api/trips/${tripId}/packing`),
           fetch('/api/user/preferences'),
           fetch(`/api/trips/${tripId}/travelers`),
@@ -113,6 +115,7 @@ export default function TripHubPage({ params }: PageProps) {
           bookingsData,
           accommodationsData,
           itineraryData,
+          itineraryRangesData,   // ADD
           packingData,
           prefData,
           travelersData,
@@ -126,6 +129,7 @@ export default function TripHubPage({ params }: PageProps) {
           bookingsResponse.ok ? bookingsResponse.json() : null,
           accommodationsResponse.ok ? accommodationsResponse.json() : null,
           itineraryResponse.ok ? itineraryResponse.json() : null,
+          itineraryRangesResponse.ok ? itineraryRangesResponse.json() : null,   // ADD
           packingResponse.ok ? packingResponse.json() : null,
           prefResponse.ok ? prefResponse.json() : null,
           travelersResponse.ok ? travelersResponse.json() : null,
@@ -144,13 +148,33 @@ export default function TripHubPage({ params }: PageProps) {
           const end = new Date(tripData.trip.end_date);
           const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-          // Set itinerary stats with calculated days
-          if (itineraryData) {
-            const daysPlanned = itineraryData.length;
-            const activitiesCount = itineraryData.reduce((sum: number, day: any) => {
-              return sum + (day.categories?.reduce((catSum: number, cat: any) => catSum + (cat.activities?.length || 0), 0) || 0);
-            }, 0);
-            setItineraryStats({ daysPlanned, totalDays, activitiesCount });
+          // Itinerary stats — supports day mode OR range mode (data presence = mode)
+          const hasDays = Array.isArray(itineraryData) && itineraryData.length > 0;
+          const hasRanges = Array.isArray(itineraryRangesData) && itineraryRangesData.length > 0;
+
+          const countActivities = (items: any[]) =>
+            items.reduce((sum: number, item: any) =>
+              sum + (item.categories?.reduce((catSum: number, cat: any) => catSum + (cat.activities?.length || 0), 0) || 0), 0);
+
+          if (hasRanges) {
+            // range mode: count days covered by ranges + activities across ranges
+            const coveredDays = new Set<number>();
+            itineraryRangesData.forEach((r: any) => {
+              for (let d = r.start_day; d <= r.end_day; d++) coveredDays.add(d);
+            });
+            setItineraryStats({
+              daysPlanned: coveredDays.size,
+              totalDays,
+              activitiesCount: countActivities(itineraryRangesData),
+            });
+          } else if (hasDays) {
+            setItineraryStats({
+              daysPlanned: itineraryData.length,
+              totalDays,
+              activitiesCount: countActivities(itineraryData),
+            });
+          } else {
+            setItineraryStats({ daysPlanned: 0, totalDays, activitiesCount: 0 });
           }
         }
 

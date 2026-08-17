@@ -7,7 +7,6 @@ import TripGridCard from '@/app/components/organisms/TripGridCard';
 import TripSummaryHeader from '@/app/components/organisms/TripSummaryHeader';
 import TripForm from '@/app/components/organisms/TripForm';
 import EmptyState from '@/app/components/organisms/EmptyState';
-import TripSummaryModal from '@/app/components/organisms/TripSummaryModal';
 import PackingAlertWidget from '@/app/components/organisms/PackingAlertWidget';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import SelectPill from '@/app/components/ui/SelectPill';

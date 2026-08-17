@@ -25,14 +25,21 @@ import {
 
 interface ItineraryCategoryCardProps {
   tripId: number;
-  dayId: number;
+  dayId: number;          // in range mode, this carries the day_range_id
+  rangeMode?: boolean;    // NEW
   category: ItineraryDayCategory;
-  onUpdate: (category: ItineraryDayCategory) => void;
+  onUpdate: (updated: ItineraryDayCategory) => void;
   onDelete: (categoryId: number) => void;
-  onRefetch: () => Promise<void>;
+  onRefetch: () => Promise<void> | void;
 }
 
-export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdate, onDelete, onRefetch }: ItineraryCategoryCardProps) {
+export default function ItineraryCategoryCard({
+  tripId, dayId, rangeMode = false, category, onUpdate, onDelete, onRefetch,
+}: ItineraryCategoryCardProps) {
+  // base path switches day vs range
+  const catBase = rangeMode
+    ? `/api/trips/${tripId}/itinerary-ranges/${dayId}/categories/${category.category_id}`
+    : `/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`;
   const [isExpanded, setIsExpanded] = useState(category.is_expanded === 1);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(category.category_name);
@@ -104,7 +111,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
     }));
 
     try {
-      await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/activities/reorder`, {
+      await fetch(`${catBase}/activities/reorder`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activityOrders }),
@@ -148,7 +155,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
     setIsExpanded(newExpanded);
 
     try {
-      await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
+      await fetch(`${catBase}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_expanded: newExpanded ? 1 : 0 }),
@@ -163,7 +170,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
     setIsTogglingActive(true);
 
     try {
-      await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
+      await fetch(`${catBase}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_active: newActive ? 1 : 0 }),
@@ -186,7 +193,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
   const handleSaveEdit = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
+      const res = await fetch(`${catBase}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -215,7 +222,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
 
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}`, {
+      const res = await fetch(`${catBase}`, {
         method: 'DELETE',
       });
 
@@ -233,7 +240,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
     setIsCopying(true);
 
     try {
-      const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/copy`, {
+      const res = await fetch(`${catBase}/copy`, {
         method: 'POST',
       });
 
@@ -261,7 +268,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
 
     setIsAddingActivity(true);
     try {
-      const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/activities`, {
+      const res = await fetch(`${catBase}/activities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activity_name: newActivityName.trim() }),
@@ -289,7 +296,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
 
     setIsAddingBulk(true);
     try {
-      const res = await fetch(`/api/trips/${tripId}/itinerary/${dayId}/categories/${category.category_id}/activities`, {
+      const res = await fetch(`${catBase}/activities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bulk: true, activities }),
@@ -344,8 +351,8 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
           onClick={handleToggleActive}
           disabled={isTogglingActive}
           className={`p-1 rounded transition-colors ${isTogglingActive
-              ? 'cursor-wait'
-              : 'hover:bg-white/10'
+            ? 'cursor-wait'
+            : 'hover:bg-white/10'
             }`}
           title={isTogglingActive ? 'Processing...' : (isActive ? 'Mark as inactive' : 'Mark as active')}
         >
@@ -421,7 +428,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                 min="1"
               />
             )}
-            <button 
+            <button
               onClick={handleSaveEdit}
               disabled={isSaving}
               className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors disabled:opacity-50"
@@ -433,7 +440,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                 <Check className="w-4 h-4" />
               )}
             </button>
-            <button 
+            <button
               onClick={() => setIsEditing(false)}
               className="p-1.5 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors"
               title="Cancel"
@@ -500,8 +507,8 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                 onClick={handleCopy}
                 disabled={isCopying}
                 className={`p-1.5 rounded-full transition-colors ${isCopying
-                    ? 'bg-primary-500/30 text-primary-200 cursor-wait'
-                    : 'hover:bg-white/10 text-primary-300 hover:text-white'
+                  ? 'bg-primary-500/30 text-primary-200 cursor-wait'
+                  : 'hover:bg-white/10 text-primary-300 hover:text-white'
                   }`}
                 title={isCopying ? 'Copying...' : 'Copy category'}
               >
@@ -594,6 +601,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                       tripId={tripId}
                       dayId={dayId}
                       categoryId={category.category_id}
+                      rangeMode={rangeMode}
                       activity={activity}
                       disableCost={hasCategoryCost}
                       isActive={isActive}
@@ -645,7 +653,7 @@ export default function ItineraryCategoryCard({ tripId, dayId, category, onUpdat
                   setIsAddingActivity(false);
                   setNewActivityName('');
                 }}
-                className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors"title="Cancel"
+                className="p-2 rounded-full hover:bg-white/10 text-primary-300 hover:text-white transition-colors" title="Cancel"
               >
                 <X className="w-4 h-4" />
               </button>

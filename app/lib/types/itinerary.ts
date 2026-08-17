@@ -11,7 +11,8 @@ export interface ItineraryDay {
 
 export interface ItineraryDayCategory {
   category_id: number;
-  day_id: number;
+  day_id: number | null;
+  day_range_id?: number | null; // NEW
   category_name: string;
   category_cost: number | null;
   currency_code: string | null;
@@ -54,7 +55,8 @@ export interface UpdateItineraryDayInput {
 }
 
 export interface CreateItineraryCategoryInput {
-  day_id: number;
+  day_id?: number;
+  day_range_id?: number;
   category_name: string;
   category_cost?: number;
   currency_code?: string;
@@ -101,4 +103,33 @@ export interface UpdateItineraryActivityInput {
 export interface CostSummary {
   currency_code: string;
   total: number;
+}
+
+export interface ItineraryDayRange {
+  day_range_id: number;
+  trip_id: number;
+  start_day: number;
+  end_day: number;
+  range_name: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+  categories?: ItineraryDayCategory[];
+}
+
+export interface CreateItineraryRangeInput {
+  trip_id: number;
+  start_day: number;
+  end_day: number;
+  range_name?: string | null;
+  description?: string | null;
+  display_order?: number;
+}
+
+export interface UpdateItineraryRangeInput {
+  start_day?: number;
+  end_day?: number;
+  range_name?: string | null;
+  description?: string | null;
+  display_order?: number;
 }

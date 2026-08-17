@@ -13,6 +13,7 @@ interface ItineraryActivityRowProps {
   tripId: number;
   dayId: number;
   categoryId: number;
+  rangeMode?: boolean;  // NEW
   activity: ItineraryActivity;
   disableCost: boolean;
   isActive: boolean;
@@ -21,15 +22,10 @@ interface ItineraryActivityRowProps {
 }
 
 export default function ItineraryActivityRow({
-  tripId,
-  dayId,
-  categoryId,
-  activity,
-  disableCost,
-  isActive,
-  onUpdate,
-  onDelete,
-}: ItineraryActivityRowProps) {
+ tripId, dayId, categoryId, rangeMode = false, activity, disableCost, isActive, onUpdate, onDelete }: ItineraryActivityRowProps) {
+  const activityBase = rangeMode
+    ? `/api/trips/${tripId}/itinerary-ranges/${dayId}/categories/${categoryId}/activities/${activity.activity_id}`
+    : `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}`;
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(activity.activity_name);
   const [editStartTime, setEditStartTime] = useState(activity.start_time || '');
@@ -71,7 +67,7 @@ export default function ItineraryActivityRow({
     const fetchLinkCount = async () => {
       try {
         const res = await fetch(
-          `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}/links`
+          `${activityBase}/links`
         );
         if (res.ok) {
           const data = await res.json();
@@ -89,7 +85,7 @@ export default function ItineraryActivityRow({
     setIsToggling(true);
     try {
       const res = await fetch(
-        `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}/toggle`,
+        `${activityBase}/toggle`,
         { method: 'POST' }
       );
 
@@ -108,7 +104,7 @@ export default function ItineraryActivityRow({
     setIsSaving(true);
     try {
       const res = await fetch(
-        `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}`,
+        `${activityBase}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -141,7 +137,7 @@ export default function ItineraryActivityRow({
     setIsDeleting(true);
     try {
       const res = await fetch(
-        `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}`,
+        `${activityBase}`,
         { method: 'DELETE' }
       );
 
@@ -361,7 +357,7 @@ export default function ItineraryActivityRow({
           const fetchLinkCount = async () => {
             try {
               const res = await fetch(
-                `/api/trips/${tripId}/itinerary/${dayId}/categories/${categoryId}/activities/${activity.activity_id}/links`
+                `${activityBase}/links`
               );
               if (res.ok) {
                 const data = await res.json();
