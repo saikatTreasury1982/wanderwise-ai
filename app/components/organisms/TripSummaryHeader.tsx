@@ -30,11 +30,14 @@ const fmtCost = (amount: number, currency: string) => {
 
 // status → primary action label + icon
 function primaryActionFor(status: number): { label: string; d: string } | null {
+  const openIcon = 'M13 7l5 5m0 0l-5 5m5-5H6';
+  const playIcon = 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+  const reactivateIcon = 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15';
   switch (status) {
-    case 1: return { label: 'Start planning', d: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z' };
-    case 2: return { label: 'Open trip', d: 'M13 7l5 5m0 0l-5 5m5-5H6' };
-    case 3: return { label: 'Reactivate', d: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' };
-    case 4: return { label: 'Open trip', d: 'M13 7l5 5m0 0l-5 5m5-5H6' };
+    case 1: return { label: 'Start planning', d: playIcon };
+    case 2: return { label: 'Open trip', d: openIcon };
+    case 3: return { label: 'Open trip', d: openIcon };        // completed → viewable
+    case 4: return { label: 'Reactivate', d: reactivateIcon }; // suspended → reactivate
     default: return null;
   }
 }
@@ -143,7 +146,7 @@ export default function TripSummaryHeader({ trip, statuses, dateFormat, onEdit, 
           {canDelete && (
             <div className="relative">
               <button onClick={() => setMenuOpen(v => !v)} title="More" className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">
-                <MoreVertical className="w-5 h-5" />
+                <MoreVertical className="w-3 h-3" />
               </button>
               {menuOpen && (
                 <>
@@ -151,7 +154,7 @@ export default function TripSummaryHeader({ trip, statuses, dateFormat, onEdit, 
                   <div className="absolute right-0 top-full mt-1 z-50 w-40 bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-lg shadow-2xl overflow-hidden">
                     <button onClick={() => { setMenuOpen(false); onDelete(trip.trip_id); }}
                       className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-300 hover:bg-red-500/10 transition-colors">
-                      <Trash2 className="w-4 h-4" /> Delete trip
+                      <Trash2 className="w-3 h-3" /> Delete trip
                     </button>
                   </div>
                 </>

@@ -3,6 +3,9 @@ import type {
   ItineraryDay,
   ItineraryDayCategory,
   ItineraryActivity,
+  ItineraryDayRange,           // ADD
+  CreateItineraryRangeInput,   // ADD
+  UpdateItineraryRangeInput,   // ADD
   CreateItineraryDayInput,
   UpdateItineraryDayInput,
   CreateItineraryCategoryInput,
@@ -331,17 +334,20 @@ export async function getItineraryCategoryById(categoryId: number): Promise<Itin
 }
 
 export async function createItineraryCategory(input: CreateItineraryCategoryInput): Promise<ItineraryDayCategory> {
-  const [{ maxOrder }] = await query<{ maxOrder: number | null }>(
-    `SELECT MAX(display_order) as maxOrder FROM itinerary_day_categories WHERE day_id = ?`,
-    [input.day_id]
-  );
+  const isRange = input.day_range_id != null;
+  const parentCol = isRange ? 'day_range_id' : 'day_id';
+  const parentId = isRange ? input.day_range_id! : input.day_id!;
 
+  const [{ maxOrder }] = await query<{ maxOrder: number | null }>(
+    `SELECT MAX(display_order) as maxOrder FROM itinerary_day_categories WHERE ${parentCol} = ?`,
+    [parentId]
+  );
   const displayOrder = input.display_order ?? (maxOrder ?? 0) + 1;
 
   await query(
-    `INSERT INTO itinerary_day_categories (day_id, category_name, category_cost, currency_code, display_order)
+    `INSERT INTO itinerary_day_categories (${parentCol}, category_name, category_cost, currency_code, display_order)
      VALUES (?, ?, ?, ?, ?)`,
-    [input.day_id, input.category_name, input.category_cost ?? null, input.currency_code ?? null, displayOrder]
+    [parentId, input.category_name, input.category_cost ?? null, input.currency_code ?? null, displayOrder]
   );
 
   const [{ id }] = await query<{ id: number }>(`SELECT last_insert_rowid() as id`, []);
@@ -559,4 +565,297 @@ export async function toggleItineraryActivity(activityId: number): Promise<Itine
   );
 
   return getItineraryActivityById(activityId);
+}
+
+// ==================== DAY RANGES ====================
+
+export async function getItineraryRangesByTrip(tripId: number): Promise<ItineraryDayRange[]> {
+  const rows = await query<{
+    day_range_id: number;
+    trip_id: number;
+    start_day: number;
+    end_day: number;
+    range_name: string | null;
+    description: string | null;
+    range_created_at: string;
+    range_updated_at: string;
+    category_id: number | null;
+    category_name: string | null;
+    category_cost: number | null;
+    currency_code: string | null;
+    cost_type: string | null;
+    headcount: number | null;
+    is_expanded: number | null;
+    is_active: number | null;
+    category_display_order: number | null;
+    category_created_at: string | null;
+    activity_id: number | null;
+    activity_name: string | null;
+    start_time: string | null;
+    end_time: string | null;
+    duration_minutes: number | null;
+    activity_cost: number | null;
+    activity_currency_code: string | null;
+    activity_cost_type: string | null;
+    activity_headcount: number | null;
+    notes: string | null;
+    is_completed: number | null;
+    activity_display_order: number | null;
+    activity_created_at: string | null;
+  }>(
+    `SELECT
+      r.day_range_id,
+      r.trip_id,
+      r.start_day,
+      r.end_day,
+      r.range_name,
+      r.description,
+      r.created_at as range_created_at,
+      r.updated_at as range_updated_at,
+      c.category_id,
+      c.category_name,
+      c.category_cost,
+      c.currency_code,
+      c.cost_type,
+      c.headcount,
+      c.is_expanded,
+      c.is_active,
+      c.display_order as category_display_order,
+      c.created_at as category_created_at,
+      a.activity_id,
+      a.activity_name,
+      a.start_time,
+      a.end_time,
+      a.duration_minutes,
+      a.activity_cost,
+      a.currency_code as activity_currency_code,
+      a.cost_type as activity_cost_type,
+      a.headcount as activity_headcount,
+      a.notes,
+      a.is_completed,
+      a.display_order as activity_display_order,
+      a.created_at as activity_created_at
+     FROM itinerary_day_ranges r
+     LEFT JOIN itinerary_day_categories c ON r.day_range_id = c.day_range_id
+     LEFT JOIN itinerary_activities a ON c.category_id = a.category_id
+     WHERE r.trip_id = ?
+     ORDER BY r.display_order, r.start_day, c.display_order, c.category_id, a.display_order, a.start_time, a.activity_id`,
+    [tripId]
+  );
+
+  const rangesMap = new Map<number, ItineraryDayRange>();
+  const categoriesMap = new Map<number, ItineraryDayCategory>();
+
+  for (const row of rows) {
+    if (!rangesMap.has(row.day_range_id)) {
+      rangesMap.set(row.day_range_id, {
+        day_range_id: row.day_range_id,
+        trip_id: row.trip_id,
+        start_day: row.start_day,
+        end_day: row.end_day,
+        range_name: row.range_name,
+        description: row.description,
+        created_at: row.range_created_at,
+        updated_at: row.range_updated_at,
+        categories: [],
+      });
+    }
+    const range = rangesMap.get(row.day_range_id)!;
+
+    if (row.category_id && !categoriesMap.has(row.category_id)) {
+      const category: ItineraryDayCategory = {
+        category_id: row.category_id,
+        day_id: null,
+        day_range_id: row.day_range_id,
+        category_name: row.category_name!,
+        category_cost: row.category_cost,
+        currency_code: row.currency_code,
+        cost_type: (row.cost_type as 'total' | 'per_head') || 'total',
+        headcount: row.headcount,
+        is_expanded: row.is_expanded!,
+        is_active: row.is_active!,
+        display_order: row.category_display_order!,
+        created_at: row.category_created_at!,
+        activities: [],
+      };
+      categoriesMap.set(row.category_id, category);
+      range.categories!.push(category);
+    }
+
+    if (row.activity_id && row.category_id) {
+      categoriesMap.get(row.category_id)!.activities!.push({
+        activity_id: row.activity_id,
+        category_id: row.category_id,
+        activity_name: row.activity_name!,
+        start_time: row.start_time,
+        end_time: row.end_time,
+        duration_minutes: row.duration_minutes,
+        activity_cost: row.activity_cost,
+        currency_code: row.activity_currency_code,
+        cost_type: (row.activity_cost_type as 'total' | 'per_head') || 'total',
+        headcount: row.activity_headcount,
+        notes: row.notes,
+        is_completed: row.is_completed!,
+        display_order: row.activity_display_order!,
+        created_at: row.activity_created_at!,
+      });
+    }
+  }
+
+  return Array.from(rangesMap.values());
+}
+
+export async function getItineraryRangeById(rangeId: number): Promise<ItineraryDayRange | null> {
+  const rows = await query<ItineraryDayRange>(
+    `SELECT * FROM itinerary_day_ranges WHERE day_range_id = ?`,
+    [rangeId]
+  );
+  if (rows.length === 0) return null;
+  const range = rows[0];
+  range.categories = await getItineraryCategoriesByRange(rangeId);
+  return range;
+}
+
+export async function createItineraryRange(input: CreateItineraryRangeInput): Promise<ItineraryDayRange> {
+  const [{ maxOrder }] = await query<{ maxOrder: number | null }>(
+    `SELECT MAX(display_order) as maxOrder FROM itinerary_day_ranges WHERE trip_id = ?`,
+    [input.trip_id]
+  );
+  const displayOrder = input.display_order ?? (maxOrder ?? 0) + 1;
+
+  await query(
+    `INSERT INTO itinerary_day_ranges (trip_id, start_day, end_day, range_name, description, display_order)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [input.trip_id, input.start_day, input.end_day, input.range_name ?? null, input.description ?? null, displayOrder]
+  );
+
+  const [{ id }] = await query<{ id: number }>(`SELECT last_insert_rowid() as id`, []);
+  return (await getItineraryRangeById(id))!;
+}
+
+export async function updateItineraryRange(rangeId: number, input: UpdateItineraryRangeInput): Promise<ItineraryDayRange | null> {
+  const updates: string[] = [];
+  const args: (string | number | null)[] = [];
+
+  if (input.start_day !== undefined) { updates.push('start_day = ?'); args.push(input.start_day); }
+  if (input.end_day !== undefined) { updates.push('end_day = ?'); args.push(input.end_day); }
+  if (input.range_name !== undefined) { updates.push('range_name = ?'); args.push(input.range_name); }
+  if (input.description !== undefined) { updates.push('description = ?'); args.push(input.description); }
+  if (input.display_order !== undefined) { updates.push('display_order = ?'); args.push(input.display_order); }
+
+  if (updates.length > 0) {
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+    args.push(rangeId);
+    await query(`UPDATE itinerary_day_ranges SET ${updates.join(', ')} WHERE day_range_id = ?`, args);
+  }
+  return getItineraryRangeById(rangeId);
+}
+
+export async function deleteItineraryRange(rangeId: number): Promise<boolean> {
+  await query(`DELETE FROM itinerary_day_ranges WHERE day_range_id = ?`, [rangeId]);
+  return true;
+}
+
+export async function getItineraryCategoriesByRange(rangeId: number): Promise<ItineraryDayCategory[]> {
+  const rows = await query<{
+    category_id: number;
+    day_id: number | null;
+    day_range_id: number | null;
+    category_name: string;
+    category_cost: number | null;
+    currency_code: string | null;
+    cost_type: string | null;
+    headcount: number | null;
+    is_expanded: number;
+    is_active: number;
+    display_order: number;
+    created_at: string;
+    activity_id: number | null;
+    activity_name: string | null;
+    start_time: string | null;
+    end_time: string | null;
+    duration_minutes: number | null;
+    activity_cost: number | null;
+    activity_currency_code: string | null;
+    activity_cost_type: string | null;
+    activity_headcount: number | null;
+    notes: string | null;
+    is_completed: number | null;
+    activity_display_order: number | null;
+    activity_created_at: string | null;
+  }>(
+    `SELECT
+      c.*,
+      a.activity_id,
+      a.activity_name,
+      a.start_time,
+      a.end_time,
+      a.duration_minutes,
+      a.activity_cost,
+      a.currency_code as activity_currency_code,
+      a.cost_type as activity_cost_type,
+      a.headcount as activity_headcount,
+      a.notes,
+      a.is_completed,
+      a.display_order as activity_display_order,
+      a.created_at as activity_created_at
+     FROM itinerary_day_categories c
+     LEFT JOIN itinerary_activities a ON c.category_id = a.category_id
+     WHERE c.day_range_id = ?
+     ORDER BY c.display_order, c.category_id, a.display_order, a.start_time, a.activity_id`,
+    [rangeId]
+  );
+
+  const categoriesMap = new Map<number, ItineraryDayCategory>();
+  for (const row of rows) {
+    if (!categoriesMap.has(row.category_id)) {
+      categoriesMap.set(row.category_id, {
+        category_id: row.category_id,
+        day_id: row.day_id,
+        day_range_id: row.day_range_id,
+        category_name: row.category_name,
+        category_cost: row.category_cost,
+        currency_code: row.currency_code,
+        cost_type: (row.cost_type as 'total' | 'per_head') || 'total',
+        headcount: row.headcount,
+        is_expanded: row.is_expanded,
+        is_active: row.is_active,
+        display_order: row.display_order,
+        created_at: row.created_at,
+        activities: [],
+      });
+    }
+    if (row.activity_id) {
+      categoriesMap.get(row.category_id)!.activities!.push({
+        activity_id: row.activity_id,
+        category_id: row.category_id,
+        activity_name: row.activity_name!,
+        start_time: row.start_time,
+        end_time: row.end_time,
+        duration_minutes: row.duration_minutes,
+        activity_cost: row.activity_cost,
+        currency_code: row.activity_currency_code,
+        cost_type: (row.activity_cost_type as 'total' | 'per_head') || 'total',
+        headcount: row.activity_headcount,
+        notes: row.notes,
+        is_completed: row.is_completed!,
+        display_order: row.activity_display_order!,
+        created_at: row.activity_created_at!,
+      });
+    }
+  }
+  return Array.from(categoriesMap.values());
+}
+
+// mode detection helpers
+export async function tripHasDays(tripId: number): Promise<boolean> {
+  const [{ n }] = await query<{ n: number }>(
+    `SELECT EXISTS(SELECT 1 FROM itinerary_days WHERE trip_id = ?) as n`, [tripId]);
+  return n === 1;
+}
+
+export async function tripHasRanges(tripId: number): Promise<boolean> {
+  const [{ n }] = await query<{ n: number }>(
+    `SELECT EXISTS(SELECT 1 FROM itinerary_day_ranges WHERE trip_id = ?) as n`, [tripId]);
+  return n === 1;
 }
