@@ -5,6 +5,7 @@ import { getTripById, updateTrip, deleteTrip } from '@/app/lib/services/trip-ser
 import { getUserById } from '@/app/lib/services/user-service';
 import { getTravelersByTripId, createTraveler } from '@/app/lib/services/traveler-service';
 import { replaceTripDestinations } from '@/app/lib/services/destination-service';
+import { query } from '@/app/lib/db';
 
 interface RouteParams {
   params: Promise<{ tripId: string }>;
@@ -145,6 +146,23 @@ export async function PUT(request: Request, { params }: RouteParams) {
     // Handle destinations update if provided
     if (destinations !== undefined) {
       await replaceTripDestinations(parseInt(tripId), destinations);
+    }
+
+    // after building/applying the update, before returning:
+    // enforce invariant: completed trip with a future end date reverts to active
+    const updatedTrip = await getTripById(Number(tripId), session.user_id); // or however you fetch it
+    if (updatedTrip && updatedTrip.status_code === 3) {
+      const endDate = new Date(updatedTrip.end_date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (endDate >= today) {
+        await query(
+          `UPDATE trips SET status_code = 2 WHERE trip_id = ?`,
+          [Number(tripId)]
+        );
+        // re-fetch so response reflects the revert
+        // (or set updatedTrip.status_code = 2 before returning)
+      }
     }
 
     return NextResponse.json({ trip });

@@ -173,6 +173,12 @@ export default function DashboardPage() {
     }
   };
 
+  const handleMarkComplete = async (tripId: number) => {
+    if (confirm('Mark this trip as completed?')) {
+      if (await setStatus(tripId, 3)) await fetchTrips();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen relative flex items-center justify-center">
@@ -239,6 +245,7 @@ export default function DashboardPage() {
                   onDelete={handleDeleteTrip}
                   onPrimaryAction={handlePrimaryAction}
                   onReactivate={handleReactivate}
+                  onMarkComplete={handleMarkComplete}
                 />
               </div>
             )}
