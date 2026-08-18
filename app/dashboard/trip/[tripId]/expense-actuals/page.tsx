@@ -50,6 +50,7 @@ export default function ExpenseActualsPage({ params }: PageProps) {
   const [isTransferring, setIsTransferring] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
   const [overBudgetOnly, setOverBudgetOnly] = useState(false);
   const [notesPopup, setNotesPopup] = useState<string | null>(null);
@@ -202,6 +203,30 @@ export default function ExpenseActualsPage({ params }: PageProps) {
       alert('Failed to reset actuals');
     } finally {
       setIsResetting(false);
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!confirm('Sync actuals with the current forecast?\n\nThis adds rows for new expenses/travelers and removes rows for items no longer in the forecast. Your entered payment data for existing items is preserved.')) return;
+
+    setIsSyncing(true);
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/trips/${tripId}/expense-actuals/sync`, { method: 'POST' });
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Sync complete. Added ${data.created}, removed ${data.deleted}.`);
+        await Promise.all([fetchActuals(), fetchSettlement()]);
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to sync actuals');
+      }
+    } catch (error) {
+      console.error('Error syncing actuals:', error);
+      alert('Failed to sync actuals');
+    } finally {
+      setIsSyncing(false);
       setIsProcessing(false);
     }
   };
@@ -366,7 +391,28 @@ export default function ExpenseActualsPage({ params }: PageProps) {
             {/* Summary Cards */}
             {settlement && (
               <>
-                <div className="flex justify-end mb-4">
+                <div className="flex justify-end gap-2 mb-4">
+                  {/* Sync with Forecast */}
+                  <div className="relative group">
+                    <CircleIconButton
+                      onClick={handleSync}
+                      disabled={isSyncing}
+                      isLoading={isSyncing}
+                      variant="primary"
+                      size="small"
+                      title="Sync with Forecast"
+                      icon={
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m4 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                      }
+                    />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                      Sync with Forecast
+                    </div>
+                  </div>
+
+                  {/* Reset Actuals */}
                   <div className="relative group">
                     <CircleIconButton
                       onClick={handleReset}
@@ -381,7 +427,6 @@ export default function ExpenseActualsPage({ params }: PageProps) {
                         </svg>
                       }
                     />
-                    {/* Tooltip */}
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                       Reset All Actuals
                     </div>
