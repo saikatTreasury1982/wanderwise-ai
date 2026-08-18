@@ -21,7 +21,6 @@ const statusStyles: Record<number, string> = {
 export default function TripGridCard({ trip, statuses, dateFormat, selected, onSelect }: Props) {
   const statusLabel = statuses.find(s => s.status_code === trip.status_code)?.status_name || 'Unknown';
   const statusStyle = statusStyles[trip.status_code] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-  const destination = trip.first_city ? `${trip.first_city}, ${trip.first_country}` : (trip.first_country || '');
 
   return (
     <button
@@ -39,8 +38,7 @@ export default function TripGridCard({ trip, statuses, dateFormat, selected, onS
         </span>
       </div>
       <div className="text-sm font-semibold text-white truncate">{trip.trip_name}</div>
-      {destination && <div className="text-xs text-white/60 truncate mt-0.5">{destination}</div>}
-      <div className="text-xs text-white/40 mt-1.5">{formatDate(trip.start_date, dateFormat)}</div>
+      <div className="text-xs text-white/40 mt-1.5">{formatDate(trip.start_date, dateFormat)} – {formatDate(trip.end_date, dateFormat)}</div>
     </button>
   );
 }
