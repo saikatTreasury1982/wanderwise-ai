@@ -371,3 +371,74 @@ export async function getSettlementSummary(tripId: number): Promise<{
     settlements,
   };
 }
+
+/**
+ * Sync actuals with the current forecast:
+ *  - CREATE blank actuals for splits that have no actual row (new expense × traveler)
+ *  - KEEP existing actuals (preserve entered data)
+ *  - DELETE actuals whose split no longer exists (traveler removed from expense, or expense gone)
+ * installment_number is always 1 (no installment feature yet).
+ */
+export async function syncActualsWithForecast(tripId: number): Promise<{
+  created: number;
+  deleted: number;
+}> {
+  // current forecast splits (the source of truth for who shares what)
+  const splits = await query<{
+    expense_id: number;
+    traveler_id: number;
+    estimated_split_amount: number;
+    expense_currency: string | null;
+  }>(
+    `SELECT es.expense_id, es.traveler_id, es.estimated_split_amount, e.expense_currency
+     FROM expense_splits es
+     JOIN expenses e ON es.expense_id = e.expense_id
+     WHERE e.trip_id = ?`,
+    [tripId]
+  );
+
+  const splitKeys = new Set(splits.map(s => `${s.expense_id}:${s.traveler_id}`));
+
+  // existing actuals for this trip
+  const existingActuals = await query<{
+    actual_id: number;
+    expense_id: number;
+    traveler_id: number;
+  }>(
+    `SELECT ea.actual_id, ea.expense_id, ea.traveler_id
+     FROM expense_actuals ea
+     JOIN expenses e ON ea.expense_id = e.expense_id
+     WHERE e.trip_id = ?`,
+    [tripId]
+  );
+
+  const actualKeys = new Set(existingActuals.map(a => `${a.expense_id}:${a.traveler_id}`));
+
+  let created = 0;
+  let deleted = 0;
+
+  // CREATE: splits with no actual row
+  for (const split of splits) {
+    const key = `${split.expense_id}:${split.traveler_id}`;
+    if (!actualKeys.has(key)) {
+      await query(
+        `INSERT INTO expense_actuals (
+          expense_id, traveler_id, installment_number, actual_amount, actual_currency
+        ) VALUES (?, ?, 1, ?, ?)`,
+        [split.expense_id, split.traveler_id, split.estimated_split_amount, split.expense_currency ?? null]
+      );
+      created++;
+    }
+  }
+
+  // DELETE: actual rows whose split no longer exists
+  for (const actual of existingActuals) {
+    const key = `${actual.expense_id}:${actual.traveler_id}`;
+    if (!splitKeys.has(key)) {
+      await query(`DELETE FROM expense_actuals WHERE actual_id = ?`, [actual.actual_id]);
+      deleted++;
+    }
+  }
+
+  return { created, deleted };
+}
