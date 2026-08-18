@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { cn, formatDateRange } from '@/app/lib/utils';
-import { Calendar, Users, Wallet, Cloud, MapPin, MoreVertical, Edit3, Trash2, RotateCcw, ChevronDown } from 'lucide-react';
+import { Calendar, Users, Wallet, Cloud, MapPin, MoreVertical, Edit3, Trash2, RotateCcw, ChevronDown, CheckCircle } from 'lucide-react';
 import type { TripListItem, TripStatus } from '@/app/lib/types/trip';
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
   onDelete: (tripId: number) => void;
   onPrimaryAction: (trip: TripListItem) => void; // proceed/open/complete/reactivate depending on status
   onReactivate: (tripId: number) => void;
+  onMarkComplete: (tripId: number) => void;
 }
 
 const statusStyles: Record<number, string> = {
@@ -41,7 +42,7 @@ function primaryActionFor(status: number): { label: string; d: string } | null {
   }
 }
 
-export default function TripSummaryHeader({ trip, statuses, dateFormat, onEdit, onDelete, onPrimaryAction, onReactivate }: Props) {
+export default function TripSummaryHeader({ trip, statuses, dateFormat, onEdit, onDelete, onPrimaryAction, onReactivate, onMarkComplete }: Props) {
   const [weather, setWeather] = useState<{ tempMin: number; tempMax: number; precipitationChance: number; description: string } | null>(null);
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [cost, setCost] = useState<{ total: number; currency: string } | null>(null);
@@ -112,9 +113,16 @@ export default function TripSummaryHeader({ trip, statuses, dateFormat, onEdit, 
   const statusLabel = statuses.find(s => s.status_code === trip.status_code)?.status_name || 'Unknown';
   const statusStyle = statusStyles[trip.status_code] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   const destinationNames = trip.all_destinations ? trip.all_destinations.split('||').filter(Boolean) : [];
+  const isEnded = (() => {
+    const end = new Date(trip.end_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return end < today;
+  })();
+  const canMarkComplete = trip.status_code === 2 && isEnded;      // active + ended
+  const canReactivate = trip.status_code === 3 || trip.status_code === 4; // completed or suspended
   const canDelete = trip.status_code === 1 || trip.status_code === 4;
-  const canReactivate = trip.status_code === 4;
-  const showMenu = canDelete || canReactivate;
+  const showMenu = canMarkComplete || canReactivate || canDelete;
 
   const duration = (() => {
     if (!trip.start_date || !trip.end_date) return null;
@@ -166,17 +174,23 @@ export default function TripSummaryHeader({ trip, statuses, dateFormat, onEdit, 
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-1 z-50 w-40 bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-lg shadow-2xl overflow-hidden">
+                  <div className="absolute right-0 top-full mt-1 z-50 w-44 bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-lg shadow-2xl overflow-hidden">
+                    {canMarkComplete && (
+                      <button onClick={() => { setMenuOpen(false); onMarkComplete(trip.trip_id); }}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-blue-300 hover:bg-blue-500/10 transition-colors">
+                        <CheckCircle className="w-3.5 h-3.5" /> Mark complete
+                      </button>
+                    )}
                     {canReactivate && (
                       <button onClick={() => { setMenuOpen(false); onReactivate(trip.trip_id); }}
                         className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-green-300 hover:bg-green-500/10 transition-colors">
-                        <RotateCcw className="w-3 h-3" /> Reactivate
+                        <RotateCcw className="w-3.5 h-3.5" /> Reactivate
                       </button>
                     )}
                     {canDelete && (
                       <button onClick={() => { setMenuOpen(false); onDelete(trip.trip_id); }}
                         className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-300 hover:bg-red-500/10 transition-colors">
-                        <Trash2 className="w-3 h-3" /> Delete trip
+                        <Trash2 className="w-3.5 h-3.5" /> Delete trip
                       </button>
                     )}
                   </div>
