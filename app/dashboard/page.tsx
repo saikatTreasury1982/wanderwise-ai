@@ -160,12 +160,16 @@ export default function DashboardPage() {
         if (await setStatus(trip.trip_id, 2)) router.push(`/dashboard/trip/${trip.trip_id}`);
         break;
       case 2: // active → open
+      case 3: // completed → open (view directly)
       case 4: // suspended → open
         router.push(`/dashboard/trip/${trip.trip_id}`);
         break;
-      case 3: // completed → reactivate
-        if (confirm('Reactivate this trip?')) { if (await setStatus(trip.trip_id, 2)) await fetchTrips(); }
-        break;
+    }
+  };
+
+  const handleReactivate = async (tripId: number) => {
+    if (confirm('Reactivate this trip?')) {
+      if (await setStatus(tripId, 2)) await fetchTrips();
     }
   };
 
@@ -223,7 +227,7 @@ export default function DashboardPage() {
                 {hasActiveFilters && <span className="text-sm text-white/60">{filteredTrips.length} of {trips.length} trips</span>}
               </div>
             )}
-            
+
             {/* Selected trip summary header */}
             {selectedTrip && (
               <div className="mb-6">
@@ -234,6 +238,7 @@ export default function DashboardPage() {
                   onEdit={handleEditTrip}
                   onDelete={handleDeleteTrip}
                   onPrimaryAction={handlePrimaryAction}
+                  onReactivate={handleReactivate}
                 />
               </div>
             )}
