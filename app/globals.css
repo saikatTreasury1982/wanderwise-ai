@@ -202,45 +202,6 @@
   --scrollbar-track:       rgba(255, 255, 255, 0.05);
 }
 
-/* ---------- Classic Light ---------- */
-:root[data-theme="classic-light"] {
-  --p50:  #ECFDF9;
-  --p100: #D0F7EC;
-  --p200: #9FE1CB;
-  --p300: #6FD4B4;
-  --p400: #3FC49C;
-  --p500: #1D9E75;
-  --p600: #148561;
-  --p700: #0F6E56;
-  --p800: #0A5342;
-  --p900: #06382D;
-
-  --page-gradient: linear-gradient(135deg, #F7FAF9 0%, #EEF4F2 40%, #E7F0EE 70%, #E1EDEA 100%);
-
-  --glass-bg:           rgba(255, 255, 255, 0.72);
-  --glass-border:       rgba(15, 40, 34, 0.10);
-  --glass-inset:        rgba(255, 255, 255, 0.90);
-  --glass-card-bg:      rgba(255, 255, 255, 0.85);
-  --glass-card-border:  rgba(15, 40, 34, 0.08);
-  --glass-card-inset:   rgba(255, 255, 255, 0.95);
-  --glass-shadow:       rgba(15, 40, 34, 0.10);
-  --glass-shadow-hover: rgba(15, 40, 34, 0.16);
-  --glass-inset-hover:  rgba(255, 255, 255, 1.00);
-  --glass-border-hover: rgba(29, 158, 117, 0.35);
-
-  --orb-1: rgba(29, 158, 117, 0.10);
-  --orb-2: rgba(56, 189, 248, 0.08);
-  --orb-3: rgba(20, 133, 97, 0.06);
-
-  --text-primary:   #12211C;
-  --text-secondary: #4A5F58;
-  --text-muted:     #849790;
-
-  --scrollbar-thumb:       rgba(29, 158, 117, 0.35);
-  --scrollbar-thumb-hover: rgba(29, 158, 117, 0.55);
-  --scrollbar-track:       rgba(15, 40, 34, 0.05);
-}
-
 /* ============================================================
    TAILWIND THEME
    Primary ramp points at theme variables so every existing
