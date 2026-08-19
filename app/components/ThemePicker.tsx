@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { THEMES, DEFAULT_THEME, isValidTheme, type ThemeKey } from '@/app/lib/config/theme';
 import { useTheme } from './ThemeProvider';
+import CircleIconButton from '@/app/components/ui/CircleIconButton';
+import { LogOut } from 'lucide-react';
 
 export function ThemePicker({ onClose }: { onClose?: () => void }) {
   const { theme, setTheme } = useTheme();
@@ -38,9 +40,8 @@ export function ThemePicker({ onClose }: { onClose?: () => void }) {
             disabled={saving}
             onClick={() => handleSelect(t.key)}
             aria-pressed={active}
-            className={`glass-card glass-hover w-full rounded-lg p-4 text-left transition ${
-              active ? 'ring-2 ring-primary-400' : ''
-            }`}
+            className={`w-full rounded-lg p-4 text-left transition-colors bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] ${active ? 'ring-2 ring-primary-400' : ''
+              }`}
           >
             <div className="flex items-center gap-4">
               <div className="flex shrink-0 gap-1">
@@ -65,6 +66,19 @@ export function ThemePicker({ onClose }: { onClose?: () => void }) {
           </button>
         );
       })}
+
+      {/* Done */}
+      {onClose && (
+        <div className="flex justify-end pt-2">
+          <CircleIconButton
+            variant="primary"
+            size="small"
+            onClick={onClose}
+            title="Exit"
+            icon={<LogOut className="w-5 h-5" />}
+          />
+        </div>
+      )}
     </div>
   );
 }

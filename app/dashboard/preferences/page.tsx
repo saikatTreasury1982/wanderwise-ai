@@ -10,7 +10,7 @@ import { getTheme } from '@/app/lib/config/theme';
 import { useTheme } from '@/app/components/ThemeProvider';
 import Modal from '@/app/components/ui/Modal';
 import SettingsRow from '@/app/components/ui/SettingsRow';
-
+import PaymentMethodForm from '@/app/components/organisms/PaymentMethodForm';
 
 interface UserPreferences {
   user_id: string;
@@ -59,16 +59,7 @@ export default function PreferencesPage() {
 
   // Payment method form states
   const [isAddingPayment, setIsAddingPayment] = useState(false);
-  const [editingPaymentId, setEditingPaymentId] = useState<number | null>(null);
-  const [paymentFormData, setPaymentFormData] = useState({
-    payment_type: 'Credit Card',
-    issuer: '',
-    payment_network: '',
-    payment_channel: 'Card',
-    payment_method_key: '',
-    is_active: 1,
-  });
-  const [isSavingPayment, setIsSavingPayment] = useState(false);
+  const [editingPaymentMethod, setEditingPaymentMethod] = useState<PaymentMethod | null>(null);
 
   const fetchData = async () => {
     try {
@@ -206,72 +197,6 @@ export default function PreferencesPage() {
     setIsAddingAlert(false);
   };
 
-  // Payment method functions
-  const resetPaymentForm = () => {
-    setPaymentFormData({
-      payment_type: 'Credit Card',
-      issuer: '',
-      payment_network: '',
-      payment_channel: 'Card',
-      payment_method_key: '',
-      is_active: 1,
-    });
-    setIsAddingPayment(false);
-    setEditingPaymentId(null);
-  };
-
-  const handleAddPayment = async () => {
-    if (!paymentFormData.payment_method_key.trim()) return;
-
-    setIsSavingPayment(true);
-    try {
-      const response = await fetch('/api/user/payment-methods', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentFormData),
-      });
-
-      if (response.ok) {
-        await fetchData();
-        resetPaymentForm();
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to create payment method');
-      }
-    } catch (error) {
-      console.error('Error creating payment method:', error);
-      alert('Failed to create payment method');
-    } finally {
-      setIsSavingPayment(false);
-    }
-  };
-
-  const handleUpdatePayment = async () => {
-    if (!editingPaymentId) return;
-
-    setIsSavingPayment(true);
-    try {
-      const response = await fetch(`/api/user/payment-methods/${editingPaymentId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentFormData),
-      });
-
-      if (response.ok) {
-        await fetchData();
-        resetPaymentForm();
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to update payment method');
-      }
-    } catch (error) {
-      console.error('Error updating payment method:', error);
-      alert('Failed to update payment method');
-    } finally {
-      setIsSavingPayment(false);
-    }
-  };
-
   const handleDeletePayment = async (methodId: number) => {
     if (!confirm('Delete this payment method?')) return;
 
@@ -293,15 +218,7 @@ export default function PreferencesPage() {
   };
 
   const startEditingPayment = (method: PaymentMethod) => {
-    setEditingPaymentId(method.payment_method_id);
-    setPaymentFormData({
-      payment_type: method.payment_type,
-      issuer: method.issuer,
-      payment_network: method.payment_network,
-      payment_channel: method.payment_channel,
-      payment_method_key: method.payment_method_key,
-      is_active: method.is_active,
-    });
+    setEditingPaymentMethod(method);
     setIsAddingPayment(false);
   };
 
@@ -540,7 +457,7 @@ export default function PreferencesPage() {
                 </svg>
                 Payment Methods
               </h2>
-              {!isAddingPayment && !editingPaymentId && (
+              {!isAddingPayment && !editingPaymentMethod && (
                 <CircleIconButton
                   variant="primary"
                   size="small"
@@ -556,109 +473,12 @@ export default function PreferencesPage() {
             </div>
 
             {/* Payment Method Add/Edit Form */}
-            {(isAddingPayment || editingPaymentId) && (
-              <div className="mb-4 p-3 sm:p-4 bg-white/5 rounded-lg border border-white/10 space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-white/60 mb-1">Payment Type</label>
-                    <select
-                      value={paymentFormData.payment_type}
-                      onChange={e => setPaymentFormData({ ...paymentFormData, payment_type: e.target.value })}
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary-400"
-                    >
-                      <option value="Credit Card" className="bg-gray-800">Credit Card</option>
-                      <option value="Debit Card" className="bg-gray-800">Debit Card</option>
-                      <option value="PayPal" className="bg-gray-800">PayPal</option>
-                      <option value="Bank Transfer" className="bg-gray-800">Bank Transfer</option>
-                      <option value="Cash" className="bg-gray-800">Cash</option>
-                      <option value="UPI" className="bg-gray-800">UPI</option>
-                      <option value="Other" className="bg-gray-800">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-white/60 mb-1">Payment Channel</label>
-                    <select
-                      value={paymentFormData.payment_channel}
-                      onChange={e => setPaymentFormData({ ...paymentFormData, payment_channel: e.target.value })}
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary-400"
-                    >
-                      <option value="Card" className="bg-gray-800">Card</option>
-                      <option value="On_Account" className="bg-gray-800">On Account</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-white/60 mb-1">Issuer</label>
-                    <input
-                      type="text"
-                      value={paymentFormData.issuer}
-                      onChange={e => setPaymentFormData({ ...paymentFormData, issuer: e.target.value })}
-                      placeholder="e.g., Visa, Chase"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-white/60 mb-1">Payment Network</label>
-                    <input
-                      type="text"
-                      value={paymentFormData.payment_network}
-                      onChange={e => setPaymentFormData({ ...paymentFormData, payment_network: e.target.value })}
-                      placeholder="e.g., Visa Card ending 1234"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-white/60 mb-1">Payment Method Key</label>
-                  <input
-                    type="text"
-                    value={paymentFormData.payment_method_key}
-                    onChange={e => setPaymentFormData({ ...paymentFormData, payment_method_key: e.target.value })}
-                    placeholder="e.g., visa_1234, paypal_account"
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-primary-400"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={paymentFormData.is_active === 1}
-                      onChange={e => setPaymentFormData({ ...paymentFormData, is_active: e.target.checked ? 1 : 0 })}
-                      className="w-4 h-4 rounded border-white/20 bg-white/10 text-primary-500 focus:ring-primary-400"
-                    />
-                    <span className="text-white text-sm">Active</span>
-                  </label>
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <CircleIconButton
-                    variant="default"
-                    size="small"
-                    onClick={resetPaymentForm}
-                    title="Cancel"
-                    className="w-9 h-9 sm:w-10 sm:h-10"
-                    icon={
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    }
-                  />
-                  <CircleIconButton
-                    variant="primary"
-                    size="small"
-                    onClick={editingPaymentId ? handleUpdatePayment : handleAddPayment}
-                    isLoading={isSavingPayment}
-                    disabled={!paymentFormData.payment_method_key.trim()}
-                    title={editingPaymentId ? 'Save changes' : 'Add payment method'}
-                    className="w-9 h-9 sm:w-10 sm:h-10"
-                    icon={
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    }
-                  />
-                </div>
-              </div>
+            {(isAddingPayment || editingPaymentMethod) && (
+              <PaymentMethodForm
+                editing={editingPaymentMethod}
+                onSaved={() => { fetchData(); setIsAddingPayment(false); setEditingPaymentMethod(null); }}
+                onCancel={() => { setIsAddingPayment(false); setEditingPaymentMethod(null); }}
+              />
             )}
 
             {/* Payment Methods List */}
@@ -724,7 +544,7 @@ export default function PreferencesPage() {
         title="Choose theme"
         className="max-w-md"
       >
-        <ThemePicker />
+        <ThemePicker onClose={() => setThemeModalOpen(false)} />
       </Modal>
     </div>
   );

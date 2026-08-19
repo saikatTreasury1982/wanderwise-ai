@@ -29,12 +29,6 @@ export const THEMES = [
     description: 'Slate teal and warm sand',
     swatch: ['#17262B', '#2A4348', '#2E8783'],
   },
-  {
-    key: 'classic-light',
-    label: 'Classic Light',
-    description: 'Clean light with soft green',
-    swatch: ['#F7FAF9', '#E1EDEA', '#1D9E75'],
-  },
 ] as const;
 
 export type ThemeKey = (typeof THEMES)[number]['key'];

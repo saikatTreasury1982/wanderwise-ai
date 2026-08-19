@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Input from '@/app/components/ui/Input';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
+import CurrencyCombobox from '@/app/components/ui/CurrencyCombobox';
 
 interface Traveler {
   traveler_id: number;
@@ -35,6 +36,7 @@ interface FormData {
 
 interface FormErrors {
   traveler_name?: string;
+  traveler_currency?: string;
   general?: string;
 }
 
@@ -131,6 +133,10 @@ export default function TravelerForm({
 
     if (!formData.traveler_name.trim()) {
       newErrors.traveler_name = 'Traveler name is required';
+    }
+
+    if (formData.is_cost_sharer && !formData.traveler_currency) {
+      newErrors.traveler_currency = 'Currency is required for cost sharers';
     }
 
     setErrors(newErrors);
@@ -238,17 +244,17 @@ export default function TravelerForm({
           </div>
           <div className="flex-1 min-w-[150px]">
             <label className="block text-sm font-medium text-white/90 mb-1">Currency</label>
-            <select
-              name="traveler_currency"
+            <CurrencyCombobox
               value={formData.traveler_currency}
-              onChange={handleChange}
-              className="w-full px-4 py-1.5 rounded-md bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
-            >
-              <option value="" className="bg-gray-800 text-white">Select currency</option>
-              {currencies.map((curr) => (
-                <option key={curr.currency_code} value={curr.currency_code} className="bg-gray-800 text-white">{curr.currency_code} - {curr.currency_name}</option>
-              ))}
-            </select>
+              currencies={currencies}
+              onSelect={(code) => {
+                setFormData(prev => ({ ...prev, traveler_currency: code }));
+                setErrors(prev => ({ ...prev, traveler_currency: undefined }));
+              }}
+            />
+            {errors.traveler_currency && (
+              <p className="text-red-300 text-xs mt-1">{errors.traveler_currency}</p>
+            )}
           </div>
         </div>
 
@@ -267,7 +273,10 @@ export default function TravelerForm({
 
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, is_cost_sharer: !prev.is_cost_sharer }))}
+            onClick={() => {
+              setFormData(prev => ({ ...prev, is_cost_sharer: !prev.is_cost_sharer }));
+              setErrors(prev => ({ ...prev, traveler_currency: undefined }));
+            }}
             className="flex items-center gap-2 group"
           >
             <span className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${formData.is_cost_sharer ? 'bg-primary-500 border-primary-400 text-white' : 'bg-white/5 border-white/30 text-transparent group-hover:border-primary-400'}`}>
