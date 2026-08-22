@@ -38,13 +38,17 @@ export async function getAccommodationOptionsByTrip(tripId: number): Promise<Acc
     traveler_id: number | null;
     traveler_name: string | null;
     is_cost_sharer: number | null;
+    is_primary: number | null;
+    is_active: number | null;
   }>(
     `SELECT 
       ao.*,
       aot.id as traveler_link_id,
       aot.traveler_id,
       tt.traveler_name,
-      tt.is_cost_sharer
+      tt.is_cost_sharer,
+      tt.is_primary,
+      tt.is_active
      FROM accommodation_options ao
      LEFT JOIN accommodation_option_travelers aot ON ao.accommodation_option_id = aot.accommodation_option_id
      LEFT JOIN trip_travelers tt ON aot.traveler_id = tt.traveler_id
@@ -89,6 +93,8 @@ export async function getAccommodationOptionsByTrip(tripId: number): Promise<Acc
         traveler_id: row.traveler_id,
         traveler_name: row.traveler_name!,
         is_cost_sharer: row.is_cost_sharer ?? 1,
+        is_primary: row.is_primary ?? 0,
+        is_active: row.is_active ?? 1,
       });
     }
   }
@@ -105,7 +111,7 @@ export async function getAccommodationOptionById(accommodationOptionId: number):
   if (rows.length === 0) return null;
 
   const travelers = await query<AccommodationOptionTraveler>(
-    `SELECT aot.id, aot.accommodation_option_id, aot.traveler_id, tt.traveler_name, tt.is_cost_sharer 
+    `SELECT aot.id, aot.accommodation_option_id, aot.traveler_id, tt.traveler_name, tt.is_cost_sharer, tt.is_primary, tt.is_active 
     FROM accommodation_option_travelers aot
     JOIN trip_travelers tt ON aot.traveler_id = tt.traveler_id
     WHERE aot.accommodation_option_id = ?`,
@@ -125,7 +131,7 @@ export async function checkDateOverlap(
   excludeId?: number
 ): Promise<boolean> {
   const excludeClause = excludeId ? `AND accommodation_option_id != ?` : '';
-  const args = excludeId 
+  const args = excludeId
     ? [tripId, checkOutDate, checkInDate, excludeId]
     : [tripId, checkOutDate, checkInDate];
 
@@ -195,7 +201,7 @@ export async function updateAccommodationOption(
   if (input.status === 'confirmed') {
     const checkInDate = input.check_in_date ?? current.check_in_date;
     const checkOutDate = input.check_out_date ?? current.check_out_date;
-    
+
     if (checkInDate && checkOutDate) {
       const hasOverlap = await checkDateOverlap(current.trip_id, checkInDate, checkOutDate, accommodationOptionId);
       if (hasOverlap) {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Input from '@/app/components/ui/Input';
 import CircleIconButton from '@/app/components/ui/CircleIconButton';
 import CurrencyCombobox from '@/app/components/ui/CurrencyCombobox';
+import TogglePill from '@/app/components/ui/TogglePill';
 
 interface Traveler {
   traveler_id: number;
@@ -136,7 +137,7 @@ export default function TravelerForm({
     }
 
     if (formData.is_cost_sharer && !formData.traveler_currency) {
-      newErrors.traveler_currency = 'Currency is required for cost sharers';
+      newErrors.traveler_currency = 'Currency is required for Payers';
     }
 
     setErrors(newErrors);
@@ -259,42 +260,57 @@ export default function TravelerForm({
         </div>
 
         {/* Row 2 — toggles */}
-        <div className="flex flex-wrap items-center gap-6">
-          <button
-            type="button"
-            onClick={() => setFormData(prev => ({ ...prev, is_primary: !prev.is_primary }))}
-            className="flex items-center gap-2 group"
-          >
-            <span className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${formData.is_primary ? 'bg-primary-500 border-primary-400 text-white' : 'bg-white/5 border-white/30 text-transparent group-hover:border-primary-400'}`}>
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-            </span>
-            <span className="text-white/90 text-sm">Primary Traveler</span>
-          </button>
+        <div className="flex flex-wrap items-start gap-6">
+          <div>
+            <label className="block text-sm font-medium text-white/90 mb-1">Primary Traveler</label>
+            <TogglePill
+              value={formData.is_primary ? 'yes' : 'no'}
+              onChange={(v) => setFormData(prev => ({ ...prev, is_primary: v === 'yes' }))}
+              options={[
+                { value: 'yes', label: 'Yes' },
+                { value: 'no', label: 'No' },
+              ]}
+              activeColors={{
+                yes: 'bg-primary-500/30 border-primary-400',
+                no: 'bg-white/20 border-white/40',
+              }}
+            />
+          </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setFormData(prev => ({ ...prev, is_cost_sharer: !prev.is_cost_sharer }));
-              setErrors(prev => ({ ...prev, traveler_currency: undefined }));
-            }}
-            className="flex items-center gap-2 group"
-          >
-            <span className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${formData.is_cost_sharer ? 'bg-primary-500 border-primary-400 text-white' : 'bg-white/5 border-white/30 text-transparent group-hover:border-primary-400'}`}>
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-            </span>
-            <span className="text-white/90 text-sm">Cost Sharer</span>
-          </button>
+          <div>
+            <label className="block text-sm font-medium text-white/90 mb-1">Payer</label>
+            <TogglePill
+              value={formData.is_cost_sharer ? 'yes' : 'no'}
+              onChange={(v) => {
+                setFormData(prev => ({ ...prev, is_cost_sharer: v === 'yes' }));
+                setErrors(prev => ({ ...prev, traveler_currency: undefined }));
+              }}
+              options={[
+                { value: 'yes', label: 'Yes' },
+                { value: 'no', label: 'No' },
+              ]}
+              activeColors={{
+                yes: 'bg-primary-500/30 border-primary-400',
+                no: 'bg-white/20 border-white/40',
+              }}
+            />
+          </div>
 
-          <button
-            type="button"
-            onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
-            className="flex items-center gap-2 group"
-          >
-            <span className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${formData.is_active ? 'bg-primary-500 border-primary-400 text-white' : 'bg-white/5 border-white/30 text-transparent group-hover:border-primary-400'}`}>
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-            </span>
-            <span className="text-white/90 text-sm">Active</span>
-          </button>
+          <div>
+            <label className="block text-sm font-medium text-white/90 mb-1">Active</label>
+            <TogglePill
+              value={formData.is_active ? 'active' : 'inactive'}
+              onChange={(v) => setFormData(prev => ({ ...prev, is_active: v === 'active' }))}
+              options={[
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Inactive' },
+              ]}
+              activeColors={{
+                active: 'bg-green-500/30 border-green-400',
+                inactive: 'bg-red-500/30 border-red-400',
+              }}
+            />
+          </div>
         </div>
 
         {/* Buttons */}
