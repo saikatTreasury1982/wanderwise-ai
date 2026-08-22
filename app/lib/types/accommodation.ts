@@ -32,6 +32,8 @@ export interface AccommodationOptionTraveler {
   traveler_id: number;
   traveler_name: string;
   is_cost_sharer: number;
+  is_primary: number;
+  is_active: number;
 }
 
 export interface CreateAccommodationOptionInput {

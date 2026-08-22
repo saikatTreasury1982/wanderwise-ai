@@ -4,7 +4,8 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import PageBackground from '@/app/components/ui/PageBackground';
 import TravelerForm from '@/app/components/organisms/TravelerForm';
-import TravelerCard from '@/app/components/organisms/TravelerCard';
+import TravelerTable from '@/app/components/organisms/TravelerTable';
+import FloatingActionButton from '@/app/components/ui/FloatingActionButton';
 import { formatDateRange } from '@/app/lib/utils';
 
 interface Traveler {
@@ -44,6 +45,7 @@ export default function TravelersPage({ params }: PageProps) {
   const [travelers, setTravelers] = useState<Traveler[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTraveler, setSelectedTraveler] = useState<Traveler | null>(null);
+  const [showForm, setShowForm] = useState(false);
   const [relationships, setRelationships] = useState<Relationship[]>([]);
   const [dateFormat, setDateFormat] = useState<'YYYY-MM-DD' | 'DD-MM-YYYY' | 'MM-DD-YYYY' | 'DD Mmm YYYY'>('DD Mmm YYYY');
 
@@ -114,6 +116,14 @@ export default function TravelersPage({ params }: PageProps) {
 
   const handleEdit = (traveler: Traveler) => {
     setSelectedTraveler(traveler);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAddNew = () => {
+    setSelectedTraveler(null);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCopy = (traveler: Traveler) => {
@@ -149,10 +159,13 @@ export default function TravelersPage({ params }: PageProps) {
 
   const handleFormSuccess = () => {
     fetchTravelers();
+    setShowForm(false);
+    setSelectedTraveler(null);
   };
 
   const handleFormClear = () => {
     setSelectedTraveler(null);
+    setShowForm(false);
   };
 
   if (isLoading) {
@@ -222,41 +235,33 @@ export default function TravelersPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Main content - Two columns */}
+        {/* Main content */}
         <div className="space-y-6">
-          <TravelerForm
-            tripId={parseInt(tripId)}
-            traveler={selectedTraveler}
-            onSuccess={handleFormSuccess}
-            onClear={handleFormClear}
-          />
+          {showForm && (
+            <TravelerForm
+              tripId={parseInt(tripId)}
+              traveler={selectedTraveler}
+              onSuccess={handleFormSuccess}
+              onClear={handleFormClear}
+            />
+          )}
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">
                 Travelers ({travelers.length})
               </h3>
             </div>
-
-            {travelers.length === 0 ? (
-              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-8 text-center">
-                <p className="text-white/70">No travelers added yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {travelers.map((traveler) => (
-                  <TravelerCard
-                    key={traveler.traveler_id}
-                    traveler={traveler}
-                    relationships={relationships}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </div>
-            )}
+            <TravelerTable
+              travelers={travelers}
+              relationships={relationships}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           </div>
         </div>
       </div>
+
+      <FloatingActionButton onClick={handleAddNew} ariaLabel="Add traveler" />
     </div>
   );
 }
