@@ -11,6 +11,8 @@ interface Props {
 interface Traveler {
   traveler_id: number;
   traveler_name: string;
+  is_primary: number;
+  is_cost_sharer: number;
   is_active: number;
 }
 
@@ -333,15 +335,24 @@ export default function FlightBookingsView({ tripId }: Props) {
                 <p className="text-white/40 text-xs">No travellers yet.</p>
               ) : (
                 roster.map((t) => (
-                  <div key={t.traveler_id} className="flex items-center gap-2 py-1.5">
-                    <span className={cn('w-2 h-2 rounded-full', t.is_active === 1 ? 'bg-primary-400' : 'bg-white/25')} />
+                  <div key={t.traveler_id} className="flex items-center gap-2 py-1.5 flex-wrap">
                     <span className={cn('text-sm', t.is_active === 1 ? 'text-white/85' : 'text-white/40')}>
-                      {t.traveler_name}{t.is_active !== 1 && ' (inactive)'}
+                      {t.traveler_name}
                     </span>
+                    {t.is_primary === 1 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary-500/20 border border-primary-400/40 text-primary-200">Primary</span>
+                    )}
+                    {t.is_cost_sharer === 1 ? (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/15 border border-green-400/40 text-green-200">Payer</span>
+                    ) : (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/50">Non payer</span>
+                    )}
+                    {t.is_active !== 1 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-400/40 text-red-200">Inactive</span>
+                    )}
                   </div>
                 ))
               )}
-              <div className="text-xs text-white/35 mt-3 pt-3 border-t border-white/10 italic">Green = active</div>
             </div>
           </div>
         </>
