@@ -296,13 +296,13 @@ export default function TripHubPage({ params }: PageProps) {
       {costSharers.length > 0 && (
         <div>
           <span className="text-green-400">{costSharers.length}</span>
-          <span className="text-white/50"> cost sharer</span>
+          <span className="text-white/50"> Payers</span>
         </div>
       )}
       {nonCostSharers.length > 0 && (
         <div>
           <span className="text-blue-400">{nonCostSharers.length}</span>
-          <span className="text-white/50"> non-cost sharer</span>
+          <span className="text-white/50"> Non Payers</span>
         </div>
       )}
       {inactiveTravelers.length > 0 && (
