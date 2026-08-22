@@ -220,7 +220,7 @@ export default function AccommodationComparisonTable({ accommodations, onEdit, o
                                                 {t.is_cost_sharer === 1 ? (
                                                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/15 border border-green-400/40 text-green-200">Payer</span>
                                                 ) : (
-                                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/50">Dependent</span>
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/50">Non Payer</span>
                                                 )}
                                                 {inactive && (
                                                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-400/40 text-red-200">Inactive</span>
